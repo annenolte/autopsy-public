@@ -1,0 +1,31 @@
+{
+  "_comment": [
+    "Multi-language (TypeScript) benchmark — reviewer issue #3. A small cross-file",
+    "Express-style app with 8 planted vulnerabilities. Line numbers read from the",
+    ".ts files directly. Categories normalized by eval.py (SQLi/Auth Bypass/Weak",
+    "Crypto/Command Injection/SSRF/Code Injection).",
+    "Honest note: Autopsy's dependency-graph extraction is Python-centric. Even",
+    "after fixing exported-function extraction, idiomatic TS (anonymous Express",
+    "route handlers) is not captured as graph nodes and cross-file CALL edges are",
+    "not built, so the graph-guided path is much weaker on TS than Python. The LLM",
+    "scan still sees raw TS source. See benchmark/js_demo/README.md."
+  ],
+  "vulnerabilities": [
+    {"id": "js-sqli-sink", "file": "db.ts", "category": "SQLi", "line_start": 5, "line_end": 9,
+     "description": "runQuery: raw SQL string passed to conn.query with no binding (sink, line 8)."},
+    {"id": "js-weak-hash", "file": "auth.ts", "category": "Weak Crypto", "line_start": 9, "line_end": 11,
+     "description": "hashPassword: MD5 used for password hashing (line 10)."},
+    {"id": "js-sqli-search", "file": "routes.ts", "category": "SQLi", "line_start": 8, "line_end": 13,
+     "description": "/users/search: req.query.q concatenated into SQL forwarded to runQuery (line 11)."},
+    {"id": "js-auth-ignored", "file": "routes.ts", "category": "Auth Bypass", "line_start": 15, "line_end": 18,
+     "description": "/users/:id: isAuthorized() return value ignored, so the check is a no-op (line 18)."},
+    {"id": "js-sqli-update", "file": "routes.ts", "category": "SQLi", "line_start": 19, "line_end": 23,
+     "description": "/users/:id: req.body.name and id concatenated into UPDATE SQL forwarded to runQuery (line 20)."},
+    {"id": "js-command-injection", "file": "routes.ts", "category": "Command Injection", "line_start": 25, "line_end": 28,
+     "description": "/ping: req.query.host concatenated into exec() (line 27)."},
+    {"id": "js-ssrf", "file": "routes.ts", "category": "SSRF", "line_start": 31, "line_end": 34,
+     "description": "/fetch: fetch() on a user-controlled URL with no allowlist (line 33)."},
+    {"id": "js-code-injection", "file": "routes.ts", "category": "Code Injection", "line_start": 37, "line_end": 40,
+     "description": "/calc: eval() on req.body.expr (line 39)."}
+  ]
+}

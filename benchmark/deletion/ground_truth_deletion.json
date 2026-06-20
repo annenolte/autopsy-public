@@ -1,0 +1,27 @@
+{
+  "_comment": [
+    "Deletion-based ground truth — the class the paper claims as a core novelty",
+    "(reviewer issue #6). Unlike demo_project (addition-based), here the",
+    "vulnerability is introduced by a DELETION in the before->after diff, so an",
+    "addition-only scanner sees nothing dangerous. before/ and after/ differ only",
+    "by the deletion described in each entry. Detected by autopsy/detection/",
+    "deletions.py (comment boundary) and autopsy/graph/builder.py diff_graphs",
+    "(security-control deletion) — both deterministic, no LLM."
+  ],
+  "vulnerabilities": [
+    {
+      "id": "deletion-comment-activation",
+      "file": "activation.py",
+      "type": "comment_boundary",
+      "delimiter": "\"\"\"",
+      "description": "Deleting the docstring opener uncomments a dormant /admin/shell route that runs os.popen on user input — a command-exec backdoor that appears in the diff only as a 3-char deletion."
+    },
+    {
+      "id": "deletion-security-control",
+      "file": "auth_layer.py",
+      "type": "security_control_deletion",
+      "name": "authorize_request",
+      "description": "Removing authorize_request (a staff-only auth gate) leaves handle_admin_action unprotected. The deletion has no added lines for an addition-only scanner to flag."
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "_comment": [
+    "Ground truth for OWASP pygoat — a real, third-party intentionally-vulnerable",
+    "Django app — used as an external validation target for Autopsy.",
+    "PROVENANCE: github.com/adeyosemanputra/pygoat @ commit",
+    "19d17cc8874861142b330636d068bbde54e86b85 (2026-03-28). pygoat is NOT vendored",
+    "into this repo; clone it yourself (see benchmark/pygoat/README.md).",
+    "Every entry below was verified by reading introduction/views.py directly and",
+    "confirming user input reaches the sink; line numbers are from that commit and",
+    "may shift in other revisions — re-verify if you use a different checkout.",
+    "Scope: only CODE-LEVEL, AST-detectable vulnerabilities in Autopsy's categories",
+    "are listed. pygoat also contains OWASP issues that are NOT statically decidable",
+    "from source (security misconfiguration, vulnerable components, business-logic",
+    "access-control, SSTI-by-render) — those are deliberately excluded rather than",
+    "guessed. The SSTI lab's os.path.join uses a server-generated UUID (not user",
+    "input), so it is NOT a path-traversal finding and was excluded.",
+    "Categories are normalized by eval.py (e.g. 'Command Injection' -> command)."
+  ],
+  "vulnerabilities": [
+    {
+      "id": "pygoat-sqli-login",
+      "file": "introduction/views.py",
+      "category": "SQLi",
+      "line_start": 147,
+      "line_end": 189,
+      "description": "sql_lab: name/password from POST concatenated into a SQL string passed to login.objects.raw() (sink at line 162)."
+    },
+    {
+      "id": "pygoat-insecure-deser-pickle",
+      "file": "introduction/views.py",
+      "category": "Insecure Deserialization",
+      "line_start": 205,
+      "line_end": 221,
+      "description": "insec_des_lab: pickle.loads() on a base64-decoded user-controlled cookie (sink at line 214)."
+    },
+    {
+      "id": "pygoat-command-injection",
+      "file": "introduction/views.py",
+      "category": "Command Injection",
+      "line_start": 415,
+      "line_end": 450,
+      "description": "cmd_lab: user 'domain' formatted into a shell command run via subprocess.Popen(shell=True) (build line 424, sink line 430)."
+    },
+    {
+      "id": "pygoat-code-injection-eval",
+      "file": "introduction/views.py",
+      "category": "Code Injection",
+      "line_start": 453,
+      "line_end": 469,
+      "description": "cmd_lab2: eval() called directly on user POST input 'val' (sink at line 460)."
+    },
+    {
+      "id": "pygoat-unsafe-yaml",
+      "file": "introduction/views.py",
+      "category": "Insecure Deserialization",
+      "line_start": 551,
+      "line_end": 569,
+      "description": "a9_lab: yaml.load() with yaml.Loader on an uploaded file, allowing arbitrary object construction (sink at line 560)."
+    },
+    {
+      "id": "pygoat-sqli-injection-lab",
+      "file": "introduction/views.py",
+      "category": "SQLi",
+      "line_start": 855,
+      "line_end": 911,
+      "description": "injection_sql_lab: name/password from POST concatenated into SQL passed to sql_lab_table.objects.raw() (build line 864, sink line 878)."
+    },
+    {
+      "id": "pygoat-ssrf",
+      "file": "introduction/views.py",
+      "category": "SSRF",
+      "line_start": 956,
+      "line_end": 966,
+      "description": "ssrf_lab2: requests.get() on a user-supplied URL with no allowlist (sink at line 963)."
+    },
+    {
+      "id": "pygoat-weak-hash",
+      "file": "introduction/views.py",
+      "category": "Weak Crypto",
+      "line_start": 1018,
+      "line_end": 1032,
+      "description": "crypto_failure_lab: MD5 used to hash a user password (sink at line 1026)."
+    },
+    {
+      "id": "pygoat-xxe",
+      "file": "introduction/views.py",
+      "category": "XXE",
+      "line_start": 256,
+      "line_end": 270,
+      "description": "xxe_parse: SAX parser with feature_external_ges enabled (line 259) parses the raw user request body (line 260) -> XML External Entity injection."
+    },
+    {
+      "id": "pygoat-imagemath-eval",
+      "file": "introduction/views.py",
+      "category": "Code Injection",
+      "line_start": 574,
+      "line_end": 606,
+      "description": "a9_lab2: ImageMath.eval() evaluates a user-supplied 'function' expression (sink at line 588) -> arbitrary code execution."
+    },
+    {
+      "id": "pygoat-ssti",
+      "file": "introduction/views.py",
+      "category": "SSTI",
+      "line_start": 975,
+      "line_end": 1000,
+      "description": "ssti_lab: user-supplied blog content is written into a Django template file (line 996) that is later rendered by ssti_view_blog -> server-side template injection. Cross-function; the hardest of the set to detect statically."
+    }
+  ]
+}

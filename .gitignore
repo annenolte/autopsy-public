@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+
+# Autopsy cache
+.autopsy_cache/
+
+# VS Code extension
+extension/node_modules/
+extension/out/
+
+# Environment
+.env
+*.env
+
+# OS
+.DS_Store
+
+# Eval harness output
+results*.json
+benchmark/results/
+
+# Local-only (kept on disk, excluded from the published repo)
+docs/
+autopsy-release/
+autopsy-public/
+
+# Paper-internal (local only)
+REVIEWER_RESPONSE.md
+PAPER_HANDOFF.md
+TODO_TO_FINISH.md

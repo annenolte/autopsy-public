@@ -1,0 +1,127 @@
+{
+  "_comment": [
+    "Authoritative ground-truth set of planted vulnerabilities in demo_project/.",
+    "Line numbers were located by reading demo_project/*.py directly (not inferred).",
+    "Fields: id, file (relative to demo_project/), category, line_start, line_end (inclusive), description.",
+    "The eval matcher (benchmark/eval.py) matches a finding to an entry when:",
+    "  basename(file) matches AND normalized category matches AND the reported line is",
+    "  within +/- fuzz lines (default 5) of [line_start, line_end]; matching is one-to-one.",
+    "Entries with \"provisional\": true are NOT counted toward the scored ground truth",
+    "unless eval.py is run with --include-provisional. See README 'Benchmark' subsection.",
+    "Category strings are the authoritative human labels; eval.py normalizes them",
+    "(e.g. 'Weak Crypto' <-> the tool's 'Secrets Exposure') before comparing.",
+    "An entry may set \"accepted_categories\" (defaults to [category]) to list more",
+    "than one valid category when the planted vulnerability genuinely spans them",
+    "(e.g. an unauthenticated arbitrary-SQL endpoint is both SQLi and Auth Bypass).",
+    "This only relaxes the category check; the file and +/- line gates are unchanged."
+  ],
+  "vulnerabilities": [
+    {
+      "id": "sqli-search",
+      "file": "query_builder.py",
+      "category": "SQLi",
+      "line_start": 4,
+      "line_end": 13,
+      "description": "build_search_query: string-interpolated LIKE clause (search_term/role_filter injected into SQL)."
+    },
+    {
+      "id": "sqli-update",
+      "file": "query_builder.py",
+      "category": "SQLi",
+      "line_start": 16,
+      "line_end": 24,
+      "description": "build_update_query: SET values and user_id interpolated without parameterization."
+    },
+    {
+      "id": "sqli-export",
+      "file": "query_builder.py",
+      "category": "SQLi",
+      "line_start": 27,
+      "line_end": 42,
+      "description": "build_export_query: user-controlled sort_field injected directly into ORDER BY."
+    },
+    {
+      "id": "sqli-execute",
+      "file": "database.py",
+      "category": "SQLi",
+      "line_start": 18,
+      "line_end": 31,
+      "description": "execute_query / execute_read: raw SQL string sinks passed to conn.execute with no parameter binding."
+    },
+    {
+      "id": "auth-bypass-token",
+      "file": "auth.py",
+      "category": "Auth Bypass",
+      "line_start": 11,
+      "line_end": 22,
+      "description": "require_auth: accepts any token present in VALID_TOKENS without checking expiry or scope."
+    },
+    {
+      "id": "auth-bypass-permission",
+      "file": "auth.py",
+      "category": "Auth Bypass",
+      "line_start": 37,
+      "line_end": 44,
+      "description": "check_permission: logic bug falls through to 'return True', granting access to non-admins."
+    },
+    {
+      "id": "weak-hash",
+      "file": "auth.py",
+      "category": "Weak Crypto",
+      "line_start": 32,
+      "line_end": 34,
+      "description": "hash_password: MD5 used for password hashing (the hashlib.md5 call is on line 34)."
+    },
+    {
+      "id": "sqli-admin-run",
+      "file": "admin_api.py",
+      "category": "SQLi",
+      "accepted_categories": ["SQLi", "Auth Bypass"],
+      "line_start": 9,
+      "line_end": 17,
+      "description": "/api/admin/run-query (run_raw_query): executes arbitrary client-supplied SQL with no auth check. This endpoint is genuinely both SQLi (raw client SQL reaches execute_read) and an Auth Bypass (no auth on a privileged route); the scanner correctly characterizes it either way, so both categories are accepted for this single planted vulnerability."
+    },
+    {
+      "id": "sqli-admin-delete",
+      "file": "admin_api.py",
+      "category": "SQLi",
+      "line_start": 19,
+      "line_end": 23,
+      "description": "delete_user: f-string SQL injection on user_id into a DELETE statement."
+    },
+    {
+      "id": "sqli-admin-impersonate",
+      "file": "admin_api.py",
+      "category": "SQLi",
+      "line_start": 25,
+      "line_end": 34,
+      "description": "impersonate_user: f-string SQL injection on user_id into an INSERT (also no expiry/audit)."
+    },
+    {
+      "id": "auth-ignored-return",
+      "file": "user_service.py",
+      "category": "Auth Bypass",
+      "line_start": 16,
+      "line_end": 26,
+      "description": "update_user_profile: calls check_permission but ignores its return value, so access is never enforced."
+    },
+    {
+      "id": "sqli-export-service",
+      "file": "user_service.py",
+      "category": "SQLi",
+      "line_start": 28,
+      "line_end": 33,
+      "description": "export_users: forwards unvalidated sort_field to build_export_query -> execute_read (SQLi sink)."
+    },
+    {
+      "id": "sqli-search-service",
+      "file": "user_service.py",
+      "category": "SQLi",
+      "line_start": 10,
+      "line_end": 14,
+      "provisional": true,
+      "provisional_reason": "RECONSTRUCTED/ADDED for review confirmation. search_users forwards the unvalidated 'query' parameter into build_search_query -> execute_read (a SQLi sink). This is a genuine vulnerability present in user_service.py beyond the two labeled entries, and Autopsy repeatedly flagged it in historical runs (user_service.py:10-11). NOT counted in the scored ground truth unless eval.py is run with --include-provisional. Pending author confirmation.",
+      "description": "search_users: forwards unvalidated query to build_search_query -> execute_read (SQLi sink)."
+    }
+  ]
+}

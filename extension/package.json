@@ -1,0 +1,88 @@
+{
+  "name": "autopsy",
+  "displayName": "Autopsy",
+  "description": "Detect vulnerabilities in AI-generated code by reasoning across dependency graphs",
+  "version": "0.1.0",
+  "publisher": "autopsy",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Linters", "Other"],
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "autopsy.debugThis",
+        "title": "Autopsy: Debug This",
+        "category": "Autopsy"
+      },
+      {
+        "command": "autopsy.scanThis",
+        "title": "Autopsy: Scan This",
+        "category": "Autopsy"
+      },
+      {
+        "command": "autopsy.orientMe",
+        "title": "Autopsy: Orient Me",
+        "category": "Autopsy"
+      },
+      {
+        "command": "autopsy.showGraph",
+        "title": "Autopsy: Show Dependency Graph",
+        "category": "Autopsy"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "autopsy.debugThis",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "autopsy.scanThis",
+        "key": "ctrl+shift+s",
+        "mac": "cmd+shift+s",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "autopsy.orientMe",
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o"
+      }
+    ],
+    "configuration": {
+      "title": "Autopsy",
+      "properties": {
+        "autopsy.serverUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:7891",
+          "description": "URL of the Autopsy API server"
+        },
+        "autopsy.autoStartServer": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start the Autopsy server when the extension activates"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
