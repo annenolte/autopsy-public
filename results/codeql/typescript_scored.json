@@ -1,0 +1,102 @@
+{
+  "benchmark": "typescript",
+  "kind": "matcher",
+  "n_truth": 8,
+  "n_findings_raw": 7,
+  "n_findings_deduped": 7,
+  "strict_tp": 5,
+  "strict_recall_pct": 62,
+  "loc_tp": 8,
+  "loc_recall_pct": 100,
+  "caught_strict": [
+    "js-auth-ignored",
+    "js-code-injection",
+    "js-command-injection",
+    "js-sqli-sink",
+    "js-ssrf"
+  ],
+  "caught_loc_only": [
+    "js-auth-ignored",
+    "js-code-injection",
+    "js-command-injection",
+    "js-sqli-search",
+    "js-sqli-sink",
+    "js-sqli-update",
+    "js-ssrf",
+    "js-weak-hash"
+  ],
+  "missed_strict": [
+    "js-sqli-search",
+    "js-sqli-update",
+    "js-weak-hash"
+  ],
+  "missed_loc_only": [],
+  "per_category": {
+    "Auth Bypass": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "js-auth-ignored"
+      ],
+      "caught": [
+        "js-auth-ignored"
+      ]
+    },
+    "Code Injection": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "js-code-injection"
+      ],
+      "caught": [
+        "js-code-injection"
+      ]
+    },
+    "Command Injection": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "js-command-injection"
+      ],
+      "caught": [
+        "js-command-injection"
+      ]
+    },
+    "SQLi": {
+      "recall_n": 1,
+      "total": 3,
+      "ids": [
+        "js-sqli-sink",
+        "js-sqli-search",
+        "js-sqli-update"
+      ],
+      "caught": [
+        "js-sqli-sink"
+      ]
+    },
+    "SSRF": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "js-ssrf"
+      ],
+      "caught": [
+        "js-ssrf"
+      ]
+    },
+    "Weak Crypto": {
+      "recall_n": 0,
+      "total": 1,
+      "ids": [
+        "js-weak-hash"
+      ],
+      "caught": []
+    }
+  },
+  "pack_versions": {
+    "CodeQL": "2.25.6",
+    "codeql/javascript-queries": "2.3.11+1a82a682e9750929a11872d8456ff91e90fc6352",
+    "codeql/javascript-all": "2.7.2+1a82a682e9750929a11872d8456ff91e90fc6352",
+    "codeql/threat-models": "1.0.51+1a82a682e9750929a11872d8456ff91e90fc6352"
+  }
+}

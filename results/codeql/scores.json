@@ -1,0 +1,463 @@
+{
+  "pygoat": {
+    "benchmark": "pygoat",
+    "kind": "matcher",
+    "n_truth": 11,
+    "n_findings_raw": 39,
+    "n_findings_deduped": 37,
+    "strict_tp": 9,
+    "strict_recall_pct": 82,
+    "loc_tp": 9,
+    "loc_recall_pct": 82,
+    "caught_strict": [
+      "pygoat-code-injection-eval",
+      "pygoat-command-injection",
+      "pygoat-insecure-deser-pickle",
+      "pygoat-sqli-injection-lab",
+      "pygoat-sqli-login",
+      "pygoat-ssrf",
+      "pygoat-unsafe-yaml",
+      "pygoat-weak-hash",
+      "pygoat-xxe"
+    ],
+    "caught_loc_only": [
+      "pygoat-code-injection-eval",
+      "pygoat-command-injection",
+      "pygoat-insecure-deser-pickle",
+      "pygoat-sqli-injection-lab",
+      "pygoat-sqli-login",
+      "pygoat-ssrf",
+      "pygoat-unsafe-yaml",
+      "pygoat-weak-hash",
+      "pygoat-xxe"
+    ],
+    "missed_strict": [
+      "pygoat-imagemath-eval",
+      "pygoat-ssti"
+    ],
+    "missed_loc_only": [
+      "pygoat-imagemath-eval",
+      "pygoat-ssti"
+    ],
+    "per_category": {
+      "Code Injection": {
+        "recall_n": 1,
+        "total": 2,
+        "ids": [
+          "pygoat-code-injection-eval",
+          "pygoat-imagemath-eval"
+        ],
+        "caught": [
+          "pygoat-code-injection-eval"
+        ]
+      },
+      "Command Injection": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "pygoat-command-injection"
+        ],
+        "caught": [
+          "pygoat-command-injection"
+        ]
+      },
+      "Insecure Deserialization": {
+        "recall_n": 2,
+        "total": 2,
+        "ids": [
+          "pygoat-insecure-deser-pickle",
+          "pygoat-unsafe-yaml"
+        ],
+        "caught": [
+          "pygoat-insecure-deser-pickle",
+          "pygoat-unsafe-yaml"
+        ]
+      },
+      "SQLi": {
+        "recall_n": 2,
+        "total": 2,
+        "ids": [
+          "pygoat-sqli-login",
+          "pygoat-sqli-injection-lab"
+        ],
+        "caught": [
+          "pygoat-sqli-login",
+          "pygoat-sqli-injection-lab"
+        ]
+      },
+      "SSRF": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "pygoat-ssrf"
+        ],
+        "caught": [
+          "pygoat-ssrf"
+        ]
+      },
+      "SSTI": {
+        "recall_n": 0,
+        "total": 1,
+        "ids": [
+          "pygoat-ssti"
+        ],
+        "caught": []
+      },
+      "Weak Crypto": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "pygoat-weak-hash"
+        ],
+        "caught": [
+          "pygoat-weak-hash"
+        ]
+      },
+      "XXE": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "pygoat-xxe"
+        ],
+        "caught": [
+          "pygoat-xxe"
+        ]
+      }
+    },
+    "pack_versions": {
+      "CodeQL": "2.25.6",
+      "codeql/python-queries": "1.8.4+1a82a682e9750929a11872d8456ff91e90fc6352",
+      "codeql/python-all": "7.1.2+1a82a682e9750929a11872d8456ff91e90fc6352",
+      "codeql/threat-models": "1.0.51+1a82a682e9750929a11872d8456ff91e90fc6352"
+    }
+  },
+  "demo_project": {
+    "benchmark": "demo_project",
+    "kind": "matcher",
+    "n_truth": 12,
+    "n_findings_raw": 3,
+    "n_findings_deduped": 3,
+    "strict_tp": 2,
+    "strict_recall_pct": 17,
+    "loc_tp": 3,
+    "loc_recall_pct": 25,
+    "caught_strict": [
+      "sqli-execute",
+      "weak-hash"
+    ],
+    "caught_loc_only": [
+      "auth-bypass-permission",
+      "sqli-execute",
+      "weak-hash"
+    ],
+    "missed_strict": [
+      "auth-bypass-permission",
+      "auth-bypass-token",
+      "auth-ignored-return",
+      "sqli-admin-delete",
+      "sqli-admin-impersonate",
+      "sqli-admin-run",
+      "sqli-export",
+      "sqli-export-service",
+      "sqli-search",
+      "sqli-update"
+    ],
+    "missed_loc_only": [
+      "auth-bypass-token",
+      "auth-ignored-return",
+      "sqli-admin-delete",
+      "sqli-admin-impersonate",
+      "sqli-admin-run",
+      "sqli-export",
+      "sqli-export-service",
+      "sqli-search",
+      "sqli-update"
+    ],
+    "per_category": {
+      "Auth Bypass": {
+        "recall_n": 0,
+        "total": 3,
+        "ids": [
+          "auth-bypass-token",
+          "auth-bypass-permission",
+          "auth-ignored-return"
+        ],
+        "caught": []
+      },
+      "SQLi": {
+        "recall_n": 1,
+        "total": 8,
+        "ids": [
+          "sqli-search",
+          "sqli-update",
+          "sqli-export",
+          "sqli-execute",
+          "sqli-admin-run",
+          "sqli-admin-delete",
+          "sqli-admin-impersonate",
+          "sqli-export-service"
+        ],
+        "caught": [
+          "sqli-execute"
+        ]
+      },
+      "Weak Crypto": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "weak-hash"
+        ],
+        "caught": [
+          "weak-hash"
+        ]
+      }
+    },
+    "pack_versions": {
+      "CodeQL": "2.25.6",
+      "codeql/python-queries": "1.8.4+1a82a682e9750929a11872d8456ff91e90fc6352",
+      "codeql/python-all": "7.1.2+1a82a682e9750929a11872d8456ff91e90fc6352",
+      "codeql/threat-models": "1.0.51+1a82a682e9750929a11872d8456ff91e90fc6352"
+    }
+  },
+  "typescript": {
+    "benchmark": "typescript",
+    "kind": "matcher",
+    "n_truth": 8,
+    "n_findings_raw": 7,
+    "n_findings_deduped": 7,
+    "strict_tp": 5,
+    "strict_recall_pct": 62,
+    "loc_tp": 8,
+    "loc_recall_pct": 100,
+    "caught_strict": [
+      "js-auth-ignored",
+      "js-code-injection",
+      "js-command-injection",
+      "js-sqli-sink",
+      "js-ssrf"
+    ],
+    "caught_loc_only": [
+      "js-auth-ignored",
+      "js-code-injection",
+      "js-command-injection",
+      "js-sqli-search",
+      "js-sqli-sink",
+      "js-sqli-update",
+      "js-ssrf",
+      "js-weak-hash"
+    ],
+    "missed_strict": [
+      "js-sqli-search",
+      "js-sqli-update",
+      "js-weak-hash"
+    ],
+    "missed_loc_only": [],
+    "per_category": {
+      "Auth Bypass": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "js-auth-ignored"
+        ],
+        "caught": [
+          "js-auth-ignored"
+        ]
+      },
+      "Code Injection": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "js-code-injection"
+        ],
+        "caught": [
+          "js-code-injection"
+        ]
+      },
+      "Command Injection": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "js-command-injection"
+        ],
+        "caught": [
+          "js-command-injection"
+        ]
+      },
+      "SQLi": {
+        "recall_n": 1,
+        "total": 3,
+        "ids": [
+          "js-sqli-sink",
+          "js-sqli-search",
+          "js-sqli-update"
+        ],
+        "caught": [
+          "js-sqli-sink"
+        ]
+      },
+      "SSRF": {
+        "recall_n": 1,
+        "total": 1,
+        "ids": [
+          "js-ssrf"
+        ],
+        "caught": [
+          "js-ssrf"
+        ]
+      },
+      "Weak Crypto": {
+        "recall_n": 0,
+        "total": 1,
+        "ids": [
+          "js-weak-hash"
+        ],
+        "caught": []
+      }
+    },
+    "pack_versions": {
+      "CodeQL": "2.25.6",
+      "codeql/javascript-queries": "2.3.11+1a82a682e9750929a11872d8456ff91e90fc6352",
+      "codeql/javascript-all": "2.7.2+1a82a682e9750929a11872d8456ff91e90fc6352",
+      "codeql/threat-models": "1.0.51+1a82a682e9750929a11872d8456ff91e90fc6352"
+    }
+  },
+  "securityeval": {
+    "benchmark": "securityeval",
+    "kind": "file_level",
+    "n_files": 121,
+    "n_findings": 59,
+    "detected": 51,
+    "recall_pct": 42,
+    "detected_files": [
+      "CWE-020/codeql_1.py",
+      "CWE-020/codeql_2.py",
+      "CWE-020/codeql_3.py",
+      "CWE-020/codeql_4.py",
+      "CWE-022/author_1.py",
+      "CWE-022/codeql_1.py",
+      "CWE-022/codeql_2.py",
+      "CWE-078/codeql_1.py",
+      "CWE-079/codeql_1.py",
+      "CWE-079/codeql_2.py",
+      "CWE-079/sonar_1.py",
+      "CWE-080/author_1.py",
+      "CWE-090/codeql_1.py",
+      "CWE-090/codeql_2.py",
+      "CWE-094/codeql_1.py",
+      "CWE-094/sonar_1.py",
+      "CWE-099/sonar_1.py",
+      "CWE-116/author_1.py",
+      "CWE-116/codeql_1.py",
+      "CWE-117/codeql_1.py",
+      "CWE-209/codeql_1.py",
+      "CWE-215/codeql_1.py",
+      "CWE-295/codeql_1.py",
+      "CWE-319/author_1.py",
+      "CWE-326/author_1.py",
+      "CWE-326/author_2.py",
+      "CWE-327/codeql_1.py",
+      "CWE-327/codeql_2.py",
+      "CWE-327/codeql_3.py",
+      "CWE-327/codeql_4.py",
+      "CWE-377/codeql_1.py",
+      "CWE-379/sonar_1.py",
+      "CWE-400/sonar_1.py",
+      "CWE-434/pearce_1.py",
+      "CWE-434/pearce_2.py",
+      "CWE-502/sonar_1.py",
+      "CWE-522/pearce_1.py",
+      "CWE-601/codeql_1.py",
+      "CWE-601/sonar_2.py",
+      "CWE-605/author_1.py",
+      "CWE-611/author_1.py",
+      "CWE-611/codeql_1.py",
+      "CWE-641/sonar_1.py",
+      "CWE-643/sonar_1.py",
+      "CWE-730/codeql_1.py",
+      "CWE-730/codeql_2.py",
+      "CWE-732/author_1.py",
+      "CWE-759/mitre_1.py",
+      "CWE-776/codeql_1.py",
+      "CWE-918/codeql_1.py",
+      "CWE-918/codeql_2.py"
+    ],
+    "missed_files": [
+      "CWE-020/author_1.py",
+      "CWE-020/author_2.py",
+      "CWE-022/author_2.py",
+      "CWE-078/author_1.py",
+      "CWE-089/author_1.py",
+      "CWE-089/codeql_1.py",
+      "CWE-094/author_1.py",
+      "CWE-095/author_1.py",
+      "CWE-113/sonar_1.py",
+      "CWE-113/sonar_2.py",
+      "CWE-117/author_1.py",
+      "CWE-117/sonar_1.py",
+      "CWE-1204/sonar_1.py",
+      "CWE-193/author_1.py",
+      "CWE-200/author_1.py",
+      "CWE-250/mitre_1.py",
+      "CWE-252/author_1.py",
+      "CWE-259/author_1.py",
+      "CWE-259/author_2.py",
+      "CWE-269/mitre_1.py",
+      "CWE-283/mitre_1.py",
+      "CWE-285/codeql_1.py",
+      "CWE-295/author_1.py",
+      "CWE-295/author_2.py",
+      "CWE-306/pearce_1.py",
+      "CWE-319/author_2.py",
+      "CWE-321/author_1.py",
+      "CWE-321/author_2.py",
+      "CWE-329/sonar_1.py",
+      "CWE-330/author_1.py",
+      "CWE-331/author_1.py",
+      "CWE-339/mitre_1.py",
+      "CWE-347/sonar_1.py",
+      "CWE-347/sonar_2.py",
+      "CWE-347/sonar_3.py",
+      "CWE-367/author_1.py",
+      "CWE-385/mitre_1.py",
+      "CWE-406/mitre_1.py",
+      "CWE-414/author_1.py",
+      "CWE-425/author_1.py",
+      "CWE-454/author_1.py",
+      "CWE-462/mitre_1.py",
+      "CWE-477/author_1.py",
+      "CWE-502/author_1.py",
+      "CWE-502/codeql_1.py",
+      "CWE-502/mitre_1.py",
+      "CWE-521/sonar_1.py",
+      "CWE-521/sonar_2.py",
+      "CWE-522/author_1.py",
+      "CWE-595/author_1.py",
+      "CWE-601/sonar_1.py",
+      "CWE-601/sonar_3.py",
+      "CWE-601/sonar_4.py",
+      "CWE-611/sonar_1.py",
+      "CWE-611/sonar_2.py",
+      "CWE-611/sonar_3.py",
+      "CWE-611/sonar_4.py",
+      "CWE-643/codeql_1.py",
+      "CWE-703/author_1.py",
+      "CWE-703/author_2.py",
+      "CWE-703/author_3.py",
+      "CWE-730/author_1.py",
+      "CWE-760/sonar_1.py",
+      "CWE-798/author_1.py",
+      "CWE-798/codeql_1.py",
+      "CWE-827/sonar_1.py",
+      "CWE-835/author_1.py",
+      "CWE-841/mitre_1.py",
+      "CWE-941/mitre_1.py",
+      "CWE-943/sonar_1.py"
+    ],
+    "pack_versions": {
+      "CodeQL": "2.25.6",
+      "codeql/python-queries": "1.8.4+1a82a682e9750929a11872d8456ff91e90fc6352",
+      "codeql/python-all": "7.1.2+1a82a682e9750929a11872d8456ff91e90fc6352",
+      "codeql/threat-models": "1.0.51+1a82a682e9750929a11872d8456ff91e90fc6352"
+    }
+  }
+}

@@ -1,0 +1,1024 @@
+{
+  "steps" : [
+    {
+      "type" : "by-name",
+      "scans" : [
+        {
+          "paths" : [ ],
+          "found" : { },
+          "hidden" : { },
+          "ambiguous" : { }
+        }
+      ],
+      "description" : "Searching directories specified by `--additional-packs`. All directories have equal priority."
+    },
+    {
+      "type" : "by-name",
+      "scans" : [ ],
+      "description" : "Searching directories specified by `--search-path`. Directories are searched in order."
+    },
+    {
+      "type" : "by-name",
+      "scans" : [
+        {
+          "paths" : [
+            "/Users/annenolte/codeql-home/codeql"
+          ],
+          "found" : {
+            "codeql/actions-all" : {
+              "version" : "0.4.37",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/actions-all/0.4.37/qlpack.yml"
+            },
+            "codeql/actions-queries" : {
+              "version" : "0.6.29",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/actions-queries/0.6.29/qlpack.yml"
+            },
+            "codeql/concepts" : {
+              "version" : "0.0.25",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/concepts/0.0.25/qlpack.yml"
+            },
+            "codeql/controlflow" : {
+              "version" : "2.0.35",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/controlflow/2.0.35/qlpack.yml"
+            },
+            "codeql/cpp-all" : {
+              "version" : "10.2.0",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-all/10.2.0/qlpack.yml"
+            },
+            "codeql/cpp-examples" : {
+              "version" : "0.0.0",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-examples/0.0.0/qlpack.yml"
+            },
+            "codeql/cpp-queries" : {
+              "version" : "1.6.4",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-queries/1.6.4/qlpack.yml"
+            },
+            "codeql/csharp-all" : {
+              "version" : "6.0.2",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-all/6.0.2/qlpack.yml"
+            },
+            "codeql/csharp-examples" : {
+              "version" : "0.0.0",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-examples/0.0.0/qlpack.yml"
+            },
+            "codeql/csharp-queries" : {
+              "version" : "1.7.4",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-queries/1.7.4/qlpack.yml"
+            },
+            "codeql/dataflow" : {
+              "version" : "2.1.7",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/dataflow/2.1.7/qlpack.yml"
+            },
+            "codeql/go-all" : {
+              "version" : "7.1.2",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-all/7.1.2/qlpack.yml"
+            },
+            "codeql/go-examples" : {
+              "version" : "0.0.0",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-examples/0.0.0/qlpack.yml"
+            },
+            "codeql/go-queries" : {
+              "version" : "1.6.4",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-queries/1.6.4/qlpack.yml"
+            },
+            "codeql/java-all" : {
+              "version" : "9.1.2",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-all/9.1.2/qlpack.yml"
+            },
+            "codeql/java-examples" : {
+              "version" : "0.0.0",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-examples/0.0.0/qlpack.yml"
+            },
+            "codeql/java-queries" : {
+              "version" : "1.11.4",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-queries/1.11.4/qlpack.yml"
+            },
+            "codeql/javascript-all" : {
+              "version" : "2.7.2",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-all/2.7.2/qlpack.yml"
+            },
+            "codeql/javascript-examples" : {
+              "version" : "0.0.0",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-examples/0.0.0/qlpack.yml"
+            },
+            "codeql/javascript-queries" : {
+              "version" : "2.3.11",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-queries/2.3.11/qlpack.yml"
+            },
+            "codeql/mad" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/mad/1.0.51/qlpack.yml"
+            },
+            "codeql/python-all" : {
+              "version" : "7.1.2",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-all/7.1.2/qlpack.yml"
+            },
+            "codeql/python-examples" : {
+              "version" : "0.0.0",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-examples/0.0.0/qlpack.yml"
+            },
+            "codeql/python-queries" : {
+              "version" : "1.8.4",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-queries/1.8.4/qlpack.yml"
+            },
+            "codeql/quantum" : {
+              "version" : "0.0.29",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/quantum/0.0.29/qlpack.yml"
+            },
+            "codeql/rangeanalysis" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rangeanalysis/1.0.51/qlpack.yml"
+            },
+            "codeql/regex" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/regex/1.0.51/qlpack.yml"
+            },
+            "codeql/ruby-all" : {
+              "version" : "5.2.2",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-all/5.2.2/qlpack.yml"
+            },
+            "codeql/ruby-examples" : {
+              "version" : "0.0.0",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-examples/0.0.0/qlpack.yml"
+            },
+            "codeql/ruby-queries" : {
+              "version" : "1.6.4",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-queries/1.6.4/qlpack.yml"
+            },
+            "codeql/rust-all" : {
+              "version" : "0.2.15",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rust-all/0.2.15/qlpack.yml"
+            },
+            "codeql/rust-queries" : {
+              "version" : "0.1.36",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rust-queries/0.1.36/qlpack.yml"
+            },
+            "codeql/ssa" : {
+              "version" : "2.0.27",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ssa/2.0.27/qlpack.yml"
+            },
+            "codeql/suite-helpers" : {
+              "version" : "1.0.51",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/suite-helpers/1.0.51/qlpack.yml"
+            },
+            "codeql/swift-all" : {
+              "version" : "6.7.0",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/swift-all/6.7.0/qlpack.yml"
+            },
+            "codeql/swift-queries" : {
+              "version" : "1.3.4",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/swift-queries/1.3.4/qlpack.yml"
+            },
+            "codeql/threat-models" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/threat-models/1.0.51/qlpack.yml"
+            },
+            "codeql/tutorial" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/tutorial/1.0.51/qlpack.yml"
+            },
+            "codeql/typeflow" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typeflow/1.0.51/qlpack.yml"
+            },
+            "codeql/typeinference" : {
+              "version" : "0.0.32",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typeinference/0.0.32/qlpack.yml"
+            },
+            "codeql/typetracking" : {
+              "version" : "2.0.35",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typetracking/2.0.35/qlpack.yml"
+            },
+            "codeql/typos" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typos/1.0.51/qlpack.yml"
+            },
+            "codeql/util" : {
+              "version" : "2.0.38",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/util/2.0.38/qlpack.yml"
+            },
+            "codeql/xml" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/xml/1.0.51/qlpack.yml"
+            },
+            "codeql/yaml" : {
+              "version" : "1.0.51",
+              "kind" : "library",
+              "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/yaml/1.0.51/qlpack.yml"
+            },
+            "legacy-upgrades" : {
+              "version" : "0.0.0",
+              "kind" : "query",
+              "path" : "/Users/annenolte/codeql-home/codeql/legacy-upgrades/qlpack.yml"
+            }
+          },
+          "hidden" : { },
+          "ambiguous" : { }
+        }
+      ],
+      "description" : "Searching the root of the CodeQL distribution."
+    },
+    {
+      "type" : "by-name",
+      "scans" : [
+        {
+          "paths" : [
+            "/Users/annenolte/codeql-home"
+          ],
+          "found" : { },
+          "hidden" : {
+            "codeql/actions-all" : {
+              "found" : [
+                {
+                  "version" : "0.4.37",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/actions-all/0.4.37/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.4.37",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/actions-all/0.4.37/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/actions-queries" : {
+              "found" : [
+                {
+                  "version" : "0.6.29",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/actions-queries/0.6.29/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.6.29",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/actions-queries/0.6.29/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/concepts" : {
+              "found" : [
+                {
+                  "version" : "0.0.25",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/concepts/0.0.25/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.25",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/concepts/0.0.25/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/controlflow" : {
+              "found" : [
+                {
+                  "version" : "2.0.35",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/controlflow/2.0.35/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "2.0.35",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/controlflow/2.0.35/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/cpp-all" : {
+              "found" : [
+                {
+                  "version" : "10.2.0",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-all/10.2.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "10.2.0",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-all/10.2.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/cpp-examples" : {
+              "found" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-examples/0.0.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-examples/0.0.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/cpp-queries" : {
+              "found" : [
+                {
+                  "version" : "1.6.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-queries/1.6.4/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.6.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/cpp-queries/1.6.4/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/csharp-all" : {
+              "found" : [
+                {
+                  "version" : "6.0.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-all/6.0.2/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "6.0.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-all/6.0.2/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/csharp-examples" : {
+              "found" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-examples/0.0.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-examples/0.0.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/csharp-queries" : {
+              "found" : [
+                {
+                  "version" : "1.7.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-queries/1.7.4/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.7.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/csharp-queries/1.7.4/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/dataflow" : {
+              "found" : [
+                {
+                  "version" : "2.1.7",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/dataflow/2.1.7/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "2.1.7",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/dataflow/2.1.7/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/go-all" : {
+              "found" : [
+                {
+                  "version" : "7.1.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-all/7.1.2/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "7.1.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-all/7.1.2/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/go-examples" : {
+              "found" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-examples/0.0.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-examples/0.0.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/go-queries" : {
+              "found" : [
+                {
+                  "version" : "1.6.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-queries/1.6.4/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.6.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/go-queries/1.6.4/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/java-all" : {
+              "found" : [
+                {
+                  "version" : "9.1.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-all/9.1.2/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "9.1.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-all/9.1.2/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/java-examples" : {
+              "found" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-examples/0.0.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-examples/0.0.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/java-queries" : {
+              "found" : [
+                {
+                  "version" : "1.11.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-queries/1.11.4/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.11.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/java-queries/1.11.4/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/javascript-all" : {
+              "found" : [
+                {
+                  "version" : "2.7.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-all/2.7.2/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "2.7.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-all/2.7.2/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/javascript-examples" : {
+              "found" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-examples/0.0.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-examples/0.0.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/javascript-queries" : {
+              "found" : [
+                {
+                  "version" : "2.3.11",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-queries/2.3.11/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "2.3.11",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/javascript-queries/2.3.11/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/mad" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/mad/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/mad/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/python-all" : {
+              "found" : [
+                {
+                  "version" : "7.1.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-all/7.1.2/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "7.1.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-all/7.1.2/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/python-examples" : {
+              "found" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-examples/0.0.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-examples/0.0.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/python-queries" : {
+              "found" : [
+                {
+                  "version" : "1.8.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-queries/1.8.4/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.8.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/python-queries/1.8.4/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/quantum" : {
+              "found" : [
+                {
+                  "version" : "0.0.29",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/quantum/0.0.29/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.29",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/quantum/0.0.29/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/rangeanalysis" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rangeanalysis/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rangeanalysis/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/regex" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/regex/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/regex/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/ruby-all" : {
+              "found" : [
+                {
+                  "version" : "5.2.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-all/5.2.2/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "5.2.2",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-all/5.2.2/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/ruby-examples" : {
+              "found" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-examples/0.0.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-examples/0.0.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/ruby-queries" : {
+              "found" : [
+                {
+                  "version" : "1.6.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-queries/1.6.4/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.6.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ruby-queries/1.6.4/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/rust-all" : {
+              "found" : [
+                {
+                  "version" : "0.2.15",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rust-all/0.2.15/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.2.15",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rust-all/0.2.15/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/rust-queries" : {
+              "found" : [
+                {
+                  "version" : "0.1.36",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rust-queries/0.1.36/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.1.36",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/rust-queries/0.1.36/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/ssa" : {
+              "found" : [
+                {
+                  "version" : "2.0.27",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ssa/2.0.27/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "2.0.27",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/ssa/2.0.27/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/suite-helpers" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/suite-helpers/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/suite-helpers/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/swift-all" : {
+              "found" : [
+                {
+                  "version" : "6.7.0",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/swift-all/6.7.0/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "6.7.0",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/swift-all/6.7.0/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/swift-queries" : {
+              "found" : [
+                {
+                  "version" : "1.3.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/swift-queries/1.3.4/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.3.4",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/swift-queries/1.3.4/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/threat-models" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/threat-models/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/threat-models/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/tutorial" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/tutorial/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/tutorial/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/typeflow" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typeflow/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typeflow/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/typeinference" : {
+              "found" : [
+                {
+                  "version" : "0.0.32",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typeinference/0.0.32/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.32",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typeinference/0.0.32/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/typetracking" : {
+              "found" : [
+                {
+                  "version" : "2.0.35",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typetracking/2.0.35/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "2.0.35",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typetracking/2.0.35/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/typos" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typos/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/typos/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/util" : {
+              "found" : [
+                {
+                  "version" : "2.0.38",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/util/2.0.38/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "2.0.38",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/util/2.0.38/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/xml" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/xml/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/xml/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "codeql/yaml" : {
+              "found" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/yaml/1.0.51/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "1.0.51",
+                  "kind" : "library",
+                  "path" : "/Users/annenolte/codeql-home/codeql/qlpacks/codeql/yaml/1.0.51/qlpack.yml"
+                }
+              ]
+            },
+            "legacy-upgrades" : {
+              "found" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/legacy-upgrades/qlpack.yml"
+                }
+              ],
+              "hidden-by" : [
+                {
+                  "version" : "0.0.0",
+                  "kind" : "query",
+                  "path" : "/Users/annenolte/codeql-home/codeql/legacy-upgrades/qlpack.yml"
+                }
+              ]
+            }
+          },
+          "ambiguous" : { }
+        }
+      ],
+      "description" : "Searching the parent directory of the CodeQL distribution."
+    },
+    {
+      "type" : "by-name-and-version",
+      "path" : "/Users/annenolte/.codeql/packages",
+      "description" : "Searching the local pack cache. This only applies when searching for a particular version of a pack specified in a lock file.",
+      "found" : { },
+      "hidden" : { }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+<h2>Admin - User Search</h2>
+
+<form method="GET">
+    <input type="text" name="search" placeholder="Search users..." value="{{ query }}">
+    <button type="submit">Search</button>
+</form>
+
+{% if users %}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Profile Photo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user['id'] }}</td>
+            <td>{{ user['username'] }}</td>
+            <td>
+                {% if user['profile_photo'] %}
+                <img src="{{ url_for('static', filename='uploads/' + user['profile_photo']) }}" alt="Profile">
+                {% else %}
+                No photo
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif query %}
+<p>No users found.</p>
+{% endif %}
+{% endblock %}

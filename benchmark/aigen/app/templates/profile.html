@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<h2>Profile</h2>
+<p>Username: {{ user['username'] }}</p>
+
+{% if user['profile_photo'] %}
+<div>
+    <h3>Current Profile Photo:</h3>
+    <img src="{{ url_for('static', filename='uploads/' + user['profile_photo']) }}" alt="Profile Photo">
+</div>
+{% endif %}
+
+<h3>Upload Profile Photo</h3>
+<form method="POST" enctype="multipart/form-data">
+    <div>
+        <input type="file" name="photo" accept="image/*" required>
+    </div>
+    <button type="submit">Upload</button>
+</form>
+{% endblock %}
+

@@ -1,0 +1,88 @@
+{
+  "benchmark": "demo_project",
+  "kind": "matcher",
+  "n_truth": 12,
+  "n_findings_raw": 3,
+  "n_findings_deduped": 3,
+  "strict_tp": 2,
+  "strict_recall_pct": 17,
+  "loc_tp": 3,
+  "loc_recall_pct": 25,
+  "caught_strict": [
+    "sqli-execute",
+    "weak-hash"
+  ],
+  "caught_loc_only": [
+    "auth-bypass-permission",
+    "sqli-execute",
+    "weak-hash"
+  ],
+  "missed_strict": [
+    "auth-bypass-permission",
+    "auth-bypass-token",
+    "auth-ignored-return",
+    "sqli-admin-delete",
+    "sqli-admin-impersonate",
+    "sqli-admin-run",
+    "sqli-export",
+    "sqli-export-service",
+    "sqli-search",
+    "sqli-update"
+  ],
+  "missed_loc_only": [
+    "auth-bypass-token",
+    "auth-ignored-return",
+    "sqli-admin-delete",
+    "sqli-admin-impersonate",
+    "sqli-admin-run",
+    "sqli-export",
+    "sqli-export-service",
+    "sqli-search",
+    "sqli-update"
+  ],
+  "per_category": {
+    "Auth Bypass": {
+      "recall_n": 0,
+      "total": 3,
+      "ids": [
+        "auth-bypass-token",
+        "auth-bypass-permission",
+        "auth-ignored-return"
+      ],
+      "caught": []
+    },
+    "SQLi": {
+      "recall_n": 1,
+      "total": 8,
+      "ids": [
+        "sqli-search",
+        "sqli-update",
+        "sqli-export",
+        "sqli-execute",
+        "sqli-admin-run",
+        "sqli-admin-delete",
+        "sqli-admin-impersonate",
+        "sqli-export-service"
+      ],
+      "caught": [
+        "sqli-execute"
+      ]
+    },
+    "Weak Crypto": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "weak-hash"
+      ],
+      "caught": [
+        "weak-hash"
+      ]
+    }
+  },
+  "pack_versions": {
+    "CodeQL": "2.25.6",
+    "codeql/python-queries": "1.8.4+1a82a682e9750929a11872d8456ff91e90fc6352",
+    "codeql/python-all": "7.1.2+1a82a682e9750929a11872d8456ff91e90fc6352",
+    "codeql/threat-models": "1.0.51+1a82a682e9750929a11872d8456ff91e90fc6352"
+  }
+}

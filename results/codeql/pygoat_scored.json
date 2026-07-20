@@ -1,0 +1,132 @@
+{
+  "benchmark": "pygoat",
+  "kind": "matcher",
+  "n_truth": 11,
+  "n_findings_raw": 39,
+  "n_findings_deduped": 37,
+  "strict_tp": 9,
+  "strict_recall_pct": 82,
+  "loc_tp": 9,
+  "loc_recall_pct": 82,
+  "caught_strict": [
+    "pygoat-code-injection-eval",
+    "pygoat-command-injection",
+    "pygoat-insecure-deser-pickle",
+    "pygoat-sqli-injection-lab",
+    "pygoat-sqli-login",
+    "pygoat-ssrf",
+    "pygoat-unsafe-yaml",
+    "pygoat-weak-hash",
+    "pygoat-xxe"
+  ],
+  "caught_loc_only": [
+    "pygoat-code-injection-eval",
+    "pygoat-command-injection",
+    "pygoat-insecure-deser-pickle",
+    "pygoat-sqli-injection-lab",
+    "pygoat-sqli-login",
+    "pygoat-ssrf",
+    "pygoat-unsafe-yaml",
+    "pygoat-weak-hash",
+    "pygoat-xxe"
+  ],
+  "missed_strict": [
+    "pygoat-imagemath-eval",
+    "pygoat-ssti"
+  ],
+  "missed_loc_only": [
+    "pygoat-imagemath-eval",
+    "pygoat-ssti"
+  ],
+  "per_category": {
+    "Code Injection": {
+      "recall_n": 1,
+      "total": 2,
+      "ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-imagemath-eval"
+      ],
+      "caught": [
+        "pygoat-code-injection-eval"
+      ]
+    },
+    "Command Injection": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "pygoat-command-injection"
+      ],
+      "caught": [
+        "pygoat-command-injection"
+      ]
+    },
+    "Insecure Deserialization": {
+      "recall_n": 2,
+      "total": 2,
+      "ids": [
+        "pygoat-insecure-deser-pickle",
+        "pygoat-unsafe-yaml"
+      ],
+      "caught": [
+        "pygoat-insecure-deser-pickle",
+        "pygoat-unsafe-yaml"
+      ]
+    },
+    "SQLi": {
+      "recall_n": 2,
+      "total": 2,
+      "ids": [
+        "pygoat-sqli-login",
+        "pygoat-sqli-injection-lab"
+      ],
+      "caught": [
+        "pygoat-sqli-login",
+        "pygoat-sqli-injection-lab"
+      ]
+    },
+    "SSRF": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "pygoat-ssrf"
+      ],
+      "caught": [
+        "pygoat-ssrf"
+      ]
+    },
+    "SSTI": {
+      "recall_n": 0,
+      "total": 1,
+      "ids": [
+        "pygoat-ssti"
+      ],
+      "caught": []
+    },
+    "Weak Crypto": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "pygoat-weak-hash"
+      ],
+      "caught": [
+        "pygoat-weak-hash"
+      ]
+    },
+    "XXE": {
+      "recall_n": 1,
+      "total": 1,
+      "ids": [
+        "pygoat-xxe"
+      ],
+      "caught": [
+        "pygoat-xxe"
+      ]
+    }
+  },
+  "pack_versions": {
+    "CodeQL": "2.25.6",
+    "codeql/python-queries": "1.8.4+1a82a682e9750929a11872d8456ff91e90fc6352",
+    "codeql/python-all": "7.1.2+1a82a682e9750929a11872d8456ff91e90fc6352",
+    "codeql/threat-models": "1.0.51+1a82a682e9750929a11872d8456ff91e90fc6352"
+  }
+}
