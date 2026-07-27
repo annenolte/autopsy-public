@@ -1,0 +1,30 @@
+{
+  "title": "Autopsy: detecting vulnerabilities in AI-generated code by reasoning across dependency graphs",
+  "description": "<p>Autopsy is a static-plus-LLM vulnerability detector aimed at AI-generated code. It builds a cross-file dependency graph, scans code in windows so that large files are not limited by a single pass's output budget, and includes deterministic detectors for deletion-based (\"zero-footprint\") vulnerabilities, where removing a comment boundary or a security control introduces a vulnerability that never appears as an added line in a diff.</p><p>This release is the reproducibility artifact accompanying the paper. It contains the detection pipeline, the benchmark harnesses (pygoat, SecurityEval, a Flask demo, and a TypeScript demo), and the Semgrep, Bandit, and CodeQL <code>security-extended</code> baselines scored through a frozen matcher.</p>",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "mit",
+  "creators": [
+    {
+      "name": "Nolte, Anne",
+      "orcid": "0009-0006-8087-4745",
+      "affiliation": "Independent Researcher"
+    }
+  ],
+  "keywords": [
+    "security",
+    "vulnerability detection",
+    "static analysis",
+    "large language models",
+    "AI-generated code",
+    "dependency graph",
+    "program analysis"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/annenolte/autopsy-public",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
