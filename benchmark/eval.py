@@ -56,11 +56,16 @@ import networkx as nx
 from rich.console import Console
 from rich.table import Table
 
-# Make `import make_diff` work no matter the current working directory.
+# Make `import make_diff` work no matter the current working directory, and make
+# `import autopsy` resolve to THIS repo rather than to whatever tree an editable
+# install happens to point at (running `python benchmark/eval.py` puts only the
+# script's own directory on sys.path, so without _REPO_ROOT the import silently
+# falls through to site-packages).
 _THIS_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _THIS_DIR.parent
-if str(_THIS_DIR) not in sys.path:
-    sys.path.insert(0, str(_THIS_DIR))
+for _p in (str(_THIS_DIR), str(_REPO_ROOT)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from make_diff import make_diff  # noqa: E402
 

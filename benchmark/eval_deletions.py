@@ -19,8 +19,11 @@ import tempfile
 from pathlib import Path
 
 _THIS = Path(__file__).resolve().parent
-if str(_THIS) not in sys.path:
-    sys.path.insert(0, str(_THIS))
+_ROOT = _THIS.parent
+# _ROOT keeps `import autopsy` bound to this repo instead of an editable install.
+for _p in (str(_THIS), str(_ROOT)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from make_diff import make_diff  # noqa: E402
 from autopsy.detection.deletions import detect_comment_boundary_deletions  # noqa: E402

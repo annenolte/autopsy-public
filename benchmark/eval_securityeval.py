@@ -50,9 +50,12 @@ def run_autopsy_llm(target: Path, scan_fn=None):
     scan_fn is injectable for an offline (no-API) dry run.
     """
     import sys as _sys
-    _b = str(Path(__file__).resolve().parent)
-    if _b not in _sys.path:
-        _sys.path.insert(0, _b)
+    _bench = Path(__file__).resolve().parent
+    # The repo root keeps `import autopsy` bound to this repo rather than to
+    # whatever tree an editable install points at.
+    for _p in (str(_bench), str(_bench.parent)):
+        if _p not in _sys.path:
+            _sys.path.insert(0, _p)
     import eval as E
     from autopsy.parser import parse_directory
     from autopsy.graph.builder import build_dependency_graph

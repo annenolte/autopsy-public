@@ -31,8 +31,10 @@ from collections import defaultdict
 from pathlib import Path
 
 _THIS = Path(__file__).resolve().parent
-if str(_THIS) not in sys.path:
-    sys.path.insert(0, str(_THIS))
+# _THIS.parent keeps `import autopsy` bound to this repo, not an editable install.
+for _p in (str(_THIS), str(_THIS.parent)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 import eval as E  # noqa: E402
 from codeql_sarif_adapter import sarif_to_findings, query_pack_versions  # noqa: E402
