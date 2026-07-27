@@ -43,10 +43,15 @@ def test_security_control_deletion_detected():
     assert any("authorize_request" in n for n in names)
 
 
-def test_comment_detector_overfires_on_benign_docstring():
-    # Documented limitation: deleting a normal function (with a docstring) also
-    # trips the comment-boundary detector. If this ever stops happening (e.g. the
-    # heuristic is refined), update benchmark/deletion/README.md.
+def test_comment_detector_suppresses_benign_docstring():
+    # Refined heuristic (Part 1C): deleting a normal function whose body is a
+    # one-line docstring no longer trips the comment-boundary detector. The
+    # opener line is self-closing (`"""text"""`), so nothing executable is
+    # revealed — the detector now suppresses it. auth_layer.py is still caught,
+    # but by the security-control-deletion detector (see the other test), not by
+    # the comment-boundary detector. This replaces the old "over-fires" test.
     comment_hits, _ = _run()
     files = [h["file"] for h in comment_hits]
-    assert any(f.endswith("auth_layer.py") for f in files)
+    assert not any(f.endswith("auth_layer.py") for f in files)
+    # The real activation (executable code revealed) is still flagged.
+    assert any(f.endswith("activation.py") for f in files)

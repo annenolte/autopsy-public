@@ -19,10 +19,17 @@ diff lives in autopsy/graph/builder.py.
 
 from __future__ import annotations
 
+import re
 
-# Comment-block opening delimiters by language. The closing delimiter is
-# intentionally NOT in this map — deleting a closer turns live code dead
-# (a far less dangerous direction).
+# Reuse the deterministic sink patterns from the static-rules layer so the
+# deletion detector and the live-code detector agree on what "dangerous" means.
+from autopsy.detection.static_rules import _DBAPI_EXEC, _WEAK_HASHES
+
+
+# Comment-block opening delimiters by language, mapped to their matching closer.
+# The closing delimiter is intentionally NOT treated as a trigger — deleting a
+# closer turns live code dead (a far less dangerous direction) — but we need it
+# to know where the revealed (previously-commented) block ends.
 COMMENT_OPENERS: dict[str, tuple[str, str]] = {
     '"""':    ("Python",   "multiline string / docstring opener"),
     "'''":    ("Python",   "multiline string opener"),
@@ -33,21 +40,104 @@ COMMENT_OPENERS: dict[str, tuple[str, str]] = {
     "<!--":   ("HTML/XML", "comment opener"),
 }
 
+_CLOSERS: dict[str, str] = {
+    '"""': '"""', "'''": "'''", "/*": "*/", "#=": "=#",
+    "--[[": "]]", "=begin": "=end", "<!--": "-->",
+}
+
+# Extra sink call-names whose mere presence in a revealed block makes it
+# dangerous regardless of taint. The two sets above (SQL exec + weak hashes)
+# are reused verbatim from static_rules.py; these supplement them for the
+# code-activation threat (the revealed block is attacker-chosen, so any
+# code-execution / deserialization / SSRF primitive is a sink here).
+_EXTRA_SINK_NAMES = {
+    "eval", "exec", "popen", "system", "spawn", "fork", "compile",
+    "loads", "load", "call", "run", "check_output", "Popen",
+    "__import__", "getattr", "setattr",
+}
+_SINK_NAMES = _DBAPI_EXEC | _WEAK_HASHES | _EXTRA_SINK_NAMES
+
+# A revealed line is "executable" if it defines or runs code. Comment-only,
+# blank, or pure-prose lines do not match, so a comment/docstring-only block is
+# suppressed (no zero-footprint activation: nothing executable was revealed).
+_EXECUTABLE_RE = re.compile(
+    r"""^\s*(
+        (async\s+)?def\s+\w+        # function definition
+        | class\s+\w+              # class definition
+        | @\w[\w.]*                # decorator (e.g. @app.route)
+        | (from\s+\S+\s+)?import\s+\S+   # import
+        | \w[\w.]*\s*=[^=]         # assignment (not ==)
+        | \w[\w.]*\s*\(            # a call
+        | (return|raise|await|yield|with|for|while|if|elif|else|try)\b
+    )""",
+    re.VERBOSE,
+)
+
+# C-style / brace languages: defs and calls look different; a light check.
+_EXECUTABLE_RE_BRACE = re.compile(
+    r"""(
+        function\s+\w*\s*\(        # function decl
+        | \b\w+\s*=>               # arrow function
+        | \b(var|let|const)\s+\w+  # binding
+        | \w[\w.]*\s*\(            # a call
+        | \breturn\b
+    )""",
+    re.VERBOSE,
+)
+
+
+def _revealed_block_is_dangerous(revealed: list[str], opener: str) -> tuple[bool, str]:
+    """True if the revealed (previously-commented) lines contain executable
+    definitions or a known sink. Comment-/prose-only blocks return False.
+
+    Returns (is_dangerous, reason). `revealed` are the raw post-prefix code lines
+    that were inside the comment block (context/added lines after the deleted
+    opener, up to the matching closer).
+    """
+    exec_re = _EXECUTABLE_RE_BRACE if opener in ("/*",) else _EXECUTABLE_RE
+    saw_executable = False
+    saw_sink = None
+    for ln in revealed:
+        s = ln.strip()
+        if not s:
+            continue
+        # Skip pure single-line comments (the block may still wrap prose).
+        if s.startswith("#") or s.startswith("//"):
+            continue
+        # Sink: any known dangerous call-name invoked in the line.
+        for call_name in re.findall(r"([A-Za-z_]\w*)\s*\(", s):
+            if call_name in _SINK_NAMES:
+                saw_sink = call_name
+                break
+        if saw_sink:
+            return True, f"revealed code calls sink `{saw_sink}(...)`"
+        if exec_re.search(s):
+            saw_executable = True
+    if saw_executable:
+        return True, "revealed code contains executable definitions/statements"
+    return False, "revealed block is comment/docstring/prose-only"
+
 
 def detect_comment_boundary_deletions(git_diff_text: str) -> list[dict]:
-    """Scan a unified git diff for deleted comment-boundary openers.
+    """Scan a unified git diff for deleted comment-boundary openers that REVEAL
+    executable code.
 
-    A deleted opener means an entire block of previously dead code is now
-    live — and that block will NOT appear as additions in this diff. Any
-    addition-only scanner will completely miss it.
+    A deleted opener can mean an entire block of previously dead code is now
+    live — and that block will NOT appear as additions in this diff. But deleting
+    the opener of a comment/docstring that contained only prose is harmless. So
+    this detector now fires only when the revealed block (the lines that follow
+    the deleted opener, up to the matching closer) parses to executable
+    definitions or contains a sink (reusing the static-rules sink patterns).
+    Comment-/docstring-only activations are suppressed.
 
     Returns a list of dicts:
-        {file, deleted_delimiter, raw_line, severity, description}
+        {file, deleted_delimiter, raw_line, severity, description, trigger}
     """
     findings: list[dict] = []
     current_file: str | None = None
 
-    for raw_line in git_diff_text.split("\n"):
+    lines = git_diff_text.split("\n")
+    for i, raw_line in enumerate(lines):
         # Track current file from the diff headers. Prefer the +++ b/ line
         # (the post-image) since it reflects the file as it exists after the
         # change. Fall back to --- a/ when the post-image is /dev/null.
@@ -77,15 +167,26 @@ def detect_comment_boundary_deletions(git_diff_text: str) -> list[dict]:
 
         for opener, (lang, desc) in COMMENT_OPENERS.items():
             if content == opener or content.startswith(opener):
+                closer = _CLOSERS.get(opener, opener)
+                # A self-closing single-line block (e.g. a one-line docstring
+                # `"""text"""`, or `/* ... */`) reveals nothing when deleted —
+                # the closer is on the same line. Skip it.
+                if content != opener and closer in content[len(opener):]:
+                    break
+                revealed = _collect_revealed(lines, i + 1, closer)
+                dangerous, reason = _revealed_block_is_dangerous(revealed, opener)
+                if not dangerous:
+                    break  # suppress comment/docstring-only activation
                 findings.append({
                     "file": current_file or "unknown",
                     "deleted_delimiter": opener,
                     "raw_line": raw_line,
                     "severity": "HIGH",
+                    "trigger": reason,
                     "description": (
                         f"Zero-footprint activation: a '{opener}' "
-                        f"({lang} {desc}) was deleted. Code previously "
-                        f"inside this comment block is now LIVE. The "
+                        f"({lang} {desc}) was deleted and {reason}. Code "
+                        f"previously inside this comment block is now LIVE. The "
                         f"activated code does NOT appear as additions in "
                         f"this diff and will be missed by any diff-only "
                         f"scanner."
@@ -94,6 +195,32 @@ def detect_comment_boundary_deletions(git_diff_text: str) -> list[dict]:
                 break
 
     return findings
+
+
+def _collect_revealed(lines: list[str], start: int, closer: str) -> list[str]:
+    """Gather the previously-commented code revealed after a deleted opener.
+
+    Walks forward from `start` collecting context (' ') and added ('+') line
+    contents until the matching `closer` delimiter or a hunk/file boundary.
+    Deleted ('-') lines are skipped (they are leaving, not being revealed).
+    """
+    out: list[str] = []
+    for raw in lines[start:]:
+        if (raw.startswith("@@") or raw.startswith("diff --git")
+                or raw.startswith("+++ ") or raw.startswith("--- ")
+                or raw.startswith("index ")):
+            break
+        if not raw:
+            continue
+        prefix, body = raw[0], raw[1:]
+        if prefix == "-":
+            continue  # being removed, not revealed
+        if prefix not in (" ", "+"):
+            continue
+        if body.strip().startswith(closer):
+            break  # reached the end of the revealed block
+        out.append(body)
+    return out
 
 
 # ---------------------------------------------------------------------------

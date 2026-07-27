@@ -22,14 +22,23 @@ python benchmark/eval_deletions.py
 
 Both planted deletion vulns are recovered by the appropriate detector.
 
-## Honest limitation (surfaced, not hidden)
+## Precision fix (Part 1C — was a known limitation)
 
-The comment-boundary detector fired a **second, spurious** time on
-`auth_layer.py`. Cause: it flags *any* deleted line beginning with `"""`, so
-removing a normal function that has a one-line docstring trips it even though no
-code was activated. It is a precise *recall* signal for genuine activations but
-an **imprecise** one — it cannot distinguish an opener-that-activates-code from a
-benign docstring deletion. This is a real precision weakness of the heuristic and
-should be reported as such (and is locked in `tests/test_deletion_benchmark.py`);
-refining it (e.g., only flag a delimiter whose removal actually changes which
-lines parse as code) is future work.
+The comment-boundary detector previously fired a **second, spurious** time on
+`auth_layer.py`, because it flagged *any* deleted line beginning with `"""` —
+including a normal function whose one-line docstring was removed, even though no
+code was activated. That over-fire is now **fixed**: the detector gates on the
+*revealed* block (the lines that follow the deleted opener, up to the matching
+closer) and only fires when that block parses to executable definitions or
+contains a sink (the sink patterns are reused from
+`autopsy/detection/static_rules.py`). Two guards do the work:
+
+1. a **self-closing** single-line block (`"""text"""`, `/* ... */`) reveals
+   nothing on deletion and is skipped; and
+2. a revealed block that is **comment-/docstring-/prose-only** is suppressed.
+
+So `auth_layer.py` is no longer flagged by the comment-boundary detector (it is
+still caught by the security-control-deletion detector), while the genuine
+`activation.py` case — where deleting the opener reveals a live `/admin/shell`
+route calling `os.popen` — still fires. Locked in
+`tests/test_deletion_benchmark.py::test_comment_detector_suppresses_benign_docstring`.
