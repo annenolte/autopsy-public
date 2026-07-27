@@ -1,0 +1,242 @@
+{
+  "new_runs": [
+    {
+      "ts": "2026-07-12T10:41:08",
+      "run_label": "new_1",
+      "attempts": 1,
+      "recall": 0.5455,
+      "tp": 6,
+      "fp": 14,
+      "total_findings": 20,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-unsafe-yaml",
+        "pygoat-weak-hash"
+      ],
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "cost_usd": 0.3389,
+      "scan_time_s": 148.7
+    },
+    {
+      "ts": "2026-07-12T10:43:37",
+      "run_label": "new_2",
+      "attempts": 1,
+      "recall": 0.6364,
+      "tp": 7,
+      "fp": 14,
+      "total_findings": 21,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-login",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-sqli-injection-lab",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ],
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "cost_usd": 0.3389,
+      "scan_time_s": 149.2
+    },
+    {
+      "ts": "2026-07-12T10:46:10",
+      "run_label": "new_3",
+      "attempts": 1,
+      "recall": 0.7273,
+      "tp": 8,
+      "fp": 17,
+      "total_findings": 25,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval",
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ],
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "cost_usd": 0.3389,
+      "scan_time_s": 152.2
+    }
+  ],
+  "new_spend_usd": 1.0167,
+  "existing_runs_cost_usd": 0.6768,
+  "pooled_5run_total_cost_usd": 1.6935,
+  "curve": [
+    {
+      "k": 1,
+      "runs_included": [
+        "existing_0"
+      ],
+      "cumulative_findings_deduped": 18,
+      "recall": 7,
+      "recall_str": "7/11",
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ]
+    },
+    {
+      "k": 2,
+      "runs_included": [
+        "existing_0",
+        "existing_1"
+      ],
+      "cumulative_findings_deduped": 33,
+      "recall": 10,
+      "recall_str": "10/11",
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-unsafe-yaml",
+        "pygoat-weak-hash",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval"
+      ]
+    },
+    {
+      "k": 3,
+      "runs_included": [
+        "existing_0",
+        "existing_1",
+        "new_1"
+      ],
+      "cumulative_findings_deduped": 46,
+      "recall": 10,
+      "recall_str": "10/11",
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-unsafe-yaml",
+        "pygoat-weak-hash",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval"
+      ]
+    },
+    {
+      "k": 4,
+      "runs_included": [
+        "existing_0",
+        "existing_1",
+        "new_1",
+        "new_2"
+      ],
+      "cumulative_findings_deduped": 55,
+      "recall": 11,
+      "recall_str": "11/11",
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-unsafe-yaml",
+        "pygoat-weak-hash",
+        "pygoat-xxe"
+      ],
+      "missed_ids": []
+    },
+    {
+      "k": 5,
+      "runs_included": [
+        "existing_0",
+        "existing_1",
+        "new_1",
+        "new_2",
+        "new_3"
+      ],
+      "cumulative_findings_deduped": 66,
+      "recall": 11,
+      "recall_str": "11/11",
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-unsafe-yaml",
+        "pygoat-weak-hash",
+        "pygoat-xxe"
+      ],
+      "missed_ids": []
+    }
+  ],
+  "windowed_ref": {
+    "runs": 1,
+    "cost_usd": 1.1261,
+    "findings": 112,
+    "recall": "11/11"
+  }
+}

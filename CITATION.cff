@@ -17,7 +17,7 @@ authors:
     given-names: Anne
     orcid: "https://orcid.org/0009-0006-8087-4745"
     affiliation: "Independent Researcher"
-version: "1.1-paper"
+version: "1.2-paper"
 date-released: "2026-07-26"
 license: MIT
 repository-code: "https://github.com/annenolte/autopsy-public"

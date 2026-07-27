@@ -1,0 +1,171 @@
+{
+  "file_total_lines": 1238,
+  "rows": [
+    {
+      "vuln_id": "pygoat-sqli-login",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 147,
+      "depth_ratio": 0.119,
+      "caught_run0": true,
+      "caught_run1": true,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-insecure-deser-pickle",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 205,
+      "depth_ratio": 0.166,
+      "caught_run0": true,
+      "caught_run1": true,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-xxe",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 256,
+      "depth_ratio": 0.207,
+      "caught_run0": true,
+      "caught_run1": true,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-command-injection",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 415,
+      "depth_ratio": 0.335,
+      "caught_run0": true,
+      "caught_run1": true,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-code-injection-eval",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 453,
+      "depth_ratio": 0.366,
+      "caught_run0": true,
+      "caught_run1": false,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-unsafe-yaml",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 551,
+      "depth_ratio": 0.445,
+      "caught_run0": true,
+      "caught_run1": true,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-imagemath-eval",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 574,
+      "depth_ratio": 0.464,
+      "caught_run0": false,
+      "caught_run1": false,
+      "caught_single_union": false,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-sqli-injection-lab",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 855,
+      "depth_ratio": 0.691,
+      "caught_run0": true,
+      "caught_run1": false,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-ssrf",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 956,
+      "depth_ratio": 0.772,
+      "caught_run0": false,
+      "caught_run1": true,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-ssti",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 975,
+      "depth_ratio": 0.788,
+      "caught_run0": false,
+      "caught_run1": true,
+      "caught_single_union": true,
+      "caught_windowed": true
+    },
+    {
+      "vuln_id": "pygoat-weak-hash",
+      "file": "introduction/views.py",
+      "file_total_lines": 1238,
+      "vuln_line": 1018,
+      "depth_ratio": 0.822,
+      "caught_run0": false,
+      "caught_run1": true,
+      "caught_single_union": true,
+      "caught_windowed": true
+    }
+  ],
+  "means_run0": {
+    "caught": {
+      "n": 7,
+      "mean_vuln_line": 411.7,
+      "mean_depth_ratio": 0.333,
+      "mean_file_lines": 1238
+    },
+    "missed": {
+      "n": 4,
+      "mean_vuln_line": 880.8,
+      "mean_depth_ratio": 0.712,
+      "mean_file_lines": 1238
+    }
+  },
+  "means_run1": {
+    "caught": {
+      "n": 8,
+      "mean_vuln_line": 565.4,
+      "mean_depth_ratio": 0.457,
+      "mean_file_lines": 1238
+    },
+    "missed": {
+      "n": 3,
+      "mean_vuln_line": 627.3,
+      "mean_depth_ratio": 0.507,
+      "mean_file_lines": 1238
+    }
+  },
+  "means_union": {
+    "caught": {
+      "n": 10,
+      "mean_vuln_line": 583.1,
+      "mean_depth_ratio": 0.471,
+      "mean_file_lines": 1238
+    },
+    "missed": {
+      "n": 1,
+      "mean_vuln_line": 574,
+      "mean_depth_ratio": 0.464,
+      "mean_file_lines": 1238
+    }
+  },
+  "run0_recall": "7/11",
+  "run1_recall": "8/11",
+  "union_recall": "10/11"
+}

