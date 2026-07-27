@@ -446,19 +446,25 @@ def build_graph_and_diff(demo_dir: Path, baseline_dir: Path, repo_dir: Path,
 
 
 def run_scan(graph, diff_text, changed_files, repo_dir, temperature,
-             chunked=False, window=400, use_triage=True):
+             chunked=False, window=400, use_triage=True, use_graph=True,
+             graph_mode="note"):
     """Invoke the scan and return the concatenated streamed output + elapsed.
 
     chunked=True uses the map-reduce scanner (windows every file so large files
     aren't truncated); otherwise the single-shot scan_stream.
     use_triage=False skips the Haiku triage step (sonnet-only arm, #16).
+    use_graph=False (chunked only) passes graph=None to scan_stream_chunked,
+    which disables the cross-file `_graph_neighbors_note` while keeping identical
+    windowing + the deterministic layer — the single-variable graph ablation.
     """
     t0 = time.time()
     chunks = []
     if chunked:
         from autopsy.llm.chunking import scan_stream_chunked
-        stream = scan_stream_chunked(graph, diff_text, changed_files,
-                                     root_dir=repo_dir, window_lines=window)
+        stream = scan_stream_chunked(graph if use_graph else None,
+                                     diff_text, changed_files,
+                                     root_dir=repo_dir, window_lines=window,
+                                     graph_mode=graph_mode)
     else:
         _, _, scan_stream = _import_autopsy()
         kwargs = {}
@@ -487,8 +493,9 @@ def run_raw_llm_scan(repo_dir, diff_text, changed_files, temperature):
     from autopsy.llm.prompts import SCAN_SYSTEM
 
     repo_dir = Path(repo_dir)
+    _exts = (".py", ".js", ".ts", ".tsx", ".jsx")
     parts = ["## Source Files\n"]
-    for p in sorted(repo_dir.rglob("*.py")):
+    for p in sorted(q for q in repo_dir.rglob("*") if q.suffix in _exts and q.is_file()):
         rel = p.relative_to(repo_dir)
         parts.append(f"### {rel}\n```\n{p.read_text(errors='replace')}\n```\n")
     parts.append(f"\n## Git Diff\n```diff\n{diff_text}\n```")
@@ -515,9 +522,15 @@ def run_raw_llm_scan(repo_dir, diff_text, changed_files, temperature):
 
 def run_single(
     demo_dir: Path, baseline_dir: Path, all_truth, scored, fuzz, temperature,
-    mode="safe", arm="autopsy", dedupe=True, chunked=False, window=400
+    mode="safe", arm="autopsy", dedupe=True, chunked=False, window=400,
+    use_graph=True
 ) -> dict:
-    """Run one scan with the given arm ('autopsy' = full pipeline, 'raw' = no graph)."""
+    """Run one scan with the given arm ('autopsy' = full pipeline, 'raw' = no graph).
+
+    use_graph=False (only meaningful with chunked=True) runs the same windowed
+    scan but with the dependency-graph cross-file note disabled — the Part 2
+    graph ablation (chunked-nograph arm).
+    """
     scored_ids = {t["id"] for t in scored}
     with tempfile.TemporaryDirectory() as tmp:
         repo_dir = Path(tmp) / "eval_repo"
@@ -541,7 +554,8 @@ def run_single(
             # "sonnet-only" = full graph pipeline but no Haiku triage (#16)
             output, elapsed = run_scan(graph, diff_text, changed_files, repo_dir,
                                        temperature, chunked=chunked, window=window,
-                                       use_triage=(arm != "sonnet-only"))
+                                       use_triage=(arm != "sonnet-only"),
+                                       use_graph=use_graph)
         usage = get_usage() if get_usage else {}
 
     findings = parse_findings(output)
@@ -654,11 +668,17 @@ def run_eval(args):
         arms = ["autopsy", "raw"]
     elif args.arm == "all":
         arms = ["autopsy", "sonnet-only", "raw"]
+    elif args.arm == "graph-ablation":
+        # Part 2 core experiment: graph-on vs graph-off (both chunked) vs raw.
+        arms = ["autopsy", "chunked-nograph", "raw"]
     else:
         arms = [args.arm]
+    if args.no_graph and not (args.chunked or "chunked-nograph" in arms):
+        console.print("[yellow]--no-graph is only honored with --chunked "
+                      "(or the chunked-nograph arm); ignoring it.[/yellow]")
     console.print(f"Arm(s)         : {', '.join(arms)} "
                   f"(autopsy=graph+Haiku+Sonnet, sonnet-only=graph+Sonnet no triage, "
-                  f"raw=Sonnet no graph)")
+                  f"raw=Sonnet no graph, chunked-nograph=chunked windows, graph note OFF)")
     console.print(f"Repeat         : {args.repeat}\n")
 
     has_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
@@ -679,6 +699,12 @@ def run_eval(args):
             # A transient API/network error in one run should not discard the
             # whole batch. Retry once, then skip just that run and continue so
             # the remaining repeats still produce a confidence interval.
+            # Per-arm chunked / graph settings. The chunked-nograph arm forces the
+            # windowed scanner with the graph note OFF regardless of flags; for
+            # other arms --no-graph (honored only with --chunked) flips the note.
+            arm_chunked = args.chunked or arm == "chunked-nograph"
+            arm_use_graph = not (arm == "chunked-nograph"
+                                 or (args.no_graph and arm_chunked))
             run = None
             for attempt in (1, 2):
                 try:
@@ -686,7 +712,8 @@ def run_eval(args):
                                      args.fuzz_lines, temperature,
                                      mode=args.baseline_mode, arm=arm,
                                      dedupe=not args.no_dedupe,
-                                     chunked=args.chunked, window=args.window_lines)
+                                     chunked=arm_chunked, window=args.window_lines,
+                                     use_graph=arm_use_graph)
                     break
                 except Exception as e:
                     console.print(f"\n[red]Run {i + 1} ({arm}) attempt {attempt} "
@@ -776,7 +803,10 @@ def summarize(runs, args, scored, all_truth, temp_note, arm="autopsy") -> dict:
             "baseline": str(args.baseline),
             "baseline_mode": args.baseline_mode,
             "dedupe": not args.no_dedupe,
-            "chunked": args.chunked,
+            "chunked": args.chunked or arm == "chunked-nograph",
+            "use_graph": not (arm == "chunked-nograph"
+                              or (args.no_graph
+                                  and (args.chunked or arm == "chunked-nograph"))),
             "window_lines": args.window_lines,
             "fuzz_lines": args.fuzz_lines,
             "repeat": args.repeat,
@@ -904,11 +934,18 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Line-distance tolerance for a match (default 5)")
     p.add_argument("--repeat", type=int, default=1,
                    help="Number of live runs; reports mean +/- std when > 1")
-    p.add_argument("--arm", choices=["autopsy", "sonnet-only", "raw", "both", "all"],
+    p.add_argument("--arm",
+                   choices=["autopsy", "sonnet-only", "raw", "both", "all",
+                            "chunked-nograph", "graph-ablation"],
                    default="autopsy",
                    help="autopsy=graph+Haiku triage+Sonnet; sonnet-only=graph+Sonnet "
                         "(no Haiku triage, #16); raw=Sonnet no graph (#11); "
-                        "both=autopsy+raw; all=autopsy+sonnet-only+raw")
+                        "chunked-nograph=windowed scan with the graph note OFF "
+                        "(graph ablation); both=autopsy+raw; all=autopsy+sonnet-only+raw; "
+                        "graph-ablation=autopsy+chunked-nograph+raw")
+    p.add_argument("--no-graph", action="store_true",
+                   help="Disable the dependency-graph cross-file note (honored only "
+                        "with --chunked; isolates the graph's marginal contribution)")
     p.add_argument("--include-provisional", action="store_true",
                    help="Score provisional ground-truth entries as well")
     p.add_argument("--no-dedupe", action="store_true",
@@ -919,6 +956,12 @@ def build_parser() -> argparse.ArgumentParser:
                         "files are not truncated). Recommended for large repos.")
     p.add_argument("--window-lines", type=int, default=400,
                    help="Line-window size for --chunked scanning (default 400)")
+    p.add_argument("--graph-mode", choices=["off", "note", "subgraph"],
+                   default="note",
+                   help="Dependency context per --chunked window: off=none, "
+                        "note=cross-file call names (default), subgraph=actual "
+                        "cross-file callee/caller bodies (depth 1-2, ~250-line "
+                        "cap). 'subgraph' is the stronger, untested recall mode.")
     p.add_argument("--dry-run", action="store_true",
                    help="Offline: build graph + diff + matcher wiring, no LLM call")
     return p

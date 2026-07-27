@@ -74,7 +74,9 @@ def build_eval_repo(
     repo_dir = Path(repo_dir)
     repo_dir.mkdir(parents=True, exist_ok=True)
 
-    demo_files = sorted(demo_dir.rglob("*.py"))
+    _exts = (".py", ".js", ".ts", ".tsx", ".jsx")
+    demo_files = sorted(p for p in demo_dir.rglob("*")
+                        if p.suffix in _exts and p.is_file())
     if not demo_files:
         raise RuntimeError(f"No .py files found in demo dir: {demo_dir}")
 

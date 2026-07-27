@@ -16,9 +16,21 @@ reports ≥1 finding in the file) is recall on a real third-party benchmark.
 | Autopsy deterministic layer (no LLM) | 3% (4/121) |
 | Semgrep (`p/python`) | 19% (23/121) |
 | Bandit | 40% (49/121) |
-| **Autopsy full LLM scan** | **staged — needs API tokens** |
+| CodeQL (`security-extended`) | 42% (51/121) |
+| **Autopsy (full LLM pipeline, chunked)** | **95% (115/121)** |
+
+Run: `python benchmark/eval_securityeval.py --autopsy-llm` — 121 files scanned
+individually (one per call); ~$1.80 (142K input / 91K output tokens, 121 calls),
+Sonnet 4.5. N=1.
 
 ## Honest reading
+- **Autopsy's LLM pipeline detects 95%**, far above Semgrep (19%) and Bandit
+  (40%) on this named external benchmark — the central result for reviewer #2.
+- ⚠️ This is **file-level detection** ("did Autopsy flag *something* in this
+  known-vulnerable file"), i.e. recall. It does **not** verify the finding names
+  the file's *exact* CWE — only that the vulnerable file was flagged. Report it
+  as detection/recall, not CWE-accurate classification.
+- ⚠️ **N=1** (one pass, nondeterministic) — repeat for a confidence interval.
 - SecurityEval is **hard for static analysis** — 69 diverse CWEs, many subtle or
   not statically decidable. Low SAST numbers (19–40%) are expected and match the
   literature; this is exactly why a tiny easy demo overstates capability.
@@ -28,13 +40,6 @@ reports ≥1 finding in the file) is recall on a real third-party benchmark.
 - Detection rate is **file-level** ("did the tool flag *anything* in this
   known-vulnerable file") — generous to all tools, and the fair granularity for
   SecurityEval (one vuln per file, no line-level ground truth).
-- ⚠️ The headline **Autopsy LLM number on SecurityEval is not yet measured** (it
-  needs tokens). Run:
-  ```bash
-  python benchmark/eval.py --demo /tmp/SecurityEval/Testcases_Insecure_Code \
-    --baseline-mode whole-file --chunked --arm both
-  ```
-  (file-level CWE ground truth is derivable from the `CWE-*` folder names.)
 
 ## Detection on AI-generated subsets (token-free)
 The same tools on SecurityEval's **model-generated** files (on-thesis: vulns in
@@ -47,9 +52,17 @@ AI-generated code):
 | Testcases_Insecure_Code (121, human) | 3% | 19% | 40% |
 
 Static tools detect *less* on AI-generated code (Bandit 28% vs 40% on human) —
-motivating better tooling. The Autopsy LLM number on these is staged (tokens).
+motivating better tooling. (Autopsy's LLM on the human Insecure_Code set: 95%.)
 
 ## CodeQL
-Not run: no `brew`/`gh` in this environment and the CodeQL CLI is a ~700MB
-download plus a per-target database build. Semgrep + Bandit serve as the SAST
-baselines; CodeQL commands are documented in `compare_tools.py`.
+Run as a third SAST baseline (CodeQL CLI 2.25.6, `python-security-extended.qls`,
+`codeql/python-queries` 1.8.4), scored file-level exactly as Semgrep/Bandit:
+**42% (51/121)** — above Bandit (40%) and roughly double Semgrep (19%), but far
+below Autopsy's 95%. SecurityEval is the analysis shape CodeQL's whole-program
+dataflow is least suited to (each file is an isolated function with no realized
+taint source); reported as-is. See `results/codeql_baseline_report.md`.
+
+## Also used for #9
+SecurityEval's `Testcases_Copilot` + `Testcases_InCoder` (model-generated) vs
+`Testcases_Insecure_Code` (human-authored) provided the labeled AI-vs-human set
+for the authorship-classifier validation — see `AUTHORSHIP.md` (ROC-AUC 0.42).

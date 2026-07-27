@@ -6,10 +6,13 @@ against the same ground_truth.json with the same matcher used for Autopsy, and
 reporting recall. This is what lets the paper claim — with evidence — whether
 Autopsy's architecture adds anything over off-the-shelf static analysis.
 
-Tools are static analyzers (no API tokens). CodeQL is intentionally not run
-here: it needs the CodeQL CLI plus a built database, which is a heavy,
-environment-specific setup. The exact commands are documented at the bottom so
-it can be added; this harness focuses on the two tools that run out of the box.
+Tools are static analyzers (no API tokens). This harness runs the two tools that
+work out of the box (Semgrep, Bandit). CodeQL IS run as a third baseline, but in
+a separate, heavier step (it needs the CodeQL CLI + a built database):
+generate SARIF with `benchmark/run_codeql.sh`, then score it through this same
+frozen matcher with `benchmark/run_codeql_baseline.py`. Committed CodeQL results
+(SARIF + scored JSON + report) live under `results/codeql/` and
+`results/codeql_baseline_report.md`.
 
 Two recall numbers are reported per tool, in fairness to the baselines:
   - strict : file basename + (normalized) category + line within fuzz, the same
@@ -151,10 +154,11 @@ def main():
 if __name__ == "__main__":
     main()
 
-# ── CodeQL (not run here; documented for completeness) ─────────────────────────
-# CodeQL needs the CLI + a built database:
-#   codeql database create cqdb --language=python --source-root=<target>
-#   codeql database analyze cqdb codeql/python-queries \
-#       --format=sarifv2.1.0 --output=codeql.sarif
-# then parse codeql.sarif results[].locations[].physicalLocation for file:line
-# and map ruleId -> category, scoring with the same matcher as above.
+# ── CodeQL (run separately; see run_codeql.sh + run_codeql_baseline.py) ────────
+# CodeQL needs the CLI + a built database, so it runs in its own step rather than
+# inline here. The full pipeline is committed:
+#   benchmark/run_codeql.sh            -> builds DBs, runs security-extended,
+#                                         writes SARIF to results/codeql/
+#   benchmark/codeql_sarif_adapter.py  -> SARIF -> {category,title,locations}
+#   benchmark/run_codeql_baseline.py   -> scores that with E.match (this matcher)
+# Results + report: results/codeql/ and results/codeql_baseline_report.md.

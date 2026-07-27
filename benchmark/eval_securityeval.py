@@ -41,10 +41,40 @@ def detection_rate(label, hit_files, all_files):
     return h, n
 
 
+def run_autopsy_llm(target: Path, scan_fn=None):
+    """Run Autopsy's chunked LLM scan on each file individually; return the set of
+    files (resolved paths) whose own scan produced at least one finding.
+
+    Scanning per-file avoids ambiguity: SecurityEval reuses filenames across CWE
+    folders, so mapping pooled findings back to files by name is unreliable.
+    scan_fn is injectable for an offline (no-API) dry run.
+    """
+    import sys as _sys
+    _b = str(Path(__file__).resolve().parent)
+    if _b not in _sys.path:
+        _sys.path.insert(0, _b)
+    import eval as E
+    from autopsy.parser import parse_directory
+    from autopsy.graph.builder import build_dependency_graph
+    from autopsy.llm.chunking import scan_stream_chunked
+
+    graph = build_dependency_graph(parse_directory(target))
+    rels = [p.relative_to(target).as_posix() for p in sorted(target.rglob("*.py"))]
+    hit = set()
+    for rel in rels:
+        out = "".join(scan_stream_chunked(graph, "", [rel], root_dir=target,
+                                          scan_fn=scan_fn))
+        if E.parse_findings(out):
+            hit.add((target / rel).resolve())
+    return hit
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--securityeval", type=Path, default=Path("/tmp/SecurityEval"))
     ap.add_argument("--subset", default="Testcases_Insecure_Code")
+    ap.add_argument("--autopsy-llm", action="store_true",
+                    help="Also run Autopsy's chunked LLM scan (COSTS API tokens)")
     args = ap.parse_args()
     target = args.securityeval / args.subset
     files = _all_files(target)
@@ -83,10 +113,21 @@ def main():
     except Exception as e:
         print(f"  Bandit failed: {e}")
 
-    print("\n[staged, needs API tokens] Autopsy full LLM scan:")
-    print(f"  python benchmark/eval.py --demo {target} --baseline-mode whole-file \\")
-    print(f"      --chunked --arm both --ground-truth <per-file CWE GT>")
-    print("  (file-level CWE ground truth can be derived from the CWE-* folder names)")
+    if args.autopsy_llm:
+        try:
+            from autopsy.llm.client import reset_usage, get_usage
+            reset_usage()
+        except Exception:
+            get_usage = None
+        hit = run_autopsy_llm(target)
+        detection_rate("Autopsy (LLM, chunked)", hit, files)
+        if get_usage:
+            u = get_usage()
+            tin = u.get("haiku_in", 0) + u.get("sonnet_in", 0)
+            tout = u.get("haiku_out", 0) + u.get("sonnet_out", 0)
+            print(f"  tokens used: {tin} in / {tout} out  ({u.get('calls',0)} calls)")
+    else:
+        print("\n[staged, needs API tokens] Autopsy full LLM scan: pass --autopsy-llm")
 
 
 if __name__ == "__main__":

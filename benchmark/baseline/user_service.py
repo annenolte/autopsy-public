@@ -47,3 +47,4 @@ class UserService:
             "role": row[3],
             "created_at": str(row[4]),
         }
+    

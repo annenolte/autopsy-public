@@ -9,7 +9,11 @@ only references line numbers.
 
 Provenance: `github.com/adeyosemanputra/pygoat` @ `19d17cc8` (2026-03-28).
 
-## Ground truth (8 verified, code-level vulnerabilities)
+## Ground truth (11 verified, code-level vulnerabilities)
+
+> Updated: the set grew from the original 8 to **11** (added `pygoat-xxe`,
+> `pygoat-imagemath-eval`, `pygoat-ssti`). The table below lists the original 8;
+> the authoritative, complete list is `ground_truth_pygoat.json` (11 entries).
 
 Each was confirmed by reading `introduction/views.py` and checking that user
 input reaches the sink:
