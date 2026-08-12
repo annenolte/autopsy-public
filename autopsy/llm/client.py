@@ -97,24 +97,24 @@ def stream_sonnet(
     drop real findings at the end of a long report and understate recall. Only
     allows more output; never forces it (cost rises only when output was being
     truncated).
+
+    API errors are NOT caught here. They previously yielded an error string into
+    the scan text, which made a failed call indistinguishable from a scan that
+    legitimately found nothing: the caller saw a normal return, the findings
+    parser saw no findings, and the run was scored as recall=0 at zero cost.
+    Letting RateLimitError / APIConnectionError / APIError propagate means a
+    failed call fails loudly instead of being recorded as a result.
     """
     client = get_client()
-    try:
-        with client.messages.stream(
-            model=SONNET_MODEL,
-            max_tokens=max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": user_message}],
-        ) as stream:
-            for text in stream.text_stream:
-                yield text
-            try:
-                _record("sonnet", stream.get_final_message().usage)
-            except Exception:  # pragma: no cover
-                pass
-    except RateLimitError:
-        yield "\n\n[ERROR] Rate limited by Anthropic API. Wait a moment and retry."
-    except APIConnectionError:
-        yield "\n\n[ERROR] Cannot connect to Anthropic API. Check your network."
-    except APIError as e:
-        yield f"\n\n[ERROR] Anthropic API error: {e.message}"
+    with client.messages.stream(
+        model=SONNET_MODEL,
+        max_tokens=max_tokens,
+        system=system,
+        messages=[{"role": "user", "content": user_message}],
+    ) as stream:
+        for text in stream.text_stream:
+            yield text
+        try:
+            _record("sonnet", stream.get_final_message().usage)
+        except Exception:  # pragma: no cover
+            pass

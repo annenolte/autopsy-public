@@ -573,6 +573,17 @@ def run_single(
     n_scored = len(scored) or 1
     total_tokens = sum(v for k, v in usage.items() if k.endswith(("_in", "_out")))
 
+    # Belt and braces for the swallowed-API-error class of failure (see
+    # autopsy/llm/client.stream_sonnet). If token accounting was available and
+    # reports that the scan consumed nothing, no model call succeeded — that is
+    # an infrastructure failure, not a run that found nothing. Refuse to return
+    # it as a scoreable result.
+    if usage and total_tokens == 0:
+        raise RuntimeError(
+            f"[{arm}] scan consumed 0 tokens ({usage!r}) — the API call did not "
+            f"succeed. Refusing to score this as a 0-finding run."
+        )
+
     return {
         "arm": arm,
         "metrics": metrics,
