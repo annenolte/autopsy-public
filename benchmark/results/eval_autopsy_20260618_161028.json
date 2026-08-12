@@ -1,0 +1,578 @@
+{
+  "mode": "live",
+  "arm": "autopsy",
+  "timestamp": "2026-06-18T16:10:28",
+  "config": {
+    "arm": "autopsy",
+    "demo": "<repo>/demo_project",
+    "baseline": "<repo>/benchmark/baseline",
+    "baseline_mode": "whole-file",
+    "fuzz_lines": 5,
+    "repeat": 3,
+    "include_provisional": false,
+    "temperature_note": "temperature not configurable in the current client; using model default (results vary slightly across runs)",
+    "haiku_model": "claude-haiku-4-5-20251001",
+    "sonnet_model": "claude-sonnet-4-5-20250929"
+  },
+  "ground_truth": {
+    "scored_count": 12,
+    "scored_ids": [
+      "sqli-search",
+      "sqli-update",
+      "sqli-export",
+      "sqli-execute",
+      "auth-bypass-token",
+      "auth-bypass-permission",
+      "weak-hash",
+      "sqli-admin-run",
+      "sqli-admin-delete",
+      "sqli-admin-impersonate",
+      "auth-ignored-return",
+      "sqli-export-service"
+    ],
+    "all_count": 13
+  },
+  "aggregate": {
+    "precision": {
+      "mean_pct": 90,
+      "std_pct": 10.0,
+      "raw_values": [
+        0.9,
+        1.0,
+        0.8
+      ]
+    },
+    "recall": {
+      "mean_pct": 69,
+      "std_pct": 4.8,
+      "raw_values": [
+        0.75,
+        0.6667,
+        0.6667
+      ]
+    },
+    "f1": {
+      "mean_pct": 78,
+      "std_pct": 4.8,
+      "raw_values": [
+        0.8182,
+        0.8,
+        0.7273
+      ]
+    }
+  },
+  "runs": [
+    {
+      "metrics": {
+        "precision": 0.9,
+        "recall": 0.75,
+        "f1": 0.8182,
+        "precision_pct": 90,
+        "recall_pct": 75,
+        "f1_pct": 82
+      },
+      "counts": {
+        "tp": 9,
+        "fp": 1,
+        "fn": 3,
+        "total_findings": 10
+      },
+      "matched_ids": [
+        "auth-bypass-permission",
+        "auth-bypass-token",
+        "sqli-admin-delete",
+        "sqli-admin-impersonate",
+        "sqli-admin-run",
+        "sqli-execute",
+        "sqli-export",
+        "sqli-search",
+        "sqli-update"
+      ],
+      "missed_ids": [
+        "auth-ignored-return",
+        "sqli-export-service",
+        "weak-hash"
+      ],
+      "provisional_matched_ids": [],
+      "category_mismatches": [],
+      "scan_time_seconds": 62.0,
+      "findings": [
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in execute_query Function",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 18
+            },
+            {
+              "file": "admin_api.py",
+              "line": 22
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in execute_query Function\n\n**Category:** SQLi\n\n**Location:** `database.py:18`\n\n**Attack Scenario:**\n1. Attacker calls any endpoint that uses `execute_query()` with malicious input\n2. The function directly executes the raw SQL string without parameterization\n3. Attacker can inject arbitrary SQL commands to modify data, escalate privileges, or exfiltrate information\n4. Example: Through `admin_api.py:22`, attacker sends `user_id = \"1' OR '1'='1'; DROP TABLE use"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in execute_read Function",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 26
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in execute_read Function\n\n**Category:** SQLi\n\n**Location:** `database.py:26`\n\n**Attack Scenario:**\n1. Attacker sends malicious input through search, export, or admin query endpoints\n2. The raw SQL string is executed directly without validation or parameterization\n3. Attacker can extract any data from the database using UNION-based injection\n4. Example: Search query `' UNION SELECT password_hash,email,name,id,created_at FROM users--` exfiltrates all password "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Unauthenticated Admin SQL Injection Endpoint",
+          "category": "Auth Bypass / SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 10
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Unauthenticated Admin SQL Injection Endpoint\n\n**Category:** Auth Bypass / SQLi\n\n**Location:** `admin_api.py:10`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/admin/run-query` with no authentication headers\n2. The endpoint has NO `@require_auth` decorator despite being an \"admin\" route\n3. Attacker provides arbitrary SQL in the request body\n4. Query executes directly via `execute_read()` with full database access\n5. Example payload: `{\"query\": \"SELECT * FROM"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in delete_user Endpoint",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 20
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in delete_user Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:20`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/delete-user/<malicious_id>` with no auth (endpoint lacks `@require_auth`)\n2. The `user_id` parameter is interpolated directly into SQL: `f\"DELETE FROM users WHERE id = '{user_id}'\"`\n3. Attacker can inject SQL to delete arbitrary records or execute additional commands\n4. Example: `/api/admin/delete-user/1' OR '1'='1` deletes all use"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in impersonate_user Endpoint",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 30
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in impersonate_user Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:30`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/impersonate/<user_id>` with no authentication\n2. The `user_id` is interpolated into SQL: `f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"`\n3. Attacker injects SQL to create sessions for any user or execute arbitrary commands\n4. Example: `user_id = \"admin'); INSERT INTO user"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_search_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 6
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_search_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:6`\n\n**Attack Scenario:**\n1. Attacker calls `/api/users/search?q=<payload>&role=<payload>`\n2. Both `search_term` and `role_filter` are interpolated directly into SQL using f-strings\n3. Attacker can extract data, modify queries, or cause denial of service\n4. Example: `q=' OR 1=1 UNION SELECT password_hash,email,name,role,id FROM users--` exfiltrates passwords\n\n**Blast Radius:**\nCalled b"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_update_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 19
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_update_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:19`\n\n**Attack Scenario:**\n1. Attacker calls `/api/users/<user_id>/profile` with malicious JSON body\n2. All field values are interpolated directly into SQL: `f\"{key} = '{value}'\"`\n3. Attacker can inject SQL in any profile field (name, email, bio, website, location)\n4. Example: `{\"bio\": \"x', role='admin' WHERE id='victim_id'--\"}` escalates privileges\n\n**Blast Radius:**\nCalled by `user_s"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_export_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 41
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_export_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:41`\n\n**Attack Scenario:**\n1. Attacker calls `/api/users/export` with malicious JSON: `{\"sort_by\": \"<payload>\", \"role\": \"<payload>\", \"created_after\": \"<payload>\"}`\n2. The `sort_field` and filter values are interpolated directly into SQL\n3. Attacker controls the ORDER BY clause and WHERE conditions completely\n4. Example: `{\"sort_by\": \"id; DELETE FROM users--\"}` deletes all users\n\n**Blas"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authentication Bypass in require_auth",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 11
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authentication Bypass in require_auth\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker creates or steals ANY valid token (even expired or revoked ones)\n2. The `require_auth` decorator only checks if `token in VALID_TOKENS`\n3. No validation of token expiry, scope, audience, or revocation status\n4. Once a token is in the dict, it remains valid forever\n5. Attacker can reuse old tokens, stolen tokens, or tokens from other contexts indefinit"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authorization Bypass in check_permission",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 37
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authorization Bypass in check_permission\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:37`\n\n**Attack Scenario:**\n1. Attacker calls `/api/users/<victim_id>/profile` to modify another user's profile\n2. The `check_permission()` function attempts to check if `user.get(\"user_id\") == resource_owner_id`\n3. Due to type mismatch (string vs int"
+        }
+      ],
+      "raw_output": "\ud83e\uddec Building pre/post commit graph snapshots...\n\n\u2728 Graph diff surfaced 17 activated node(s) \u2014 feeding into the addition scan as extra targets.\n\n\ud83e\udd16 Detecting AI-generated code...\n\n**Found 2 file(s) likely AI-generated:**\n\n- `database.py` \u2014 60% AI-generated confidence (bulk_addition, boilerplate_density, complete_functions)\n  - bulk_addition: +50/-1 lines (ratio 50.0:1)\n  - boilerplate_density: 56% boilerplate (25 docstring, 1 comment, 0 try/except lines)\n  - complete_functions: 4 complete function defs in 54 lines\n- `user_service.py` \u2014 51% AI-generated confidence (boilerplate_density, complete_functions, missing_edge_cases)\n  - boilerplate_density: 61% boilerplate (23 docstring, 1 comment, 0 try/except lines)\n  - complete_functions: 5 complete function defs in 47 lines\n  - missing_edge_cases: 0 defensive checks for 5 risky operations (ratio 0.00)\n\n\ud83d\udd0d Triaging changed files with Haiku...\n\nTriage complete.\n\n Blast Radius \u2014 1 nodes can reach register_admin_routes:\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/admin_api.py  (direct caller)\n\n Blast Radius \u2014 3 nodes can reach require_auth:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 3 nodes can reach get_current_user:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 3 nodes can reach hash_password:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 4 nodes can reach check_permission:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 11 nodes can reach get_connection:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/database.py::execute_query  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/database.py::execute_read  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/database.py::init_db  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/admin_api.py::register_admin_routes  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.update_user_profile  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.search_users  (depth 2)\n  \u2514\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.export_users  (depth 2)\n  \u2514\u2500\u2500 ... 1 more\n\n Blast Radius \u2014 6 nodes can reach execute_query:\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/admin_api.py::register_admin_routes  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 7 nodes can reach execute_read:\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/admin_api.py::register_admin_routes  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach init_db:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_search_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_update_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_export_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 2 nodes can reach UserService.search_users:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 2 nodes can reach UserService.update_user_profile:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 2 nodes can reach UserService.export_users:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 4 nodes can reach UserService._format_user:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmptj15aeq2/eval_repo/routes.py  (depth 2)\n\n\ud83d\udd2c Scanning with Sonnet...\n\n# Security Analysis Report\n\n## [SEVERITY: CRITICAL] SQL Injection in execute_query Function\n\n**Category:** SQLi\n\n**Location:** `database.py:18`\n\n**Attack Scenario:**\n1. Attacker calls any endpoint that uses `execute_query()` with malicious input\n2. The function directly executes the raw SQL string without parameterization\n3. Attacker can inject arbitrary SQL commands to modify data, escalate privileges, or exfiltrate information\n4. Example: Through `admin_api.py:22`, attacker sends `user_id = \"1' OR '1'='1'; DROP TABLE users--\"` to delete the entire users table\n\n**Blast Radius:**\nThis foundational SQL injection sink is called by:\n- `admin_api.py::register_admin_routes` (direct caller)\n- `user_service.py::UserService.update_user_profile` (direct caller)\n- All upstream routes in `routes.py` that trigger these functions\n\n**Fix:**\n```python\n# Before:\ndef execute_query(sql):\n    conn = get_connection()\n    conn.execute(sql)\n    conn.commit()\n\n# After:\ndef execute_query(sql, params=None):\n    conn = get_connection()\n    if params:\n        conn.execute(sql, params)\n    else:\n        conn.execute(sql)\n    conn.commit()\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in execute_read Function\n\n**Category:** SQLi\n\n**Location:** `database.py:26`\n\n**Attack Scenario:**\n1. Attacker sends malicious input through search, export, or admin query endpoints\n2. The raw SQL string is executed directly without validation or parameterization\n3. Attacker can extract any data from the database using UNION-based injection\n4. Example: Search query `' UNION SELECT password_hash,email,name,id,created_at FROM users--` exfiltrates all password hashes\n\n**Blast Radius:**\nThis SQL injection sink is called by:\n- `admin_api.py::register_admin_routes` (direct caller for raw query execution)\n- `user_service.py::UserService.search_users` (direct caller)\n- `user_service.py::UserService.export_users` (direct caller)\n- All routes in `routes.py` that invoke these service methods\n\n**Fix:**\n```python\n# Before:\ndef execute_read(sql):\n    conn = get_connection()\n    cursor = conn.execute(sql)\n    return cursor.fetchall()\n\n# After:\ndef execute_read(sql, params=None):\n    conn = get_connection()\n    if params:\n        cursor = conn.execute(sql, params)\n    else:\n        cursor = conn.execute(sql)\n    return cursor.fetchall()\n```\n\n---\n\n## [SEVERITY: CRITICAL] Unauthenticated Admin SQL Injection Endpoint\n\n**Category:** Auth Bypass / SQLi\n\n**Location:** `admin_api.py:10`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/admin/run-query` with no authentication headers\n2. The endpoint has NO `@require_auth` decorator despite being an \"admin\" route\n3. Attacker provides arbitrary SQL in the request body\n4. Query executes directly via `execute_read()` with full database access\n5. Example payload: `{\"query\": \"SELECT * FROM users WHERE role='admin'\"}`\n\n**Blast Radius:**\nThis endpoint is registered in `admin_api.py::register_admin_routes`, which can be imported by any Flask application file. Once registered, it's publicly accessible.\n\n**Fix:**\n```python\n# Before:\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\ndef run_raw_query():\n    data = request.get_json()\n    sql = data.get(\"query\", \"\")\n    rows = execute_read(sql)\n    return jsonify({\"results\": [list(r) for r in rows]})\n\n# After:\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n@require_auth\ndef run_raw_query():\n    from auth import get_current_user\n    current_user = get_current_user()\n    if current_user.get(\"role\") != \"admin\":\n        abort(403)\n    \n    # Still need to remove this endpoint entirely or use strict query allowlisting\n    abort(501, \"Raw query execution disabled for security\")\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in delete_user Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:20`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/delete-user/<malicious_id>` with no auth (endpoint lacks `@require_auth`)\n2. The `user_id` parameter is interpolated directly into SQL: `f\"DELETE FROM users WHERE id = '{user_id}'\"`\n3. Attacker can inject SQL to delete arbitrary records or execute additional commands\n4. Example: `/api/admin/delete-user/1' OR '1'='1` deletes all users\n\n**Blast Radius:**\nThis vulnerability exists in `admin_api.py::register_admin_routes`, exposing the entire users table to deletion through `database.py::execute_query`.\n\n**Fix:**\n```python\n# Before:\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\ndef delete_user(user_id):\n    execute_query(f\"DELETE FROM users WHERE id = '{user_id}'\")\n    return jsonify({\"deleted\": user_id})\n\n# After:\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\n@require_auth\ndef delete_user(user_id):\n    from auth import get_current_user\n    current_user = get_current_user()\n    if current_user.get(\"role\") != \"admin\":\n        abort(403)\n    \n    conn = get_connection()\n    conn.execute(\"DELETE FROM users WHERE id = ?\", (user_id,))\n    conn.commit()\n    return jsonify({\"deleted\": user_id})\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in impersonate_user Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:30`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/impersonate/<user_id>` with no authentication\n2. The `user_id` is interpolated into SQL: `f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"`\n3. Attacker injects SQL to create sessions for any user or execute arbitrary commands\n4. Example: `user_id = \"admin'); INSERT INTO users (id, role) VALUES ('backdoor', 'admin'--\"` creates admin account\n\n**Blast Radius:**\nThis endpoint in `admin_api.py::register_admin_routes` forwards unsanitized input to `database.py::execute_query`, creating sessions without validation or expiry.\n\n**Fix:**\n```python\n# Before:\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\ndef impersonate_user(user_id):\n    import secrets\n    token = secrets.token_hex(32)\n    execute_query(\n        f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n    )\n    return jsonify({\"token\": token, \"user_id\": user_id})\n\n# After:\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\n@require_auth\ndef impersonate_user(user_id):\n    from auth import get_current_user\n    current_user = get_current_user()\n    if current_user.get(\"role\") != \"admin\":\n        abort(403)\n    \n    import secrets\n    token = secrets.token_hex(32)\n    conn = get_connection()\n    conn.execute(\n        \"INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, datetime('now'), datetime('now', '+1 hour'))\",\n        (token, user_id)\n    )\n    conn.commit()\n    # Add audit logging here\n    return jsonify({\"token\": token, \"user_id\": user_id})\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_search_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:6`\n\n**Attack Scenario:**\n1. Attacker calls `/api/users/search?q=<payload>&role=<payload>`\n2. Both `search_term` and `role_filter` are interpolated directly into SQL using f-strings\n3. Attacker can extract data, modify queries, or cause denial of service\n4. Example: `q=' OR 1=1 UNION SELECT password_hash,email,name,role,id FROM users--` exfiltrates passwords\n\n**Blast Radius:**\nCalled by `user_service.py::UserService.search_users`, which is invoked by `routes.py` search endpoint. All authenticated users can exploit this.\n\n**Fix:**\n```python\n# Before:\ndef build_search_query(search_term, role_filter=None):\n    sql = f\"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%{search_term}%' OR email LIKE '%{search_term}%')\"\n    if role_filter:\n        sql += f\" AND role = '{role_filter}'\"\n    sql += \" ORDER BY name ASC LIMIT 50\"\n    return sql\n\n# After:\ndef build_search_query(search_term, role_filter=None):\n    sql = \"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE ? OR email LIKE ?)\"\n    params = [f\"%{search_term}%\", f\"%{search_term}%\"]\n    \n    if role_filter:\n        sql += \" AND role = ?\"\n        params.append(role_filter)\n    \n    sql += \" ORDER BY name ASC LIMIT 50\"\n    return sql, params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_update_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:19`\n\n**Attack Scenario:**\n1. Attacker calls `/api/users/<user_id>/profile` with malicious JSON body\n2. All field values are interpolated directly into SQL: `f\"{key} = '{value}'\"`\n3. Attacker can inject SQL in any profile field (name, email, bio, website, location)\n4. Example: `{\"bio\": \"x', role='admin' WHERE id='victim_id'--\"}` escalates privileges\n\n**Blast Radius:**\nCalled by `user_service.py::UserService.update_user_profile`, which is invoked by `routes.py` profile update endpoint through the `execute_query` sink.\n\n**Fix:**\n```python\n# Before:\ndef build_update_query(user_id, data):\n    set_clauses = []\n    for key, value in data.items():\n        set_clauses.append(f\"{key} = '{value}'\")\n    clause_str = \", \".join(set_clauses)\n    return f\"UPDATE users SET {clause_str} WHERE id = '{user_id}'\"\n\n# After:\ndef build_update_query(user_id, data):\n    set_clauses = []\n    params = []\n    for key, value in data.items():\n        set_clauses.append(f\"{key} = ?\")\n        params.append(value)\n    \n    clause_str = \", \".join(set_clauses)\n    params.append(user_id)\n    return f\"UPDATE users SET {clause_str} WHERE id = ?\", params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_export_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:41`\n\n**Attack Scenario:**\n1. Attacker calls `/api/users/export` with malicious JSON: `{\"sort_by\": \"<payload>\", \"role\": \"<payload>\", \"created_after\": \"<payload>\"}`\n2. The `sort_field` and filter values are interpolated directly into SQL\n3. Attacker controls the ORDER BY clause and WHERE conditions completely\n4. Example: `{\"sort_by\": \"id; DELETE FROM users--\"}` deletes all users\n\n**Blast Radius:**\nCalled by `user_service.py::UserService.export_users`, which is invoked by `routes.py` export endpoint and flows to `database.py::execute_read`.\n\n**Fix:**\n```python\n# Before:\ndef build_export_query(sort_field, filters):\n    sql = \"SELECT id, name, email, role, created_at FROM users\"\n    conditions = []\n    if filters.get(\"role\"):\n        conditions.append(f\"role = '{filters['role']}'\")\n    if filters.get(\"created_after\"):\n        conditions.append(f\"created_at > '{filters['created_after']}'\")\n    if conditions:\n        sql += \" WHERE \" + \" AND \".join(conditions)\n    sql += f\" ORDER BY {sort_field}\"\n    return sql\n\n# After:\ndef build_export_query(sort_field, filters):\n    allowed_sorts = {\"id\", \"name\", \"email\", \"role\", \"created_at\"}\n    if sort_field not in allowed_sorts:\n        sort_field = \"created_at\"\n    \n    sql = \"SELECT id, name, email, role, created_at FROM users\"\n    conditions = []\n    params = []\n    \n    if filters.get(\"role\"):\n        conditions.append(\"role = ?\")\n        params.append(filters[\"role\"])\n    if filters.get(\"created_after\"):\n        conditions.append(\"created_at > ?\")\n        params.append(filters[\"created_after\"])\n    \n    if conditions:\n        sql += \" WHERE \" + \" AND \".join(conditions)\n    sql += f\" ORDER BY {sort_field}\"\n    return sql, params\n```\n\n---\n\n## [SEVERITY: HIGH] Authentication Bypass in require_auth\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker creates or steals ANY valid token (even expired or revoked ones)\n2. The `require_auth` decorator only checks if `token in VALID_TOKENS`\n3. No validation of token expiry, scope, audience, or revocation status\n4. Once a token is in the dict, it remains valid forever\n5. Attacker can reuse old tokens, stolen tokens, or tokens from other contexts indefinitely\n\n**Blast Radius:**\nThis deficient auth check protects all endpoints in `routes.py` that use `@require_auth`, including:\n- `/api/users/search`\n- `/api/users/<user_id>/profile`\n- `/api/users/export`\n\nThe downstream impact reaches `user_service.py` functions that assume authenticated users are properly validated.\n\n**Fix:**\n```python\n# Before:\ndef require_auth(f):\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:\n            abort(401)\n        if token not in VALID_TOKENS:\n            abort(401)\n        return f(*args, **kwargs)\n    return decorated\n\n# After:\ndef require_auth(f):\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:\n            abort(401)\n        \n        token_data = VALID_TOKENS.get(token)\n        if not token_data:\n            abort(401)\n        \n        # Check expiry\n        import datetime\n        if token_data.get(\"expires_at\") and datetime.datetime.now() > token_data[\"expires_at\"]:\n            abort(401)\n        \n        # Check revocation\n        if token_data.get(\"revoked\"):\n            abort(401)\n        \n        # Check scope/audience if applicable\n        required_scope = getattr(f, 'required_scope', None)\n        if required_scope and required_scope not in token_data.get(\"scopes\", []):\n            abort(403)\n        \n        return f(*args, **kwargs)\n    return decorated\n```\n\n---\n\n## [SEVERITY: HIGH] Authorization Bypass in check_permission\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:37`\n\n**Attack Scenario:**\n1. Attacker calls `/api/users/<victim_id>/profile` to modify another user's profile\n2. The `check_permission()` function attempts to check if `user.get(\"user_id\") == resource_owner_id`\n3. Due to type mismatch (string vs int"
+    },
+    {
+      "metrics": {
+        "precision": 1.0,
+        "recall": 0.6667,
+        "f1": 0.8,
+        "precision_pct": 100,
+        "recall_pct": 67,
+        "f1_pct": 80
+      },
+      "counts": {
+        "tp": 8,
+        "fp": 0,
+        "fn": 4,
+        "total_findings": 8
+      },
+      "matched_ids": [
+        "auth-bypass-token",
+        "sqli-admin-delete",
+        "sqli-admin-impersonate",
+        "sqli-admin-run",
+        "sqli-execute",
+        "sqli-export",
+        "sqli-search",
+        "sqli-update"
+      ],
+      "missed_ids": [
+        "auth-bypass-permission",
+        "auth-ignored-return",
+        "sqli-export-service",
+        "weak-hash"
+      ],
+      "provisional_matched_ids": [],
+      "category_mismatches": [],
+      "scan_time_seconds": 76.0,
+      "findings": [
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in Database Execution Layer",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 18
+            },
+            {
+              "file": "database.py",
+              "line": 26
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in Database Execution Layer\n\n**Category:** SQLi\n\n**Location:** `database.py:18` and `database.py:26`\n\n**Attack Scenario:**\n1. Attacker sends any request to endpoints that build dynamic SQL (search, update, export, admin routes)\n2. Malicious input flows through query builders without sanitization\n3. Raw SQL string reaches `execute_query()` or `execute_read()` \n4. SQLite executes attacker-controlled commands directly via `conn.execute(sql)`\n5. Attacker extract"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in User Search",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 7
+            },
+            {
+              "file": "query_builder.py",
+              "line": 4
+            },
+            {
+              "file": "user_service.py",
+              "line": 12
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in User Search\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:7`\n\n**Attack Scenario:**\n1. Attacker navigates to `/api/users/search?q=' UNION SELECT password_hash,name,email,role,created_at FROM users--`\n2. `build_search_query()` interpolates payload directly into LIKE clause\n3. SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%' UNION SELECT password_hash,name,email,role,created_at FROM users--%'...)`\n4. Returns all p"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in Profile Update",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 19
+            },
+            {
+              "file": "query_builder.py",
+              "line": 16
+            },
+            {
+              "file": "user_service.py",
+              "line": 24
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in Profile Update\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:19`\n\n**Attack Scenario:**\n1. Attacker sends `PUT /api/users/victim123/profile` with body:\n```json\n{\"bio\": \"x', role='admin' WHERE id='attacker123'; UPDATE users SET role='admin\"}\n```\n2. `build_update_query()` constructs: `UPDATE users SET bio = 'x', role='admin' WHERE id='attacker123'; UPDATE users SET role='admin' WHERE id = 'victim123'`\n3. Multi-statement execution grants attacker admin"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in Export (ORDER BY Injection)",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 40
+            },
+            {
+              "file": "query_builder.py",
+              "line": 27
+            },
+            {
+              "file": "user_service.py",
+              "line": 31
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in Export (ORDER BY Injection)\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:40`\n\n**Attack Scenario:**\n1. Attacker sends `POST /api/users/export` with:\n```json\n{\"sort_by\": \"created_at; DROP TABLE users; --\", \"role\": \"admin\"}\n```\n2. `build_export_query()` injects payload into ORDER BY: `SELECT ... ORDER BY created_at; DROP TABLE users; --`\n3. SQLite executes both statements, destroying the users table\n4. Complete data loss\n\n**Blast Radius:**\nComputed b"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Unauthenticated Admin SQL Execution",
+          "category": "Auth Bypass / SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 9
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Unauthenticated Admin SQL Execution\n\n**Category:** Auth Bypass / SQLi\n\n**Location:** `admin_api.py:9`\n\n**Attack Scenario:**\n1. Attacker sends `POST /api/admin/run-query` with NO authentication header\n2. Route has NO `@require_auth` decorator despite comment saying \"admin only\"\n3. Attacker provides arbitrary SQL: `{\"query\": \"SELECT * FROM users WHERE role='admin'\"}`\n4. `execute_read()` executes it directly\n5. Attacker extracts admin credentials, password hashes, session to"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in Admin User Deletion",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 21
+            },
+            {
+              "file": "admin_api.py",
+              "line": 19
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in Admin User Deletion\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:21`\n\n**Attack Scenario:**\n1. Attacker calls `DELETE /api/admin/delete-user/' OR '1'='1`\n2. No authentication check on route\n3. SQL becomes: `DELETE FROM users WHERE id = '' OR '1'='1'`\n4. Deletes ALL users in database\n5. Complete service outage\n\n**Blast Radius:**\nFrom computed data: **6 nodes** reach `execute_query`:\n- `admin_api.py::register_admin_routes` (contains this function)\n- `adm"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in User Impersonation",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 31
+            },
+            {
+              "file": "admin_api.py",
+              "line": 25
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in User Impersonation\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `POST /api/admin/impersonate/' OR role='admin'; --`\n2. No authentication required (missing decorator)\n3. SQL becomes: `INSERT INTO sessions (token, user_id, created_at) VALUES ('abc123', '' OR role='admin'; --', datetime('now'))`\n4. Creates session token for first admin user\n5. Attacker uses token to access admin account\n\nAlternative: `user_id='"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authentication Bypass via Missing Token Validation",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 11
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authentication Bypass via Missing Token Validation\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker generates any token and adds to VALID_TOKENS dict (via app restart or memory injection)\n2. Or attacker steals expired token from logs/network capture\n3. `require_auth` only checks `if token not in VALID_TOKENS` \u2014 never validates:\n   - Token expiration\n   - Token scope/audience\n   - Token revocation status\n   - User session still active\n4."
+        }
+      ],
+      "raw_output": "\ud83e\uddec Building pre/post commit graph snapshots...\n\n\u2728 Graph diff surfaced 17 activated node(s) \u2014 feeding into the addition scan as extra targets.\n\n\ud83e\udd16 Detecting AI-generated code...\n\n**Found 2 file(s) likely AI-generated:**\n\n- `database.py` \u2014 60% AI-generated confidence (bulk_addition, boilerplate_density, complete_functions)\n  - bulk_addition: +50/-1 lines (ratio 50.0:1)\n  - boilerplate_density: 56% boilerplate (25 docstring, 1 comment, 0 try/except lines)\n  - complete_functions: 4 complete function defs in 54 lines\n- `user_service.py` \u2014 51% AI-generated confidence (boilerplate_density, complete_functions, missing_edge_cases)\n  - boilerplate_density: 61% boilerplate (23 docstring, 1 comment, 0 try/except lines)\n  - complete_functions: 5 complete function defs in 47 lines\n  - missing_edge_cases: 0 defensive checks for 5 risky operations (ratio 0.00)\n\n\ud83d\udd0d Triaging changed files with Haiku...\n\nTriage complete.\n\n Blast Radius \u2014 1 nodes can reach register_admin_routes:\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/admin_api.py  (direct caller)\n\n Blast Radius \u2014 3 nodes can reach require_auth:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 3 nodes can reach get_current_user:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 3 nodes can reach hash_password:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 4 nodes can reach check_permission:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 11 nodes can reach get_connection:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/database.py::execute_query  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/database.py::execute_read  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/database.py::init_db  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/admin_api.py::register_admin_routes  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.update_user_profile  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.search_users  (depth 2)\n  \u2514\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.export_users  (depth 2)\n  \u2514\u2500\u2500 ... 1 more\n\n Blast Radius \u2014 6 nodes can reach execute_query:\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/admin_api.py::register_admin_routes  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 7 nodes can reach execute_read:\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/admin_api.py::register_admin_routes  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach init_db:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_search_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_update_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_export_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 2 nodes can reach UserService.search_users:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 2 nodes can reach UserService.update_user_profile:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 2 nodes can reach UserService.export_users:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 4 nodes can reach UserService._format_user:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp6nribho8/eval_repo/routes.py  (depth 2)\n\n\ud83d\udd2c Scanning with Sonnet...\n\n# Security Analysis Report\n\n## [SEVERITY: CRITICAL] SQL Injection in Database Execution Layer\n\n**Category:** SQLi\n\n**Location:** `database.py:18` and `database.py:26`\n\n**Attack Scenario:**\n1. Attacker sends any request to endpoints that build dynamic SQL (search, update, export, admin routes)\n2. Malicious input flows through query builders without sanitization\n3. Raw SQL string reaches `execute_query()` or `execute_read()` \n4. SQLite executes attacker-controlled commands directly via `conn.execute(sql)`\n5. Attacker extracts all user data, escalates privileges, or drops tables\n\nExample payload to `/api/users/search?q=' OR '1'='1`:\n```sql\nSELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%' OR '1'='1%' OR email LIKE '%' OR '1'='1%')\n```\nReturns all users regardless of search term.\n\n**Blast Radius:**\nThe computed blast radius shows **11 nodes** can reach `execute_query` and `execute_read`. These foundational sinks affect:\n- `admin_api.py` (register_admin_routes and all 3 admin endpoints)\n- `user_service.py` (UserService.update_user_profile, search_users, export_users)\n- `routes.py` (all 3 user API endpoints)\n- `database.py` itself (init_db)\n\nEvery function that calls these sinks inherits the SQLi vulnerability. This is the root cause enabling all downstream injection chains.\n\n**Fix:**\n```python\n# BEFORE (database.py:18-22)\ndef execute_query(sql):\n    conn = get_connection()\n    conn.execute(sql)\n    conn.commit()\n\n# AFTER\ndef execute_query(sql, params=None):\n    conn = get_connection()\n    conn.execute(sql, params or ())\n    conn.commit()\n\n# BEFORE (database.py:26-29)\ndef execute_read(sql):\n    conn = get_connection()\n    cursor = conn.execute(sql)\n    return cursor.fetchall()\n\n# AFTER\ndef execute_read(sql, params=None):\n    conn = get_connection()\n    cursor = conn.execute(sql, params or ())\n    return cursor.fetchall()\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in User Search\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:7`\n\n**Attack Scenario:**\n1. Attacker navigates to `/api/users/search?q=' UNION SELECT password_hash,name,email,role,created_at FROM users--`\n2. `build_search_query()` interpolates payload directly into LIKE clause\n3. SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%' UNION SELECT password_hash,name,email,role,created_at FROM users--%'...)`\n4. Returns all password hashes in the `id` field\n5. Attacker cracks MD5 hashes offline (hash_password uses MD5)\n\n**Blast Radius:**\nFrom computed data: **4 nodes** reach this vulnerability:\n- `query_builder.py` itself\n- `user_service.py::UserService.search_users` (direct caller)\n- `user_service.py` (file)\n- `routes.py` (indirect via search_users endpoint)\n\n**Fix:**\n```python\n# BEFORE (query_builder.py:4-12)\ndef build_search_query(search_term, role_filter=None):\n    sql = f\"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%{search_term}%' OR email LIKE '%{search_term}%')\"\n    if role_filter:\n        sql += f\" AND role = '{role_filter}'\"\n    sql += \" ORDER BY name ASC LIMIT 50\"\n    return sql\n\n# AFTER\ndef build_search_query(search_term, role_filter=None):\n    sql = \"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE ? OR email LIKE ?)\"\n    params = [f'%{search_term}%', f'%{search_term}%']\n    \n    if role_filter:\n        sql += \" AND role = ?\"\n        params.append(role_filter)\n    \n    sql += \" ORDER BY name ASC LIMIT 50\"\n    return sql, params\n```\n\nThen update caller in `user_service.py:12`:\n```python\nsql, params = build_search_query(query, role_filter)\nrows = execute_read(sql, params)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Profile Update\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:19`\n\n**Attack Scenario:**\n1. Attacker sends `PUT /api/users/victim123/profile` with body:\n```json\n{\"bio\": \"x', role='admin' WHERE id='attacker123'; UPDATE users SET role='admin\"}\n```\n2. `build_update_query()` constructs: `UPDATE users SET bio = 'x', role='admin' WHERE id='attacker123'; UPDATE users SET role='admin' WHERE id = 'victim123'`\n3. Multi-statement execution grants attacker admin privileges\n4. Attacker now has full system access\n\n**Blast Radius:**\nComputed blast radius shows **4 nodes**:\n- `query_builder.py` (function location)\n- `user_service.py::UserService.update_user_profile` (direct caller)\n- `user_service.py` (file)\n- `routes.py` (exposed via /api/users/<user_id>/profile endpoint)\n\n**Fix:**\n```python\n# BEFORE (query_builder.py:16-23)\ndef build_update_query(user_id, data):\n    set_clauses = []\n    for key, value in data.items():\n        set_clauses.append(f\"{key} = '{value}'\")\n    clause_str = \", \".join(set_clauses)\n    return f\"UPDATE users SET {clause_str} WHERE id = '{user_id}'\"\n\n# AFTER\ndef build_update_query(user_id, data):\n    set_clauses = []\n    params = []\n    \n    for key, value in data.items():\n        set_clauses.append(f\"{key} = ?\")\n        params.append(value)\n    \n    clause_str = \", \".join(set_clauses)\n    params.append(user_id)\n    return f\"UPDATE users SET {clause_str} WHERE id = ?\", params\n```\n\nUpdate caller in `user_service.py:24`:\n```python\nsql, params = build_update_query(user_id, clean_data)\nexecute_query(sql, params)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Export (ORDER BY Injection)\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:40`\n\n**Attack Scenario:**\n1. Attacker sends `POST /api/users/export` with:\n```json\n{\"sort_by\": \"created_at; DROP TABLE users; --\", \"role\": \"admin\"}\n```\n2. `build_export_query()` injects payload into ORDER BY: `SELECT ... ORDER BY created_at; DROP TABLE users; --`\n3. SQLite executes both statements, destroying the users table\n4. Complete data loss\n\n**Blast Radius:**\nComputed blast radius: **4 nodes**:\n- `query_builder.py` (function)\n- `user_service.py::UserService.export_users` (direct caller)\n- `user_service.py` (file)\n- `routes.py` (via /api/users/export endpoint)\n\n**Fix:**\n```python\n# BEFORE (query_builder.py:27-41)\ndef build_export_query(sort_field, filters):\n    sql = \"SELECT id, name, email, role, created_at FROM users\"\n    conditions = []\n    if filters.get(\"role\"):\n        conditions.append(f\"role = '{filters['role']}'\")\n    if filters.get(\"created_after\"):\n        conditions.append(f\"created_at > '{filters['created_after']}'\")\n    if conditions:\n        sql += \" WHERE \" + \" AND \".join(conditions)\n    sql += f\" ORDER BY {sort_field}\"\n    return sql\n\n# AFTER\ndef build_export_query(sort_field, filters):\n    # Whitelist allowed sort fields\n    ALLOWED_SORT = {\"id\", \"name\", \"email\", \"role\", \"created_at\"}\n    if sort_field not in ALLOWED_SORT:\n        sort_field = \"created_at\"\n    \n    sql = \"SELECT id, name, email, role, created_at FROM users\"\n    conditions = []\n    params = []\n    \n    if filters.get(\"role\"):\n        conditions.append(\"role = ?\")\n        params.append(filters['role'])\n    if filters.get(\"created_after\"):\n        conditions.append(\"created_at > ?\")\n        params.append(filters['created_after'])\n    \n    if conditions:\n        sql += \" WHERE \" + \" AND \".join(conditions)\n    \n    sql += f\" ORDER BY {sort_field}\"  # Safe after whitelist validation\n    return sql, params\n```\n\nUpdate `user_service.py:31`:\n```python\nsql, params = build_export_query(sort_field, filters)\nrows = execute_read(sql, params)\n```\n\n---\n\n## [SEVERITY: CRITICAL] Unauthenticated Admin SQL Execution\n\n**Category:** Auth Bypass / SQLi\n\n**Location:** `admin_api.py:9`\n\n**Attack Scenario:**\n1. Attacker sends `POST /api/admin/run-query` with NO authentication header\n2. Route has NO `@require_auth` decorator despite comment saying \"admin only\"\n3. Attacker provides arbitrary SQL: `{\"query\": \"SELECT * FROM users WHERE role='admin'\"}`\n4. `execute_read()` executes it directly\n5. Attacker extracts admin credentials, password hashes, session tokens, or drops tables\n\n**Blast Radius:**\nComputed blast radius: **1 node** (admin_api.py file). This endpoint is a standalone attack surface requiring no upstream calls \u2014 it's directly exposed to unauthenticated internet traffic.\n\n**Fix:**\n```python\n# BEFORE (admin_api.py:9-16)\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    data = request.get_json()\n    sql = data.get(\"query\", \"\")\n    rows = execute_read(sql)\n    return jsonify({\"results\": [list(r) for r in rows]})\n\n# AFTER\nfrom auth import require_auth\n\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n@require_auth  # Add authentication\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    current_user = get_current_user()\n    if current_user.get(\"role\") != \"admin\":\n        abort(403)\n    \n    # Still has SQLi - recommend removing this endpoint entirely\n    # If kept, use parameterized queries and strict validation\n    abort(501, \"Raw query execution disabled for security\")\n```\n\n**Better fix:** Delete this endpoint entirely. Raw SQL execution should never be exposed via API.\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Admin User Deletion\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:21`\n\n**Attack Scenario:**\n1. Attacker calls `DELETE /api/admin/delete-user/' OR '1'='1`\n2. No authentication check on route\n3. SQL becomes: `DELETE FROM users WHERE id = '' OR '1'='1'`\n4. Deletes ALL users in database\n5. Complete service outage\n\n**Blast Radius:**\nFrom computed data: **6 nodes** reach `execute_query`:\n- `admin_api.py::register_admin_routes` (contains this function)\n- `admin_api.py` (file)\n- `user_service.py::UserService.update_user_profile` (separate caller)\n- `user_service.py` (file)\n- `routes.py` (indirect)\n- `database.py` (the sink itself)\n\n**Fix:**\n```python\n# BEFORE (admin_api.py:19-22)\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    execute_query(f\"DELETE FROM users WHERE id = '{user_id}'\")\n    return jsonify({\"deleted\": user_id})\n\n# AFTER\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\n@require_auth\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    current_user = get_current_user()\n    if current_user.get(\"role\") != \"admin\":\n        abort(403)\n    \n    execute_query(\"DELETE FROM users WHERE id = ?\", (user_id,))\n    return jsonify({\"deleted\": user_id})\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in User Impersonation\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `POST /api/admin/impersonate/' OR role='admin'; --`\n2. No authentication required (missing decorator)\n3. SQL becomes: `INSERT INTO sessions (token, user_id, created_at) VALUES ('abc123', '' OR role='admin'; --', datetime('now'))`\n4. Creates session token for first admin user\n5. Attacker uses token to access admin account\n\nAlternative: `user_id=' UNION SELECT id FROM users WHERE role='admin' LIMIT 1; --` to target specific admin.\n\n**Blast Radius:**\nSame as delete_user \u2014 **6 nodes** via `execute_query` sink.\n\n**Fix:**\n```python\n# BEFORE (admin_api.py:25-33)\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    import secrets\n    token = secrets.token_hex(32)\n    execute_query(\n        f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n    )\n    return jsonify({\"token\": token, \"user_id\": user_id})\n\n# AFTER\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\n@require_auth\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    current_user = get_current_user()\n    if current_user.get(\"role\") != \"admin\":\n        abort(403)\n    \n    import secrets\n    token = secrets.token_hex(32)\n    execute_query(\n        \"INSERT INTO sessions (token, user_id, created_at, impersonator_id) VALUES (?, ?, datetime('now'), ?)\",\n        (token, user_id, current_user.get(\"user_id\"))\n    )\n    # Log this action for audit trail\n    return jsonify({\"token\": token, \"user_id\": user_id})\n```\n\n---\n\n## [SEVERITY: HIGH] Authentication Bypass via Missing Token Validation\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker generates any token and adds to VALID_TOKENS dict (via app restart or memory injection)\n2. Or attacker steals expired token from logs/network capture\n3. `require_auth` only checks `if token not in VALID_TOKENS` \u2014 never validates:\n   - Token expiration\n   - Token scope/audience\n   - Token revocation status\n   - User session still active\n4. Attacker uses old/stolen token indefinitely\n5. No logout effectively works\n\n**Blast Radius:**\nComputed blast radius: **3 nodes**:\n- `auth.py` (decorator definition)\n- `routes.py` (applies decorator to search_users, update_profile, export_users)\n- `user_service.py` (called by decorated routes)\n\nAll protected endpoints inherit this bypass vulnerability.\n\n**Fix:**\n```python\n# BEFORE (auth.py:11-21)\ndef require_auth(f):\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:"
+    },
+    {
+      "metrics": {
+        "precision": 0.8,
+        "recall": 0.6667,
+        "f1": 0.7273,
+        "precision_pct": 80,
+        "recall_pct": 67,
+        "f1_pct": 73
+      },
+      "counts": {
+        "tp": 8,
+        "fp": 2,
+        "fn": 4,
+        "total_findings": 11
+      },
+      "matched_ids": [
+        "sqli-admin-delete",
+        "sqli-admin-impersonate",
+        "sqli-admin-run",
+        "sqli-execute",
+        "sqli-export",
+        "sqli-export-service",
+        "sqli-search",
+        "sqli-update"
+      ],
+      "missed_ids": [
+        "auth-bypass-permission",
+        "auth-bypass-token",
+        "auth-ignored-return",
+        "weak-hash"
+      ],
+      "provisional_matched_ids": [
+        "sqli-search-service"
+      ],
+      "category_mismatches": [
+        {
+          "finding_index": 9,
+          "finding_title": "SQL Injection via Unsanitized Forwarding in update_user_profile",
+          "finding_category": "SQLi",
+          "truth_id": "auth-ignored-return",
+          "truth_category": "Auth Bypass"
+        }
+      ],
+      "scan_time_seconds": 65.6,
+      "findings": [
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in execute_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 18
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in execute_query\n\n**Category:** SQLi\n\n**Location:** `database.py:18`\n\n**Attack Scenario:**\n1. Attacker calls any endpoint that invokes `execute_query` with unsanitized input\n2. Malicious SQL is constructed in query builders and passed directly to `conn.execute(sql)`\n3. Example: `DELETE FROM users WHERE id = '1' OR '1'='1'` would delete all users\n4. Attacker gains full database write access (INSERT, UPDATE, DELETE)\n\n**Blast Radius:**\nThis is a foundational SQ"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in execute_read",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 26
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in execute_read\n\n**Category:** SQLi\n\n**Location:** `database.py:26`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/run-query` or search/export endpoints\n2. Malicious SQL bypasses application logic: `' UNION SELECT password_hash FROM users --`\n3. Attacker extracts all user credentials, session tokens, or other sensitive data\n4. Full read access to entire database achieved\n\n**Blast Radius:**\nThis is a foundational SQL injection sink used by:\n- `admin_api."
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Unauthenticated SQL Injection in Admin Endpoint",
+          "category": "Auth Bypass / SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 10
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Unauthenticated SQL Injection in Admin Endpoint\n\n**Category:** Auth Bypass / SQLi\n\n**Location:** `admin_api.py:10`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/api/admin/run-query` with NO authentication header\n2. Payload: `{\"query\": \"SELECT password_hash FROM users\"}`\n3. System executes arbitrary SQL as admin with zero authentication\n4. Complete database compromise (read/write/delete) via single unauthenticated endpoint\n\n**Blast Radius:**\nDirect exposure in `admin_a"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in delete_user Endpoint",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 21
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in delete_user Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:21`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/delete-user/1' OR '1'='1`\n2. SQL becomes: `DELETE FROM users WHERE id = '1' OR '1'='1'`\n3. All users deleted from database\n4. System-wide denial of service and data loss\n\n**Blast Radius:**\nDirect vulnerability in `admin_api.py::register_admin_routes`. Forwards unsanitized `user_id` URL parameter directly to the `execute_query` SQL "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in impersonate_user Endpoint",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 31
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in impersonate_user Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/impersonate/1', 'admin', datetime('now')); DROP TABLE users; --`\n2. SQL injection in INSERT statement creates session AND drops tables\n3. Complete database destruction possible\n4. Attacker can also inject arbitrary user_id to create admin sessions\n\n**Blast Radius:**\nDirect vulnerability in `admin_api.py::register_admin_routes`"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_search_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 6
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_search_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:6`\n\n**Attack Scenario:**\n1. Attacker sends GET to `/api/users/search?q=%' OR '1'='1' UNION SELECT password_hash,email,id,role,created_at FROM users --`\n2. SQL becomes: `SELECT ... WHERE (name LIKE '%%' OR '1'='1' UNION ...%')`\n3. Attacker extracts all password hashes via UNION injection\n4. Offline cracking yields plaintext passwords (MD5 is trivially breakable)\n\n**Blast Radius:**\nBuil"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_update_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 19
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_update_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:19`\n\n**Attack Scenario:**\n1. Attacker sends PUT to `/api/users/<user_id>/profile` with payload:\n   ```json\n   {\"bio\": \"test', role='admin' WHERE '1'='1' --\"}\n   ```\n2. SQL becomes: `UPDATE users SET bio = 'test', role='admin' WHERE '1'='1' --' WHERE id = '...'`\n3. Attacker escalates to admin role on all accounts\n4. Or exfiltrates data: `{\"bio\": \"x' WHERE id IN (SELECT password_hash FR"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_export_query via ORDER BY",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 40
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_export_query via ORDER BY\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:40`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/api/users/export` with:\n   ```json\n   {\"sort_by\": \"(SELECT CASE WHEN (SELECT password_hash FROM users LIMIT 1) LIKE 'a%' THEN created_at ELSE name END)\"}\n   ```\n2. Boolean-based blind SQL injection extracts data character-by-character\n3. Or time-based: `\"sort_by\": \"CASE WHEN 1=1 THEN (SELECT sleep(5)) ELSE name END\"`\n4"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized Forwarding in search_users",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 11
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Forwarding in search_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:11`\n\n**Attack Scenario:**\n1. User-controlled `query` parameter from routes.py passed to build_search_query\n2. build_search_query performs f-string interpolation (SQLi sink)\n3. Malicious query executes: `/api/users/search?q=%' UNION SELECT 1,2,password_hash,4,5 FROM users --`\n4. Password hashes leaked to all authenticated users\n\n**Blast Radius:**\nCalled from `routes"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized Forwarding in update_user_profile",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 23
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Forwarding in update_user_profile\n\n**Category:** SQLi\n\n**Location:** `user_service.py:23`\n\n**Attack Scenario:**\n1. User sends profile update with malicious bio: `{\"bio\": \"x', role='admin'--\"}`\n2. Data forwarded to build_update_query which concatenates without escaping\n3. SQL: `UPDATE users SET bio = 'x', role='admin'--' WHERE id = '...'`\n4. User escalates to admin, bypassing all authorization\n\n**Blast Radius:**\nCalled from `routes.py` update_"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized Forwarding in export_users",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 30
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Forwarding in export_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:30`\n\n**Attack Scenario:**\n1. User controls sort_field: POST `/api/users/export` with `{\"sort_by\": \"name; DROP TABLE users--\"}`\n2. Forwarded directly to build_export_query which injects into ORDER BY\n3. Depending on SQLite version, stacked queries or boolean-blind injection succeeds\n4. Complete database compromise via exported data endpoint\n\n**Blast Radius:**\nCalled"
+        }
+      ],
+      "raw_output": "\ud83e\uddec Building pre/post commit graph snapshots...\n\n\u2728 Graph diff surfaced 17 activated node(s) \u2014 feeding into the addition scan as extra targets.\n\n\ud83e\udd16 Detecting AI-generated code...\n\n**Found 2 file(s) likely AI-generated:**\n\n- `database.py` \u2014 60% AI-generated confidence (bulk_addition, boilerplate_density, complete_functions)\n  - bulk_addition: +50/-1 lines (ratio 50.0:1)\n  - boilerplate_density: 56% boilerplate (25 docstring, 1 comment, 0 try/except lines)\n  - complete_functions: 4 complete function defs in 54 lines\n- `user_service.py` \u2014 51% AI-generated confidence (boilerplate_density, complete_functions, missing_edge_cases)\n  - boilerplate_density: 61% boilerplate (23 docstring, 1 comment, 0 try/except lines)\n  - complete_functions: 5 complete function defs in 47 lines\n  - missing_edge_cases: 0 defensive checks for 5 risky operations (ratio 0.00)\n\n\ud83d\udd0d Triaging changed files with Haiku...\n\nTriage complete.\n\n Blast Radius \u2014 1 nodes can reach register_admin_routes:\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/admin_api.py  (direct caller)\n\n Blast Radius \u2014 3 nodes can reach require_auth:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 3 nodes can reach get_current_user:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 3 nodes can reach hash_password:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 4 nodes can reach check_permission:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/auth.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n\n Blast Radius \u2014 11 nodes can reach get_connection:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/database.py::execute_query  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/database.py::execute_read  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/database.py::init_db  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/admin_api.py::register_admin_routes  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.update_user_profile  (depth 2)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.search_users  (depth 2)\n  \u2514\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.export_users  (depth 2)\n  \u2514\u2500\u2500 ... 1 more\n\n Blast Radius \u2014 6 nodes can reach execute_query:\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/admin_api.py::register_admin_routes  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 7 nodes can reach execute_read:\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/admin_api.py::register_admin_routes  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach init_db:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/database.py  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/admin_api.py  (depth 2)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_search_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_update_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.update_user_profile  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 4 nodes can reach build_export_query:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/query_builder.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (depth 2)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 3)\n\n Blast Radius \u2014 2 nodes can reach UserService.search_users:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 2 nodes can reach UserService.update_user_profile:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 2 nodes can reach UserService.export_users:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 2)\n\n Blast Radius \u2014 4 nodes can reach UserService._format_user:\n  \u251c\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.search_users  (direct caller)\n  \u251c\u2500\u2500 func:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/user_service.py::UserService.export_users  (direct caller)\n  \u2514\u2500\u2500 file:/var/folders/y3/byrg9r8s1q5bnr7ztt4y_xdr0000gn/T/tmp5fghpsfo/eval_repo/routes.py  (depth 2)\n\n\ud83d\udd2c Scanning with Sonnet...\n\n# Security Analysis Report\n\n## [SEVERITY: CRITICAL] SQL Injection in execute_query\n\n**Category:** SQLi\n\n**Location:** `database.py:18`\n\n**Attack Scenario:**\n1. Attacker calls any endpoint that invokes `execute_query` with unsanitized input\n2. Malicious SQL is constructed in query builders and passed directly to `conn.execute(sql)`\n3. Example: `DELETE FROM users WHERE id = '1' OR '1'='1'` would delete all users\n4. Attacker gains full database write access (INSERT, UPDATE, DELETE)\n\n**Blast Radius:**\nThis is a foundational SQL injection sink used by:\n- `admin_api.py::register_admin_routes` (delete_user, impersonate_user endpoints)\n- `user_service.py::UserService.update_user_profile` (forwarding unsanitized data from build_update_query)\n- All callers in `routes.py` that trigger these service methods\n\n**Fix:**\n```python\n# Before:\ndef execute_query(sql):\n    conn = get_connection()\n    conn.execute(sql)\n    conn.commit()\n\n# After:\ndef execute_query(sql, params=None):\n    conn = get_connection()\n    if params:\n        conn.execute(sql, params)\n    else:\n        conn.execute(sql)\n    conn.commit()\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in execute_read\n\n**Category:** SQLi\n\n**Location:** `database.py:26`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/run-query` or search/export endpoints\n2. Malicious SQL bypasses application logic: `' UNION SELECT password_hash FROM users --`\n3. Attacker extracts all user credentials, session tokens, or other sensitive data\n4. Full read access to entire database achieved\n\n**Blast Radius:**\nThis is a foundational SQL injection sink used by:\n- `admin_api.py::register_admin_routes` (run_raw_query endpoint with no auth)\n- `user_service.py::UserService.search_users` (forwarding unsanitized search_term from build_search_query)\n- `user_service.py::UserService.export_users` (forwarding unsanitized sort_field from build_export_query)\n- All callers in `routes.py` including search_users and export_users endpoints\n\n**Fix:**\n```python\n# Before:\ndef execute_read(sql):\n    conn = get_connection()\n    cursor = conn.execute(sql)\n    return cursor.fetchall()\n\n# After:\ndef execute_read(sql, params=None):\n    conn = get_connection()\n    if params:\n        cursor = conn.execute(sql, params)\n    else:\n        cursor = conn.execute(sql)\n    return cursor.fetchall()\n```\n\n---\n\n## [SEVERITY: CRITICAL] Unauthenticated SQL Injection in Admin Endpoint\n\n**Category:** Auth Bypass / SQLi\n\n**Location:** `admin_api.py:10`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/api/admin/run-query` with NO authentication header\n2. Payload: `{\"query\": \"SELECT password_hash FROM users\"}`\n3. System executes arbitrary SQL as admin with zero authentication\n4. Complete database compromise (read/write/delete) via single unauthenticated endpoint\n\n**Blast Radius:**\nDirect exposure in `admin_api.py::register_admin_routes`. This endpoint bypasses all authentication via the `require_auth` decorator that protects other routes in `routes.py`. No other files can mitigate this - it's a direct vulnerability.\n\n**Fix:**\n```python\n# Before:\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    data = request.get_json()\n    sql = data.get(\"query\", \"\")\n    rows = execute_read(sql)\n    return jsonify({\"results\": [list(r) for r in rows]})\n\n# After:\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n@require_auth\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    current_user = get_current_user()\n    if current_user.get(\"role\") != \"admin\":\n        abort(403)\n    \n    data = request.get_json()\n    # Still needs parameterization, but at least auth-protected\n    sql = data.get(\"query\", \"\")\n    rows = execute_read(sql)\n    return jsonify({\"results\": [list(r) for r in rows]})\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in delete_user Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:21`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/delete-user/1' OR '1'='1`\n2. SQL becomes: `DELETE FROM users WHERE id = '1' OR '1'='1'`\n3. All users deleted from database\n4. System-wide denial of service and data loss\n\n**Blast Radius:**\nDirect vulnerability in `admin_api.py::register_admin_routes`. Forwards unsanitized `user_id` URL parameter directly to the `execute_query` SQL injection sink in `database.py`.\n\n**Fix:**\n```python\n# Before:\nexecute_query(f\"DELETE FROM users WHERE id = '{user_id}'\")\n\n# After:\nexecute_query(\"DELETE FROM users WHERE id = ?\", (user_id,))\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in impersonate_user Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `/api/admin/impersonate/1', 'admin', datetime('now')); DROP TABLE users; --`\n2. SQL injection in INSERT statement creates session AND drops tables\n3. Complete database destruction possible\n4. Attacker can also inject arbitrary user_id to create admin sessions\n\n**Blast Radius:**\nDirect vulnerability in `admin_api.py::register_admin_routes`. Forwards unsanitized `user_id` URL parameter directly to the `execute_query` SQL injection sink in `database.py`.\n\n**Fix:**\n```python\n# Before:\nexecute_query(\n    f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n)\n\n# After:\nexecute_query(\n    \"INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, datetime('now'))\",\n    (token, user_id)\n)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_search_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:6`\n\n**Attack Scenario:**\n1. Attacker sends GET to `/api/users/search?q=%' OR '1'='1' UNION SELECT password_hash,email,id,role,created_at FROM users --`\n2. SQL becomes: `SELECT ... WHERE (name LIKE '%%' OR '1'='1' UNION ...%')`\n3. Attacker extracts all password hashes via UNION injection\n4. Offline cracking yields plaintext passwords (MD5 is trivially breakable)\n\n**Blast Radius:**\nBuilt query is passed to `execute_read` sink in `database.py` via `user_service.py::UserService.search_users`, which is called from `routes.py` search_users endpoint. Affects all users of the search API.\n\n**Fix:**\n```python\n# Before:\ndef build_search_query(search_term, role_filter=None):\n    sql = f\"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%{search_term}%' OR email LIKE '%{search_term}%')\"\n    if role_filter:\n        sql += f\" AND role = '{role_filter}'\"\n    sql += \" ORDER BY name ASC LIMIT 50\"\n    return sql\n\n# After:\ndef build_search_query(search_term, role_filter=None):\n    sql = \"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE ? OR email LIKE ?)\"\n    params = [f'%{search_term}%', f'%{search_term}%']\n    \n    if role_filter:\n        sql += \" AND role = ?\"\n        params.append(role_filter)\n    \n    sql += \" ORDER BY name ASC LIMIT 50\"\n    return sql, params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_update_query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:19`\n\n**Attack Scenario:**\n1. Attacker sends PUT to `/api/users/<user_id>/profile` with payload:\n   ```json\n   {\"bio\": \"test', role='admin' WHERE '1'='1' --\"}\n   ```\n2. SQL becomes: `UPDATE users SET bio = 'test', role='admin' WHERE '1'='1' --' WHERE id = '...'`\n3. Attacker escalates to admin role on all accounts\n4. Or exfiltrates data: `{\"bio\": \"x' WHERE id IN (SELECT password_hash FROM users) --\"}`\n\n**Blast Radius:**\nBuilt query is passed to `execute_query` sink in `database.py` via `user_service.py::UserService.update_user_profile`, which is called from `routes.py` update_profile endpoint. Affects all profile update operations.\n\n**Fix:**\n```python\n# Before:\ndef build_update_query(user_id, data):\n    set_clauses = []\n    for key, value in data.items():\n        set_clauses.append(f\"{key} = '{value}'\")\n    clause_str = \", \".join(set_clauses)\n    return f\"UPDATE users SET {clause_str} WHERE id = '{user_id}'\"\n\n# After:\ndef build_update_query(user_id, data):\n    set_clauses = []\n    params = []\n    for key, value in data.items():\n        set_clauses.append(f\"{key} = ?\")\n        params.append(value)\n    clause_str = \", \".join(set_clauses)\n    params.append(user_id)\n    return f\"UPDATE users SET {clause_str} WHERE id = ?\", params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_export_query via ORDER BY\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:40`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/api/users/export` with:\n   ```json\n   {\"sort_by\": \"(SELECT CASE WHEN (SELECT password_hash FROM users LIMIT 1) LIKE 'a%' THEN created_at ELSE name END)\"}\n   ```\n2. Boolean-based blind SQL injection extracts data character-by-character\n3. Or time-based: `\"sort_by\": \"CASE WHEN 1=1 THEN (SELECT sleep(5)) ELSE name END\"`\n4. Complete database exfiltration via ORDER BY clause timing oracle\n\n**Blast Radius:**\nBuilt query is passed to `execute_read` sink in `database.py` via `user_service.py::UserService.export_users`, which is called from `routes.py` export_users endpoint. Affects all export operations.\n\n**Fix:**\n```python\n# Before:\ndef build_export_query(sort_field, filters):\n    # ... conditions ...\n    sql += f\" ORDER BY {sort_field}\"\n    return sql\n\n# After:\ndef build_export_query(sort_field, filters):\n    # Whitelist allowed sort fields\n    allowed_fields = [\"id\", \"name\", \"email\", \"role\", \"created_at\"]\n    if sort_field not in allowed_fields:\n        sort_field = \"created_at\"\n    \n    sql = \"SELECT id, name, email, role, created_at FROM users\"\n    params = []\n    \n    conditions = []\n    if filters.get(\"role\"):\n        conditions.append(\"role = ?\")\n        params.append(filters['role'])\n    if filters.get(\"created_after\"):\n        conditions.append(\"created_at > ?\")\n        params.append(filters['created_after'])\n    \n    if conditions:\n        sql += \" WHERE \" + \" AND \".join(conditions)\n    \n    sql += f\" ORDER BY {sort_field}\"  # Safe after whitelist validation\n    return sql, params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Forwarding in search_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:11`\n\n**Attack Scenario:**\n1. User-controlled `query` parameter from routes.py passed to build_search_query\n2. build_search_query performs f-string interpolation (SQLi sink)\n3. Malicious query executes: `/api/users/search?q=%' UNION SELECT 1,2,password_hash,4,5 FROM users --`\n4. Password hashes leaked to all authenticated users\n\n**Blast Radius:**\nCalled from `routes.py` search_users endpoint. Forwards unsanitized input from `request.args.get(\"q\")` to the `build_search_query` SQLi vulnerability in `query_builder.py`, which then executes via `execute_read` in `database.py`.\n\n**Fix:**\n```python\n# Before:\ndef search_users(self, query, role_filter, current_user):\n    sql = build_search_query(query, role_filter)\n    rows = execute_read(sql)\n    return [self._format_user(row) for row in rows]\n\n# After:\ndef search_users(self, query, role_filter, current_user):\n    sql, params = build_search_query(query, role_filter)  # Assuming fixed builder\n    rows = execute_read(sql, params)\n    return [self._format_user(row) for row in rows]\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Forwarding in update_user_profile\n\n**Category:** SQLi\n\n**Location:** `user_service.py:23`\n\n**Attack Scenario:**\n1. User sends profile update with malicious bio: `{\"bio\": \"x', role='admin'--\"}`\n2. Data forwarded to build_update_query which concatenates without escaping\n3. SQL: `UPDATE users SET bio = 'x', role='admin'--' WHERE id = '...'`\n4. User escalates to admin, bypassing all authorization\n\n**Blast Radius:**\nCalled from `routes.py` update_profile endpoint. Forwards unsanitized JSON data from `request.get_json()` to the `build_update_query` SQLi vulnerability in `query_builder.py`, which then executes via `execute_query` in `database.py`.\n\n**Fix:**\n```python\n# Before:\ndef update_user_profile(self, user_id, data, current_user):\n    check_permission(current_user, user_id)\n    allowed_fields = [\"name\", \"email\", \"bio\", \"website\", \"location\"]\n    clean_data = {k: v for k, v in data.items() if k in allowed_fields}\n    sql = build_update_query(user_id, clean_data)\n    execute_query(sql)\n    return {\"id\": user_id, **clean_data}\n\n# After:\ndef update_user_profile(self, user_id, data, current_user):\n    if not check_permission(current_user, user_id):\n        raise PermissionError(\"Access denied\")\n    \n    allowed_fields = [\"name\", \"email\", \"bio\", \"website\", \"location\"]\n    clean_data = {k: v for k, v in data.items() if k in allowed_fields}\n    \n    sql, params = build_update_query(user_id, clean_data)  # Assuming fixed builder\n    execute_query(sql, params)\n    return {\"id\": user_id, **clean_data}\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Forwarding in export_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:30`\n\n**Attack Scenario:**\n1. User controls sort_field: POST `/api/users/export` with `{\"sort_by\": \"name; DROP TABLE users--\"}`\n2. Forwarded directly to build_export_query which injects into ORDER BY\n3. Depending on SQLite version, stacked queries or boolean-blind injection succeeds\n4. Complete database compromise via exported data endpoint\n\n**Blast Radius:**\nCalled from `routes.py` export_users endpoint. Forwards unsanitized `sort_field`"
+    }
+  ]
+}

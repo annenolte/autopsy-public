@@ -1,0 +1,1094 @@
+{
+  "mode": "live",
+  "arm": "chunked-nograph-demo",
+  "timestamp": "2026-06-22T15:14:46",
+  "config": {
+    "arm": "chunked-nograph-demo",
+    "demo": "demo_project",
+    "baseline": "benchmark/baseline",
+    "baseline_mode": "safe",
+    "dedupe": true,
+    "chunked": true,
+    "use_graph": false,
+    "window_lines": 400,
+    "fuzz_lines": 5,
+    "repeat": 3,
+    "include_provisional": false,
+    "temperature_note": "temperature: model default (no knob)",
+    "haiku_model": "claude-haiku-4-5-20251001",
+    "sonnet_model": "claude-sonnet-4-5-20250929"
+  },
+  "ground_truth": {
+    "scored_count": 12,
+    "scored_ids": [
+      "sqli-search",
+      "sqli-update",
+      "sqli-export",
+      "sqli-execute",
+      "auth-bypass-token",
+      "auth-bypass-permission",
+      "weak-hash",
+      "sqli-admin-run",
+      "sqli-admin-delete",
+      "sqli-admin-impersonate",
+      "auth-ignored-return",
+      "sqli-export-service"
+    ],
+    "all_count": 13
+  },
+  "aggregate": {
+    "precision": {
+      "mean_pct": 63,
+      "std_pct": 3.3,
+      "raw_values": [
+        0.6,
+        0.6316,
+        0.6667
+      ]
+    },
+    "recall": {
+      "mean_pct": 100,
+      "std_pct": 0.0,
+      "raw_values": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "f1": {
+      "mean_pct": 77,
+      "std_pct": 2.5,
+      "raw_values": [
+        0.75,
+        0.7742,
+        0.8
+      ]
+    }
+  },
+  "runs": [
+    {
+      "metrics": {
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1": 0.75,
+        "precision_pct": 60,
+        "recall_pct": 100,
+        "f1_pct": 75
+      },
+      "counts": {
+        "tp": 12,
+        "fp": 8,
+        "fn": 0,
+        "total_findings": 21
+      },
+      "matched_ids": [
+        "auth-bypass-permission",
+        "auth-bypass-token",
+        "auth-ignored-return",
+        "sqli-admin-delete",
+        "sqli-admin-impersonate",
+        "sqli-admin-run",
+        "sqli-execute",
+        "sqli-export",
+        "sqli-export-service",
+        "sqli-search",
+        "sqli-update",
+        "weak-hash"
+      ],
+      "missed_ids": [],
+      "provisional_matched_ids": [
+        "sqli-search-service"
+      ],
+      "category_mismatches": [
+        {
+          "finding_index": 6,
+          "finding_title": "Session Token Without Expiry or Revocation",
+          "finding_category": "Auth Bypass",
+          "truth_id": "sqli-admin-impersonate",
+          "truth_category": "SQLi"
+        },
+        {
+          "finding_index": 7,
+          "finding_title": "Missing Audit Logging for Privileged Operations",
+          "finding_category": "Other (Security Monitoring)",
+          "truth_id": "sqli-admin-run",
+          "truth_category": "SQLi"
+        },
+        {
+          "finding_index": 12,
+          "finding_title": "Path Traversal - Database File Location",
+          "finding_category": "Path Traversal",
+          "truth_id": "sqli-search",
+          "truth_category": "SQLi"
+        },
+        {
+          "finding_index": 19,
+          "finding_title": "SQL Injection via Profile Update Data",
+          "finding_category": "SQLi",
+          "truth_id": "auth-ignored-return",
+          "truth_category": "Auth Bypass"
+        },
+        {
+          "finding_index": 20,
+          "finding_title": "Missing Authorization Check Enables Unauthorized Data Export",
+          "finding_category": "Auth Bypass",
+          "truth_id": "sqli-export-service",
+          "truth_category": "SQLi"
+        }
+      ],
+      "scan_time_seconds": 190.1,
+      "target_loc": 254,
+      "scan_time_per_kloc": 748.6,
+      "scan_time_per_vuln": 15.8,
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 7512,
+        "sonnet_out": 11007,
+        "calls": 5
+      },
+      "tokens_per_kloc": 72909,
+      "findings": [
+        {
+          "severity": "HIGH",
+          "title": "Cross-file Auth Bypass: ignored return of check_permission()",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 18
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Cross-file Auth Bypass: ignored return of check_permission()\n**Category:** Auth Bypass\n**Location:** `user_service.py:18`\n**Attack Scenario:**\nUserService.update_user_profile() invokes the security gate `check_permission()` (defined in `auth.py`) but never uses its return value. An unauthorized caller reaches the protected operation because the gate's verdict is silently dropped.\n**Fix:**\nBranch on the gate's result, e.g. `if not check_permission(...): abort(403)`.\n---\n\n\ud83d\udd0e Gra"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQLi (static): register_admin_routes.delete_user",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 22
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.delete_user\n**Category:** SQLi\n**Location:** `admin_api.py:22`\n**Attack Scenario:**\nregister_admin_routes.delete_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQLi (static): register_admin_routes.impersonate_user",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 31
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.impersonate_user\n**Category:** SQLi\n**Location:** `admin_api.py:31`\n**Attack Scenario:**\nregister_admin_routes.impersonate_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Weak Crypto (static): hash_password",
+          "category": "Weak Crypto",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 34
+            },
+            {
+              "file": "admin_api.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Weak Crypto (static): hash_password\n**Category:** Weak Crypto\n**Location:** `auth.py:34`\n**Attack Scenario:**\nMD5 is cryptographically weak; if used for passwords or security tokens it is trivially brute-forced. Use a slow, salted KDF (bcrypt/scrypt/PBKDF2).\n**Fix:**\nSee description.\n---\n\n\n[scanning admin_api.py:1-34]\n"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary SQL Execution via Unauthenticated Admin Endpoint",
+          "category": "SQLi / Auth Bypass",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 16
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary SQL Execution via Unauthenticated Admin Endpoint\n\n**Category:** SQLi / Auth Bypass\n\n**Location:** `admin_api.py:16`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/admin/run-query` with JSON body `{\"query\": \"SELECT * FROM users WHERE role='admin'\"}`\n2. No authentication check exists on this route despite the \"admin only\" comment\n3. The raw SQL string from the attacker is passed directly to `execute_read(sql)` without any validation or parameter bin"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Authentication Bypass on All Admin Routes",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 9
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Authentication Bypass on All Admin Routes\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:9`\n\n**Attack Scenario:**\n1. All three admin routes (`/api/admin/run-query`, `/api/admin/delete-user/<user_id>`, `/api/admin/impersonate/<user_id>`) have no authentication checks\n2. Despite the comment \"admin only\" on line 15, no decorator or code enforces this\n3. Any anonymous attacker can access these routes by simply sending HTTP requests\n4. Attacker runs arbitrary queries,"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Session Token Without Expiry or Revocation",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 30
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Session Token Without Expiry or Revocation\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:30-33`\n\n**Attack Scenario:**\n1. Admin uses impersonate feature to debug user account, generating token\n2. Token is stored with no expiry time (comment on line 30 confirms this)\n3. Token remains valid indefinitely in the sessions table\n4. If token is leaked (logs, network capture, compromised admin account), attacker has permanent access\n5. No mechanism exists to revoke the token"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Missing Audit Logging for Privileged Operations",
+          "category": "Other (Security Monitoring)",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 22
+            },
+            {
+              "file": "auth.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Missing Audit Logging for Privileged Operations\n\n**Category:** Other (Security Monitoring)\n\n**Location:** `admin_api.py:22`\n\n**Attack Scenario:**\n1. Attacker (or malicious insider admin) deletes user accounts via `/api/admin/delete-user`\n2. No audit log is created (line 30 comment mentions \"no audit log\" for impersonate, same issue here)\n3. No record exists of who deleted which users or when\n4. During incident response, impossible to determine scope of compromise\n5. Attacker "
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authentication Bypass - No Token Expiry or Revocation Check",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 11
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authentication Bypass - No Token Expiry or Revocation Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker obtains a valid authentication token (via phishing, MITM, or compromised session)\n2. Even after the legitimate user logs out or their access is revoked, the token remains in `VALID_TOKENS` dictionary\n3. Attacker continues using the stolen token indefinitely - there is no expiry check\n4. Attacker can access all protected routes wi"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authorization Bypass - Type Confusion in Permission Check",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 37
+            },
+            {
+              "file": "database.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authorization Bypass - Type Confusion in Permission Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:37`\n\n**Attack Scenario:**\n1. Non-admin user authenticates and obtains a session where `user_id` is stored as a string (e.g., from JWT sub claim, session cookie, or database string field)\n2. User attempts to access a resource owned by user ID 123 (integer from database primary key)\n3. Application calls `check_permission(user, 123)` where `user[\"user_id\"]` is \"456\" (stri"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection Sink - execute_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 22
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection Sink - execute_query\n\n**Category:** SQLi\n\n**Location:** `database.py:22`\n\n**Attack Scenario:**\n1. Any caller passing user-controlled input into `execute_query(sql)` can inject arbitrary SQL commands\n2. Attacker crafts input like `\"; DROP TABLE users; --` or `\"; INSERT INTO users (id, role) VALUES ('attacker', 'admin'); --`\n3. The raw SQL string is executed directly via `conn.execute(sql)` with no parameter binding\n4. Attacker gains full database control: dat"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection Sink - execute_read",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 30
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection Sink - execute_read\n\n**Category:** SQLi\n\n**Location:** `database.py:30`\n\n**Attack Scenario:**\n1. Any caller passing user-controlled input into `execute_read(sql)` can inject arbitrary SQL\n2. Attacker crafts input like `' UNION SELECT password_hash, email, role FROM users WHERE '1'='1` in a search query\n3. The raw SQL executes via `conn.execute(sql)` with no sanitization\n4. Attacker extracts sensitive data (password hashes, emails, admin credentials) or perfo"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Path Traversal - Database File Location",
+          "category": "Path Traversal",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 5
+            },
+            {
+              "file": "query_builder.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Path Traversal - Database File Location\n\n**Category:** Path Traversal\n\n**Location:** `database.py:5`\n\n**Attack Scenario:**\n1. Attacker controls the `USER_DB_PATH` environment variable (common in containerized environments, CI/CD, or when app is run by another user)\n2. Attacker sets `USER_DB_PATH=/etc/passwd` or `USER_DB_PATH=../../sensitive/app.db`\n3. Application attempts to open arbitrary file as SQLite database via `sqlite3.connect(DB_PATH)`\n4. If file exists and is SQLit"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_search_query via search_term Parameter",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 7
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_search_query via search_term Parameter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:7`\n\n**Attack Scenario:**\n1. Attacker calls `build_search_query(\"' OR '1'='1' -- \", None)`\n2. Generated SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%' OR '1'='1' -- %' OR email LIKE '%' OR '1'='1' -- %') ORDER BY name ASC LIMIT 50`\n3. The `--` comments out the rest of the query, and `'1'='1'` always evaluates to true\n4. "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_update_query via Column Names",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 21
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_update_query via Column Names\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:21`\n\n**Attack Scenario:**\n1. Attacker calls `build_update_query(123, {\"name = 'hacked', admin\": \"1\"})`\n2. The key `\"name = 'hacked', admin\"` is inserted directly into the SET clause\n3. Generated SQL becomes: `UPDATE users SET name = 'hacked', admin = '1' WHERE id = '123'`\n4. Attacker has injected an additional column update, setting themselves as admin\n5. More severe:"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_export_query via role Filter",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 33
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_export_query via role Filter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:33`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name\", {\"role\": \"user' OR '1'='1' UNION SELECT id, password, email, 'extracted', created_at FROM credentials -- \"})`\n2. Generated SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE role = 'user' OR '1'='1' UNION SELECT id, password, email, 'extracted', created_at FROM credentials -- '"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in build_export_query via sort_field Parameter",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 41
+            },
+            {
+              "file": "user_service.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in build_export_query via sort_field Parameter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:41`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name; DROP TABLE users; -- \", {})`\n2. Generated SQL becomes: `SELECT id, name, email, role, created_at FROM users ORDER BY name; DROP TABLE users; -- `\n3. Depending on database configuration, this could execute multiple statements, deleting the users table\n4. More realistic: `\"(SELECT CASE WHEN ("
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized Search Query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 12
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Search Query\n\n**Category:** SQLi\n\n**Location:** `user_service.py:12`\n\n**Attack Scenario:**\n1. Attacker calls `search_users()` with malicious `query` parameter: `' OR 1=1 UNION SELECT password_hash, salt, api_key, ssn FROM sensitive_data --`\n2. `build_search_query()` concatenates this into SQL without parameterization\n3. The constructed SQL is passed directly to `execute_read()` which executes it\n4. Attacker extracts password hashes, API keys,"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized Sort Field",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 31
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Sort Field\n\n**Category:** SQLi\n\n**Location:** `user_service.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `export_users()` with `sort_field = \"name; DROP TABLE users; --\"`\n2. `build_export_query()` concatenates this directly into an ORDER BY clause: `SELECT * FROM users ORDER BY name; DROP TABLE users; --`\n3. The SQL is passed to `execute_read()` which executes it\n4. The users table is dropped, causing complete service disruption\n5. Alternat"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Profile Update Data",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 24
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Profile Update Data\n\n**Category:** SQLi\n\n**Location:** `user_service.py:24`\n\n**Attack Scenario:**\n1. Attacker updates profile with `bio = \"', email = 'attacker@evil.com' WHERE 1=1 OR email = '\"`\n2. If `build_update_query()` constructs SQL like `UPDATE users SET bio = '{bio}' WHERE id = {user_id}`, the injected payload becomes:\n   ```sql\n   UPDATE users SET bio = '', email = 'attacker@evil.com' WHERE 1=1 OR email = '' WHERE id = 123\n   ```\n3. This updates"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Missing Authorization Check Enables Unauthorized Data Export",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 28
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Missing Authorization Check Enables Unauthorized Data Export\n\n**Category:** Auth Bypass\n\n**Location:** `user_service.py:28`\n\n**Attack Scenario:**\n1. Unauthenticated or low-privilege attacker calls `export_users(sort_field='created_at', filters={})`\n2. No permission check exists in the function (unlike `update_user_profile` which calls `check_permission`)\n3. The function returns all users matching filters, potentially exposing emails, roles, and account creation timestamps\n4"
+        }
+      ],
+      "raw_output": "\ud83d\udd17 Graph-derived check: security gate return value discarded\n\n## [SEVERITY: HIGH] Cross-file Auth Bypass: ignored return of check_permission()\n**Category:** Auth Bypass\n**Location:** `user_service.py:18`\n**Attack Scenario:**\nUserService.update_user_profile() invokes the security gate `check_permission()` (defined in `auth.py`) but never uses its return value. An unauthorized caller reaches the protected operation because the gate's verdict is silently dropped.\n**Fix:**\nBranch on the gate's result, e.g. `if not check_permission(...): abort(403)`.\n---\n\n\ud83d\udd0e Graph/AST static rules \u2014 deterministic findings\n\n## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.delete_user\n**Category:** SQLi\n**Location:** `admin_api.py:22`\n**Attack Scenario:**\nregister_admin_routes.delete_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.impersonate_user\n**Category:** SQLi\n**Location:** `admin_api.py:31`\n**Attack Scenario:**\nregister_admin_routes.impersonate_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n## [SEVERITY: HIGH] Weak Crypto (static): hash_password\n**Category:** Weak Crypto\n**Location:** `auth.py:34`\n**Attack Scenario:**\nMD5 is cryptographically weak; if used for passwords or security tokens it is trivially brute-forced. Use a slow, salted KDF (bcrypt/scrypt/PBKDF2).\n**Fix:**\nSee description.\n---\n\n\n[scanning admin_api.py:1-34]\n## [SEVERITY: CRITICAL] Arbitrary SQL Execution via Unauthenticated Admin Endpoint\n\n**Category:** SQLi / Auth Bypass\n\n**Location:** `admin_api.py:16`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/admin/run-query` with JSON body `{\"query\": \"SELECT * FROM users WHERE role='admin'\"}`\n2. No authentication check exists on this route despite the \"admin only\" comment\n3. The raw SQL string from the attacker is passed directly to `execute_read(sql)` without any validation or parameter binding\n4. Attacker can execute arbitrary SELECT queries to exfiltrate entire database: `{\"query\": \"SELECT password_hash, email FROM users\"}`\n5. If `execute_read` internally allows writes, attacker could also modify data: `{\"query\": \"UPDATE users SET role='admin' WHERE id=1; --\"}`\n\n**Blast Radius:**\nAny anonymous user can read the entire database. If the `execute_read` function doesn't properly restrict to read-only operations, this becomes full database compromise including writes/deletes. All user credentials, PII, and application secrets stored in the database are exposed.\n\n**Fix:**\n```python\n# BEFORE:\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    data = request.get_json()\n    sql = data.get(\"query\", \"\")\n\n    # \"admin only\" \u2014 but no auth check on this route\n    rows = execute_read(sql)\n    return jsonify({\"results\": [list(r) for r in rows]})\n\n# AFTER:\nfrom auth import require_admin  # Assume this decorator exists\n\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n@require_admin  # Add authentication check\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    # Remove this endpoint entirely - arbitrary SQL execution is dangerous\n    # even for authenticated admins. Instead, provide specific query endpoints.\n    return jsonify({\"error\": \"This endpoint has been removed for security\"}), 403\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in User Deletion Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:22`\n\n**Attack Scenario:**\n1. Attacker sends DELETE request to `/api/admin/delete-user/1' OR '1'='1`\n2. No authentication check exists on this route\n3. The `user_id` from the URL path is directly interpolated into the SQL query using an f-string\n4. Resulting query: `DELETE FROM users WHERE id = '1' OR '1'='1'`\n5. This deletes ALL users in the database, causing complete authentication system failure\n\n**Blast Radius:**\nComplete deletion of the users table. All user accounts destroyed, making the application unusable. Recovery requires database restore from backup.\n\n**Fix:**\n```python\n# BEFORE:\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    execute_query(f\"DELETE FROM users WHERE id = '{user_id}'\")\n    return jsonify({\"deleted\": user_id})\n\n# AFTER:\nfrom auth import require_admin\n\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\n@require_admin\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    # Use parameterized query\n    execute_query(\"DELETE FROM users WHERE id = ?\", (user_id,))\n    return jsonify({\"deleted\": user_id})\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Session Token Creation\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:31-33`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/api/admin/impersonate/1', (SELECT password_hash FROM users WHERE id=1)); --`\n2. No authentication check exists on this route\n3. The `user_id` is directly interpolated into the SQL INSERT statement\n4. Resulting query: `INSERT INTO sessions (token, user_id, created_at) VALUES ('...', '1', (SELECT password_hash FROM users WHERE id=1)); --', datetime('now'))`\n5. Attacker can inject subqueries to exfiltrate data into the sessions table, then retrieve via another endpoint\n6. Alternatively: `1'); DROP TABLE users; --` to destroy the users table\n\n**Blast Radius:**\nDatabase compromise through blind SQL injection. Attacker can exfiltrate data, modify records, or destroy tables. Combined with the returned token, attacker gains authenticated session as any user.\n\n**Fix:**\n```python\n# BEFORE:\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    import secrets\n    token = secrets.token_hex(32)\n    # Stores token with no expiry, no audit log\n    execute_query(\n        f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n    )\n    return jsonify({\"token\": token, \"user_id\": user_id})\n\n# AFTER:\nfrom auth import require_admin\nimport secrets\nfrom datetime import datetime, timedelta\n\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\n@require_admin\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    # Validate user_id is numeric\n    if not user_id.isdigit():\n        return jsonify({\"error\": \"Invalid user_id\"}), 400\n    \n    token = secrets.token_hex(32)\n    expires_at = datetime.now() + timedelta(hours=1)\n    \n    # Use parameterized query with expiry and audit logging\n    execute_query(\n        \"INSERT INTO sessions (token, user_id, created_at, expires_at, created_by, purpose) VALUES (?, ?, datetime('now'), ?, ?, ?)\",\n        (token, user_id, expires_at, request.admin_user_id, 'impersonation')\n    )\n    \n    # Log admin action for audit trail\n    execute_query(\n        \"INSERT INTO audit_log (admin_id, action, target_user_id, timestamp) VALUES (?, ?, ?, datetime('now'))\",\n        (request.admin_user_id, 'impersonate', user_id)\n    )\n    \n    return jsonify({\"token\": token, \"user_id\": user_id})\n```\n\n---\n\n## [SEVERITY: CRITICAL] Authentication Bypass on All Admin Routes\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:9`\n\n**Attack Scenario:**\n1. All three admin routes (`/api/admin/run-query`, `/api/admin/delete-user/<user_id>`, `/api/admin/impersonate/<user_id>`) have no authentication checks\n2. Despite the comment \"admin only\" on line 15, no decorator or code enforces this\n3. Any anonymous attacker can access these routes by simply sending HTTP requests\n4. Attacker runs arbitrary queries, deletes users, and generates session tokens for any account\n5. Complete application takeover without credentials\n\n**Blast Radius:**\nTotal compromise of the application. Attacker gains:\n- Full database read/write access via `/api/admin/run-query`\n- Ability to delete any user via `/api/admin/delete-user`\n- Authenticated sessions as any user via `/api/admin/impersonate`\n- No audit trail of malicious actions\n\n**Fix:**\n```python\n# BEFORE:\ndef register_admin_routes(app):\n    \"\"\"Register admin-only routes on the Flask app.\"\"\"\n\n    @app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n    def run_raw_query():\n        # \"admin only\" \u2014 but no auth check on this route\n\n# AFTER:\nfrom functools import wraps\nfrom flask import abort\n\ndef require_admin(f):\n    @wraps(f)\n    def decorated_function(*args, **kwargs):\n        # Verify JWT token or session\n        auth_header = request.headers.get('Authorization')\n        if not auth_header:\n            abort(401)\n        \n        # Validate token and extract user\n        user = validate_auth_token(auth_header)\n        if not user or user.role != 'admin':\n            abort(403)\n        \n        request.admin_user_id = user.id  # For audit logging\n        return f(*args, **kwargs)\n    return decorated_function\n\ndef register_admin_routes(app):\n    \"\"\"Register admin-only routes on the Flask app.\"\"\"\n\n    @app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n    @require_admin\n    def run_raw_query():\n        # Now actually protected\n```\n\n---\n\n## [SEVERITY: HIGH] Session Token Without Expiry or Revocation\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:30-33`\n\n**Attack Scenario:**\n1. Admin uses impersonate feature to debug user account, generating token\n2. Token is stored with no expiry time (comment on line 30 confirms this)\n3. Token remains valid indefinitely in the sessions table\n4. If token is leaked (logs, network capture, compromised admin account), attacker has permanent access\n5. No mechanism exists to revoke the token when debugging is complete\n6. Token can be used months/years later for account access\n\n**Blast Radius:**\nLong-lived sessions created via this endpoint cannot be revoked. If any token generated by this function is compromised, the affected user account is permanently accessible to the attacker unless the database is manually modified or the user changes their password (which may not invalidate session tokens depending on implementation).\n\n**Fix:**\n```python\n# BEFORE:\nexecute_query(\n    f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n)\n\n# AFTER:\nfrom datetime import datetime, timedelta\n\nexpires_at = datetime.now() + timedelta(hours=1)  # Short-lived for debugging\nexecute_query(\n    \"INSERT INTO sessions (token, user_id, created_at, expires_at, session_type) VALUES (?, ?, datetime('now'), ?, ?)\",\n    (token, user_id, expires_at, 'impersonation')\n)\n\n# Add endpoint to revoke impersonation tokens:\n@app.route(\"/api/admin/revoke-impersonation/<user_id>\", methods=[\"POST\"])\n@require_admin\ndef revoke_impersonation(user_id):\n    execute_query(\n        \"DELETE FROM sessions WHERE user_id = ? AND session_type = ?\",\n        (user_id, 'impersonation')\n    )\n    return jsonify({\"revoked\": user_id})\n```\n\n---\n\n## [SEVERITY: HIGH] Missing Audit Logging for Privileged Operations\n\n**Category:** Other (Security Monitoring)\n\n**Location:** `admin_api.py:22`\n\n**Attack Scenario:**\n1. Attacker (or malicious insider admin) deletes user accounts via `/api/admin/delete-user`\n2. No audit log is created (line 30 comment mentions \"no audit log\" for impersonate, same issue here)\n3. No record exists of who deleted which users or when\n4. During incident response, impossible to determine scope of compromise\n5. Attacker can cover tracks by deleting admin logs if they exist elsewhere\n6. Regulatory compliance violations (GDPR, SOC2) for untracked data deletion\n\n**Blast Radius:**\nAffects all three admin endpoints. Malicious actions cannot be attributed to specific admins. Incident response and forensics severely hampered. Compliance violations may result in fines or audit failures.\n\n**Fix:**\n```python\n# Add to all three admin endpoints:\n\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\n@require_admin\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    # Log before deletion\n    execute_query(\n        \"INSERT INTO audit_log (admin_id, action, target_user_id, timestamp, ip_address) VALUES (?, ?, ?, datetime('now'), ?)\",\n        (request.admin_user_id, 'delete_user', user_id, request.remote_addr)\n    )\n    \n    execute_query(\"DELETE FROM users WHERE id = ?\", (user_id,))\n    return jsonify({\"deleted\": user_id})\n```\n[scanning auth.py:1-44]\n## [SEVERITY: HIGH] Authentication Bypass - No Token Expiry or Revocation Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker obtains a valid authentication token (via phishing, MITM, or compromised session)\n2. Even after the legitimate user logs out or their access is revoked, the token remains in `VALID_TOKENS` dictionary\n3. Attacker continues using the stolen token indefinitely - there is no expiry check\n4. Attacker can access all protected routes without any time limitation or ability for administrators to revoke access\n5. If a user's permissions are downgraded or removed, old tokens still grant full access\n\n**Blast Radius:**\nAny route decorated with `@require_auth` is vulnerable. The decorator only verifies the token exists in the `VALID_TOKENS` dictionary but never checks:\n- Token expiration timestamp\n- Token revocation status\n- Token scope/audience\n- Session validity\n\nThis affects all authenticated endpoints in the application.\n\n**Fix:**\n```python\n# Before:\ndef require_auth(f):\n    \"\"\"Decorator to require authentication on a route.\"\"\"\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:\n            abort(401)\n        if token not in VALID_TOKENS:\n            abort(401)\n        return f(*args, **kwargs)\n    return decorated\n\n# After:\nimport time\n\nVALID_TOKENS = {}  # Now stores {'token': {'user_id': ..., 'expires_at': timestamp, 'scope': []}}\n\ndef require_auth(f):\n    \"\"\"Decorator to require authentication on a route.\"\"\"\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:\n            abort(401)\n        \n        token_data = VALID_TOKENS.get(token)\n        if not token_data:\n            abort(401)\n        \n        # Check expiry\n        if token_data.get('expires_at', 0) < time.time():\n            abort(401)\n        \n        # Check revocation (could use a separate REVOKED_TOKENS set)\n        if token_data.get('revoked', False):\n            abort(401)\n            \n        return f(*args, **kwargs)\n    return decorated\n```\n\n---\n\n## [SEVERITY: CRITICAL] Weak Password Hashing with MD5\n\n**Category:** Secrets Exposure\n\n**Location:** `auth.py:32`\n\n**Attack Scenario:**\n1. Attacker gains read access to the password database (SQL injection, backup exposure, insider threat)\n2. All password hashes are MD5 - a cryptographically broken algorithm that can be cracked at billions of hashes per second on consumer GPUs\n3. Attacker uses rainbow tables or GPU-accelerated cracking tools (hashcat, john) to reverse MD5 hashes\n4. Common passwords are cracked instantly; even complex passwords fall within hours/days\n5. Attacker gains plaintext passwords and uses them to access user accounts\n6. If users reuse passwords across services, attacker pivots to other platforms\n\n**Blast Radius:**\nAll user passwords stored in the system are trivially reversible. MD5:\n- Has no computational cost (can compute billions per second)\n- Has no salt in this implementation (vulnerable to rainbow tables)\n- Is cryptographically broken (collision attacks exist)\n- Does not meet any modern security standard (OWASP, NIST, PCI-DSS all prohibit MD5 for passwords)\n\n**Fix:**\n```python\n# Before:\nimport hashlib\n\ndef hash_password(password):\n    \"\"\"Hash a password for storage.\"\"\"\n    return hashlib.md5(password.encode()).hexdigest()\n\n# After:\nimport bcrypt\n\ndef hash_password(password):\n    \"\"\"Hash a password for storage using bcrypt with salt.\"\"\"\n    # bcrypt automatically generates a unique salt per password\n    # and uses adaptive cost factor (default ~10, can be increased over time)\n    salt = bcrypt.gensalt(rounds=12)  # 2^12 iterations\n    return bcrypt.hashpw(password.encode(), salt).decode('utf-8')\n\ndef verify_password(password, hashed):\n    \"\"\"Verify a password against its hash.\"\"\"\n    return bcrypt.checkpw(password.encode(), hashed.encode())\n```\n\n---\n\n## [SEVERITY: HIGH] Authorization Bypass - Type Confusion in Permission Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:37`\n\n**Attack Scenario:**\n1. Non-admin user authenticates and obtains a session where `user_id` is stored as a string (e.g., from JWT sub claim, session cookie, or database string field)\n2. User attempts to access a resource owned by user ID 123 (integer from database primary key)\n3. Application calls `check_permission(user, 123)` where `user[\"user_id\"]` is \"456\" (string)\n4. Line 42 compares string \"456\" == int 123, which evaluates to False in Python\n5. The condition fails, execution skips the `return True` inside the if-block\n6. Code falls through to line 44 `return True`, granting unauthorized access\n7. Non-admin user successfully accesses resources belonging to other users\n\n**Blast Radius:**\nAny resource access control that relies on `check_permission()` is bypassable. The function always returns `True` due to the fallthrough logic:\n- Admins return `True` on line 44 (intended behavior)\n- Non-admins with matching user_id should return `True` on line 43, but type mismatch causes fallthrough to line 44\n- Non-admins with different user_id also fall through to line 44 and return `True` (unintended access grant)\n\nAll non-admin users can access any resource regardless of ownership.\n\n**Fix:**\n```python\n# Before:\ndef check_permission(user, resource_owner_id):\n    \"\"\"Check if user can access a resource.\"\"\"\n    if user.get(\"role\") != \"admin\":\n        if user.get(\"user_id\") == resource_owner_id:\n            return True\n    return True\n\n# After:\ndef check_permission(user, resource_owner_id):\n    \"\"\"Check if user can access a resource.\"\"\"\n    # Admin can access anything\n    if user.get(\"role\") == \"admin\":\n        return True\n    \n    # Non-admin can only access their own resources\n    # Ensure type consistency - convert both to int for comparison\n    user_id = user.get(\"user_id\")\n    try:\n        user_id = int(user_id) if user_id else None\n        owner_id = int(resource_owner_id) if resource_owner_id else None\n    except (ValueError, TypeError):\n        return False\n    \n    return user_id is not None and user_id == owner_id\n```\n[scanning database.py:1-50]\n## [SEVERITY: CRITICAL] SQL Injection Sink - execute_query\n\n**Category:** SQLi\n\n**Location:** `database.py:22`\n\n**Attack Scenario:**\n1. Any caller passing user-controlled input into `execute_query(sql)` can inject arbitrary SQL commands\n2. Attacker crafts input like `\"; DROP TABLE users; --` or `\"; INSERT INTO users (id, role) VALUES ('attacker', 'admin'); --`\n3. The raw SQL string is executed directly via `conn.execute(sql)` with no parameter binding\n4. Attacker gains full database control: data exfiltration, privilege escalation, data destruction\n\n**Blast Radius:**\nThis is a foundational SQL injection sink. Every function in the codebase that calls `execute_query()` with user-controlled input becomes an injection point. Common patterns include:\n- User registration/update endpoints passing unsanitized `name`, `email`, `bio`, `website`, `location` fields\n- Search/filter functions building WHERE clauses from query parameters\n- Admin functions constructing dynamic SQL from request data\n\n**Fix:**\n```python\n# BEFORE\ndef execute_query(sql):\n    \"\"\"Execute a write query (INSERT, UPDATE, DELETE).\"\"\"\n    conn = get_connection()\n    conn.execute(sql)\n    conn.commit()\n\n# AFTER\ndef execute_query(sql, params=None):\n    \"\"\"Execute a write query with parameterized inputs.\"\"\"\n    conn = get_connection()\n    if params is None:\n        params = []\n    conn.execute(sql, params)\n    conn.commit()\n```\n\nUsage changes from `execute_query(f\"INSERT INTO users (name) VALUES ('{name}')\")` to `execute_query(\"INSERT INTO users (name) VALUES (?)\", [name])`.\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection Sink - execute_read\n\n**Category:** SQLi\n\n**Location:** `database.py:30`\n\n**Attack Scenario:**\n1. Any caller passing user-controlled input into `execute_read(sql)` can inject arbitrary SQL\n2. Attacker crafts input like `' UNION SELECT password_hash, email, role FROM users WHERE '1'='1` in a search query\n3. The raw SQL executes via `conn.execute(sql)` with no sanitization\n4. Attacker extracts sensitive data (password hashes, emails, admin credentials) or performs blind SQL injection to map the entire database schema\n\n**Blast Radius:**\nThis is a foundational SQL injection sink for read operations. Every function calling `execute_read()` with user input becomes a data exfiltration vector. Common patterns include:\n- Search endpoints building `LIKE` clauses from search terms\n- User lookup functions interpolating user IDs or emails into WHERE clauses\n- Filtering/sorting functions accepting column names or filter values from requests\n- Export/reporting functions constructing dynamic SELECT statements\n\n**Fix:**\n```python\n# BEFORE\ndef execute_read(sql):\n    \"\"\"Execute a read query and return all rows.\"\"\"\n    conn = get_connection()\n    cursor = conn.execute(sql)\n    return cursor.fetchall()\n\n# AFTER\ndef execute_read(sql, params=None):\n    \"\"\"Execute a read query with parameterized inputs.\"\"\"\n    conn = get_connection()\n    if params is None:\n        params = []\n    cursor = conn.execute(sql, params)\n    return cursor.fetchall()\n```\n\nUsage changes from `execute_read(f\"SELECT * FROM users WHERE email = '{email}'\")` to `execute_read(\"SELECT * FROM users WHERE email = ?\", [email])`.\n\n---\n\n## [SEVERITY: MEDIUM] Path Traversal - Database File Location\n\n**Category:** Path Traversal\n\n**Location:** `database.py:5`\n\n**Attack Scenario:**\n1. Attacker controls the `USER_DB_PATH` environment variable (common in containerized environments, CI/CD, or when app is run by another user)\n2. Attacker sets `USER_DB_PATH=/etc/passwd` or `USER_DB_PATH=../../sensitive/app.db`\n3. Application attempts to open arbitrary file as SQLite database via `sqlite3.connect(DB_PATH)`\n4. If file exists and is SQLite-compatible, attacker reads/writes arbitrary files; if not, attacker causes application crash or information disclosure via error messages revealing file paths\n\n**Blast Radius:**\nAffects `get_connection()` at line 14, which is called by:\n- `execute_query()` - every write operation\n- `execute_read()` - every read operation  \n- `init_db()` - database initialization\nThis means an attacker controlling the environment variable can redirect ALL database operations to an arbitrary file path.\n\n**Fix:**\n```python\n# BEFORE\nDB_PATH = os.getenv(\"USER_DB_PATH\", \"users.db\")\n\n# AFTER\nimport os.path\n\n_DEFAULT_DB = \"users.db\"\n_db_path_override = os.getenv(\"USER_DB_PATH\")\n\nif _db_path_override:\n    # Validate: must be filename only, no path separators\n    if os.path.sep in _db_path_override or _db_path_override.startswith('.'):\n        raise ValueError(\"USER_DB_PATH must be a filename without path separators\")\n    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), _db_path_override)\nelse:\n    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), _DEFAULT_DB)\n```\n\nThis restricts database files to the application directory and blocks path traversal attempts.\n[scanning query_builder.py:1-42]\n## [SEVERITY: CRITICAL] SQL Injection in build_search_query via search_term Parameter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:7`\n\n**Attack Scenario:**\n1. Attacker calls `build_search_query(\"' OR '1'='1' -- \", None)`\n2. Generated SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%' OR '1'='1' -- %' OR email LIKE '%' OR '1'='1' -- %') ORDER BY name ASC LIMIT 50`\n3. The `--` comments out the rest of the query, and `'1'='1'` always evaluates to true\n4. All user records are returned, bypassing search intent\n5. More sophisticated payloads could use UNION injection to extract data from other tables: `' UNION SELECT id, password, email, 'admin', created_at FROM admin_credentials -- `\n\n**Blast Radius:**\nAny code path that calls `build_search_query` with user-controlled input for `search_term` will allow arbitrary SQL injection. Without the full dependency graph, this potentially affects all search endpoints, admin panels, and API routes that expose user search functionality.\n\n**Fix:**\n```python\n# Before:\nsql = f\"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%{search_term}%' OR email LIKE '%{search_term}%')\"\n\n# After:\nsql = \"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE ? OR email LIKE ?)\"\nparams = [f\"%{search_term}%\", f\"%{search_term}%\"]\n# Return both sql and params tuple for parameterized execution\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_search_query via role_filter Parameter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:10`\n\n**Attack Scenario:**\n1. Attacker calls `build_search_query(\"test\", \"admin' OR '1'='1\")`\n2. Generated SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%test%' OR email LIKE '%test%') AND role = 'admin' OR '1'='1' ORDER BY name ASC LIMIT 50`\n3. Due to SQL operator precedence, `OR '1'='1'` applies to the entire WHERE clause\n4. All users are returned regardless of role\n5. Attacker could also use: `' UNION SELECT password, salt, NULL, NULL, NULL FROM auth_tokens WHERE '1'='1` to extract authentication tokens\n\n**Blast Radius:**\nAffects any caller that passes user-controlled input as `role_filter`, potentially exposing role-based access control bypasses in admin interfaces or filtered views.\n\n**Fix:**\n```python\n# Before:\nif role_filter:\n    sql += f\" AND role = '{role_filter}'\"\n\n# After:\nif role_filter:\n    sql += \" AND role = ?\"\n    params.append(role_filter)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_update_query via Column Names\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:21`\n\n**Attack Scenario:**\n1. Attacker calls `build_update_query(123, {\"name = 'hacked', admin\": \"1\"})`\n2. The key `\"name = 'hacked', admin\"` is inserted directly into the SET clause\n3. Generated SQL becomes: `UPDATE users SET name = 'hacked', admin = '1' WHERE id = '123'`\n4. Attacker has injected an additional column update, setting themselves as admin\n5. More severe: `{\"name\": \"x' WHERE id = '999' -- \"}` would update a different user entirely, becoming: `UPDATE users SET name = 'x' WHERE id = '999' -- ' WHERE id = '123'`\n\n**Blast Radius:**\nAny profile update, account settings, or admin user modification endpoint that forwards user input to this function can be exploited to modify arbitrary columns or target different user records.\n\n**Fix:**\n```python\n# Before:\ndef build_update_query(user_id, data):\n    set_clauses = []\n    for key, value in data.items():\n        set_clauses.append(f\"{key} = '{value}'\")\n    clause_str = \", \".join(set_clauses)\n    return f\"UPDATE users SET {clause_str} WHERE id = '{user_id}'\"\n\n# After:\ndef build_update_query(user_id, data):\n    # Whitelist allowed columns\n    ALLOWED_COLUMNS = {'name', 'email', 'bio', 'phone'}\n    \n    set_clauses = []\n    params = []\n    for key, value in data.items():\n        if key not in ALLOWED_COLUMNS:\n            raise ValueError(f\"Invalid column: {key}\")\n        set_clauses.append(f\"{key} = ?\")\n        params.append(value)\n    \n    clause_str = \", \".join(set_clauses)\n    params.append(user_id)\n    sql = f\"UPDATE users SET {clause_str} WHERE id = ?\"\n    return sql, params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_update_query via user_id Parameter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:24`\n\n**Attack Scenario:**\n1. Attacker calls `build_update_query(\"123' OR '1'='1' -- \", {\"name\": \"John\"})`\n2. Generated SQL becomes: `UPDATE users SET name = 'John' WHERE id = '123' OR '1'='1' -- '`\n3. The `OR '1'='1'` causes all user records to be updated, not just the target user\n4. Entire user table has `name` set to \"John\"\n5. Could also use: `\"1'; DROP TABLE users; -- \"` for destructive attacks\n\n**Blast Radius:**\nCombined with the column injection vulnerability above, this enables mass data modification or deletion across the entire users table.\n\n**Fix:**\n```python\n# Before:\nreturn f\"UPDATE users SET {clause_str} WHERE id = '{user_id}'\"\n\n# After:\n# (Use parameterized query from previous fix)\nparams.append(user_id)\nsql = f\"UPDATE users SET {clause_str} WHERE id = ?\"\nreturn sql, params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_export_query via role Filter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:33`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name\", {\"role\": \"user' OR '1'='1' UNION SELECT id, password, email, 'extracted', created_at FROM credentials -- \"})`\n2. Generated SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE role = 'user' OR '1'='1' UNION SELECT id, password, email, 'extracted', created_at FROM credentials -- ' ORDER BY name`\n3. UNION injection allows attacker to extract data from arbitrary tables\n4. Export functionality typically has elevated privileges and returns large datasets, making this ideal for data exfiltration\n\n**Blast Radius:**\nData export endpoints are often used by admins or automated systems. This vulnerability enables wholesale database extraction through UNION-based injection.\n\n**Fix:**\n```python\n# Before:\nconditions = []\nif filters.get(\"role\"):\n    conditions.append(f\"role = '{filters['role']}'\")\nif filters.get(\"created_after\"):\n    conditions.append(f\"created_at > '{filters['created_after']}'\")\n\n# After:\nconditions = []\nparams = []\nif filters.get(\"role\"):\n    conditions.append(\"role = ?\")\n    params.append(filters['role'])\nif filters.get(\"created_after\"):\n    conditions.append(\"created_at > ?\")\n    params.append(filters['created_after'])\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_export_query via created_after Filter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:35`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name\", {\"created_after\": \"2020-01-01' OR '1'='1' -- \"})`\n2. Generated SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE created_at > '2020-01-01' OR '1'='1' -- ' ORDER BY name`\n3. All users are exported regardless of creation date\n4. Attacker could use: `\"' UNION SELECT table_name, NULL, NULL, NULL, NULL FROM information_schema.tables -- \"` to enumerate database schema\n\n**Blast Radius:**\nSimilar to role filter injection, this affects data export operations and can be chained with sort_field injection for multi-vector attacks.\n\n**Fix:**\n```python\n# (Included in previous fix with parameterized conditions)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in build_export_query via sort_field Parameter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:41`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name; DROP TABLE users; -- \", {})`\n2. Generated SQL becomes: `SELECT id, name, email, role, created_at FROM users ORDER BY name; DROP TABLE users; -- `\n3. Depending on database configuration, this could execute multiple statements, deleting the users table\n4. More realistic: `\"(SELECT CASE WHEN (SELECT password FROM users WHERE id=1) LIKE 'a%' THEN name ELSE email END)\"` enables boolean-based blind SQLi to extract admin passwords character by character\n\n**Blast Radius:**\nSort parameters are often exposed in API query strings or export configurations. This enables attackers to execute arbitrary SQL through URL manipulation.\n\n**Fix:**\n```python\n# Before:\nsql += f\" ORDER BY {sort_field}\"\nreturn sql\n\n# After:\n# Whitelist allowed sort columns\nALLOWED_SORT_FIELDS = {'id', 'name', 'email', 'role', 'created_at'}\n\nif sort_field not in ALLOWED_SORT_FIELDS:\n    raise ValueError(f\"Invalid sort field: {sort_field}\")\n\nsql += f\" ORDER BY {sort_field}\"\nreturn sql, params\n```\n\n---\n\n**Summary:** All three functions in this file contain multiple critical SQL injection vulnerabilities. Every parameter is vulnerable to injection through direct string interpolation. The entire file should be refactored to use parameterized queries with whitelisted column names for ORDER BY and SET clauses.\n[scanning user_service.py:1-43]\n# Security Analysis Report\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Search Query\n\n**Category:** SQLi\n\n**Location:** `user_service.py:12`\n\n**Attack Scenario:**\n1. Attacker calls `search_users()` with malicious `query` parameter: `' OR 1=1 UNION SELECT password_hash, salt, api_key, ssn FROM sensitive_data --`\n2. `build_search_query()` concatenates this into SQL without parameterization\n3. The constructed SQL is passed directly to `execute_read()` which executes it\n4. Attacker extracts password hashes, API keys, SSNs, and other sensitive data from unrelated tables\n5. Even if `build_search_query()` attempts basic sanitization, the raw SQL string flows through `execute_read()` to the database without parameter binding\n\n**Blast Radius:**\nAny endpoint exposing `search_users()` allows unauthenticated SQL injection. The attacker can read any table, modify data via stacked queries (if supported), or exfiltrate the entire database. All downstream consumers of search results receive poisoned data.\n\n**Fix:**\n```python\n# BEFORE:\nsql = build_search_query(query, role_filter)\nrows = execute_read(sql)\n\n# AFTER:\nsql, params = build_search_query_parameterized(query, role_filter)\nrows = execute_read(sql, params)  # Pass params separately for binding\n```\n\nOr better yet, use an ORM:\n```python\n# AFTER (ORM):\nusers = User.query.filter(\n    User.name.ilike(f\"%{query}%\") | User.email.ilike(f\"%{query}%\")\n).filter_by(role=role_filter).all()\nreturn [self._format_user(u) for u in users]\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Sort Field\n\n**Category:** SQLi\n\n**Location:** `user_service.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `export_users()` with `sort_field = \"name; DROP TABLE users; --\"`\n2. `build_export_query()` concatenates this directly into an ORDER BY clause: `SELECT * FROM users ORDER BY name; DROP TABLE users; --`\n3. The SQL is passed to `execute_read()` which executes it\n4. The users table is dropped, causing complete service disruption\n5. Alternatively, attacker uses `sort_field = \"(SELECT CASE WHEN (SELECT password FROM users WHERE id=1 LIKE 'a%') THEN name ELSE email END)\"` for blind SQLi to exfiltrate passwords character-by-character\n\n**Blast Radius:**\nAny endpoint exposing `export_users()` allows data exfiltration or destruction. The attack can escalate to full database compromise, including reading admin credentials, modifying audit logs to hide tracks, or executing operating system commands via SQL functions like `xp_cmdshell` (MSSQL) or `COPY TO PROGRAM` (PostgreSQL).\n\n**Fix:**\n```python\n# BEFORE:\nsql = build_export_query(sort_field, filters)\n\n# AFTER:\nALLOWED_SORT_FIELDS = {\"name\", \"email\", \"created_at\", \"role\"}\nif sort_field not in ALLOWED_SORT_FIELDS:\n    raise ValueError(f\"Invalid sort field: {sort_field}\")\n\nsql, params = build_export_query_parameterized(sort_field, filters)\nrows = execute_read(sql, params)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Profile Update Data\n\n**Category:** SQLi\n\n**Location:** `user_service.py:24`\n\n**Attack Scenario:**\n1. Attacker updates profile with `bio = \"', email = 'attacker@evil.com' WHERE 1=1 OR email = '\"`\n2. If `build_update_query()` constructs SQL like `UPDATE users SET bio = '{bio}' WHERE id = {user_id}`, the injected payload becomes:\n   ```sql\n   UPDATE users SET bio = '', email = 'attacker@evil.com' WHERE 1=1 OR email = '' WHERE id = 123\n   ```\n3. This updates ALL users' email addresses to the attacker's email\n4. Attacker triggers password resets for admin accounts, receiving reset tokens at their email\n5. Attacker gains admin access by resetting passwords\n\n**Blast Radius:**\nMass account takeover. The attacker can modify any user record, escalate privileges by setting `role = 'admin'` in the injected SQL, or exfiltrate sensitive profile data. Even if `check_permission()` limits updates to the current user, the SQL injection bypasses this check by targeting the WHERE clause.\n\n**Fix:**\n```python\n# BEFORE:\nsql = build_update_query(user_id, clean_data)\nexecute_query(sql)\n\n# AFTER:\nsql, params = build_update_query_parameterized(user_id, clean_data)\nexecute_query(sql, params)\n\n# Or use ORM:\nuser = User.query.get(user_id)\nfor field, value in clean_data.items():\n    setattr(user, field, value)\ndb.session.commit()\n```\n\n---\n\n## [SEVERITY: HIGH] Authorization Bypass via Ignored Permission Check Return Value\n\n**Category:** Auth Bypass\n\n**Location:** `user_service.py:18`\n\n**Attack Scenario:**\n1. Attacker with `user_id = 999` calls `update_user_profile(user_id=1, ...)` to modify the admin account\n2. `check_permission(current_user, user_id)` is called but its return value is ignored (line 18)\n3. If `check_permission()` returns `False` or raises an exception that is caught elsewhere, execution continues to line 24\n4. The update proceeds without authorization, allowing the attacker to modify any user's profile\n5. Attacker sets admin's email to their own, triggers password reset, gains admin access\n\n**Blast Radius:**\nHorizontal privilege escalation to any user account. If `check_permission()` does not raise exceptions (only returns boolean), this becomes a complete auth bypass. The vulnerability affects all operations using this pattern. Even if the current implementation raises exceptions, the ignored return value makes the code fragile and prone to future bypass via exception handling changes.\n\n**Fix:**\n```python\n# BEFORE:\ncheck_permission(current_user, user_id)\n\n# AFTER:\nif not check_permission(current_user, user_id):\n    raise PermissionError(f\"User {current_user.id} cannot modify user {user_id}\")\n\n# OR ensure check_permission raises on failure:\ncheck_permission(current_user, user_id)  # Must raise PermissionError on denial\n```\n\nVerify that `check_permission()` in `auth.py` actually raises exceptions on denial and does not silently return False.\n\n---\n\n## [SEVERITY: MEDIUM] Missing Authorization Check Enables Unauthorized Data Export\n\n**Category:** Auth Bypass\n\n**Location:** `user_service.py:28`\n\n**Attack Scenario:**\n1. Unauthenticated or low-privilege attacker calls `export_users(sort_field='created_at', filters={})`\n2. No permission check exists in the function (unlike `update_user_profile` which calls `check_permission`)\n3. The function returns all users matching filters, potentially exposing emails, roles, and account creation timestamps\n4. Attacker enumerates admin accounts, identifies recently created accounts for targeted phishing, or builds a user database for spam/social engineering\n5. Combined with the SQLi in the same function (line 31), attacker can exfiltrate the entire database including sensitive fields not in `_format_user()`\n\n**Blast Radius:**\nMass data exposure. Any caller of `export_users()` receives user data without authorization. If the function is exposed via an API endpoint without authentication, it becomes a public data leak. The lack of permission checks also enables reconnaissance for more targeted attacks.\n\n**Fix:**\n```python\n# BEFORE:\ndef export_users(self, sort_field, filters):\n    \"\"\"Export users with sorting and filtering.\"\"\"\n    sql = build_export_query(sort_field, filters)\n\n# AFTER:\ndef export_users(self, sort_field, filters, current_user):\n    \"\"\"Export users with sorting and filtering.\"\"\"\n    if current_user.role not in ['admin', 'auditor']:\n        raise PermissionError(\"Only admins and auditors can export users\")\n    \n    ALLOWED_SORT_FIELDS = {\"name\", \"email\", \"created_at\", \"role\"}\n    if sort_field not in ALLOWED_SORT_FIELDS:\n        raise ValueError(f\"Invalid sort field: {sort_field}\")\n    \n    sql, params = build_export_query_parameterized(sort_field, filters)\n    rows = execute_read(sql, params)\n    return [self._format_user(row) for row in rows]\n```\n\n---\n\n## Summary\n\nThis code contains **3 critical SQL injection vulnerabilities** and **2 high/medium authorization issues**. All three SQLi findings stem from the same root cause: `build_*_query()` functions construct SQL strings that are passed to `execute_query()` and `execute_read()` without parameter binding. The authorization issues involve an ignored permission check and a completely missing permission check.\n\n**Immediate actions required:**\n1. Refactor all query builders to return parameterized queries: `(sql_template, params_dict)`\n2. Update `execute_query()` and `execute_read()` to accept and bind parameters\n3. Verify `check_permission()` raises exceptions on denial\n4. Add permission checks to `export_users()`\n5. Implement input validation for `sort_field` using an allowlist"
+    },
+    {
+      "metrics": {
+        "precision": 0.6316,
+        "recall": 1.0,
+        "f1": 0.7742,
+        "precision_pct": 63,
+        "recall_pct": 100,
+        "f1_pct": 77
+      },
+      "counts": {
+        "tp": 12,
+        "fp": 7,
+        "fn": 0,
+        "total_findings": 20
+      },
+      "matched_ids": [
+        "auth-bypass-permission",
+        "auth-bypass-token",
+        "auth-ignored-return",
+        "sqli-admin-delete",
+        "sqli-admin-impersonate",
+        "sqli-admin-run",
+        "sqli-execute",
+        "sqli-export",
+        "sqli-export-service",
+        "sqli-search",
+        "sqli-update",
+        "weak-hash"
+      ],
+      "missed_ids": [],
+      "provisional_matched_ids": [
+        "sqli-search-service"
+      ],
+      "category_mismatches": [
+        {
+          "finding_index": 5,
+          "finding_title": "Unauthenticated Account Takeover via Token Generation",
+          "finding_category": "Auth Bypass",
+          "truth_id": "sqli-admin-delete",
+          "truth_category": "SQLi"
+        },
+        {
+          "finding_index": 6,
+          "finding_title": "Session Tokens Without Expiration Enable Persistent Compromise",
+          "finding_category": "Auth Bypass",
+          "truth_id": "sqli-admin-impersonate",
+          "truth_category": "SQLi"
+        },
+        {
+          "finding_index": 12,
+          "finding_title": "Environment-Controlled Database Path",
+          "finding_category": "Path Traversal",
+          "truth_id": "sqli-search",
+          "truth_category": "SQLi"
+        },
+        {
+          "finding_index": 19,
+          "finding_title": "SQL Injection via Unsanitized User Data in update_user_profile",
+          "finding_category": "SQLi",
+          "truth_id": "auth-ignored-return",
+          "truth_category": "Auth Bypass"
+        }
+      ],
+      "scan_time_seconds": 155.6,
+      "target_loc": 254,
+      "scan_time_per_kloc": 612.5,
+      "scan_time_per_vuln": 13.0,
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 7512,
+        "sonnet_out": 9771,
+        "calls": 5
+      },
+      "tokens_per_kloc": 68043,
+      "findings": [
+        {
+          "severity": "HIGH",
+          "title": "Cross-file Auth Bypass: ignored return of check_permission()",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 18
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Cross-file Auth Bypass: ignored return of check_permission()\n**Category:** Auth Bypass\n**Location:** `user_service.py:18`\n**Attack Scenario:**\nUserService.update_user_profile() invokes the security gate `check_permission()` (defined in `auth.py`) but never uses its return value. An unauthorized caller reaches the protected operation because the gate's verdict is silently dropped.\n**Fix:**\nBranch on the gate's result, e.g. `if not check_permission(...): abort(403)`.\n---\n\n\ud83d\udd0e Gra"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQLi (static): register_admin_routes.delete_user",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 22
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.delete_user\n**Category:** SQLi\n**Location:** `admin_api.py:22`\n**Attack Scenario:**\nregister_admin_routes.delete_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQLi (static): register_admin_routes.impersonate_user",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 31
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.impersonate_user\n**Category:** SQLi\n**Location:** `admin_api.py:31`\n**Attack Scenario:**\nregister_admin_routes.impersonate_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Weak Crypto (static): hash_password",
+          "category": "Weak Crypto",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 34
+            },
+            {
+              "file": "admin_api.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Weak Crypto (static): hash_password\n**Category:** Weak Crypto\n**Location:** `auth.py:34`\n**Attack Scenario:**\nMD5 is cryptographically weak; if used for passwords or security tokens it is trivially brute-forced. Use a slow, salted KDF (bcrypt/scrypt/PBKDF2).\n**Fix:**\nSee description.\n---\n\n\n[scanning admin_api.py:1-34]\n"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Unauthenticated Arbitrary SQL Query Execution",
+          "category": "Auth Bypass / SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 10
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Unauthenticated Arbitrary SQL Query Execution\n\n**Category:** Auth Bypass / SQLi\n\n**Location:** `admin_api.py:10`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/admin/run-query` with arbitrary SQL in JSON body\n2. No authentication check exists (comment on line 15 confirms \"no auth check on this route\")\n3. Attacker executes `{\"query\": \"SELECT * FROM users\"}` to dump all user data\n4. Attacker executes `{\"query\": \"SELECT * FROM sessions\"}` to steal all active s"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Unauthenticated Account Takeover via Token Generation",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 25
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Unauthenticated Account Takeover via Token Generation\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:25`\n\n**Attack Scenario:**\n1. Attacker identifies target user ID (e.g., admin user ID 1)\n2. Sends POST request to `/api/admin/impersonate/1` with no credentials\n3. Receives valid session token for admin account\n4. Uses token to authenticate as admin user\n5. Gains full administrative access to application\n\n**Blast Radius:**\n- Complete account takeover of any user in"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Session Tokens Without Expiration Enable Persistent Compromise",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 31
+            },
+            {
+              "file": "auth.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Session Tokens Without Expiration Enable Persistent Compromise\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:31`\n\n**Attack Scenario:**\n1. Attacker obtains session token via impersonation endpoint or database leak\n2. Token never expires (line 30 confirms \"no expiry\")\n3. Attacker uses token indefinitely, even after user changes password or admin revokes access\n4. Stolen tokens remain valid permanently with no rotation mechanism\n5. Compromised tokens cannot be invalida"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authentication Bypass - No Token Expiry or Revocation Check",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 11
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authentication Bypass - No Token Expiry or Revocation Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker obtains a valid authentication token (e.g., from a compromised session, stolen cookie, or legitimate login)\n2. User logs out or admin revokes the token - but token remains in VALID_TOKENS dict\n3. Attacker continues using the stolen token indefinitely to access protected endpoints\n4. Even if the user changes their password or is d"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authorization Bypass - Type Confusion in Permission Check",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 37
+            },
+            {
+              "file": "database.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authorization Bypass - Type Confusion in Permission Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:37`\n\n**Attack Scenario:**\n1. Non-admin user (role != \"admin\") attempts to access a resource they don't own\n2. Function retrieves `user.get(\"user_id\")` which returns a string (e.g., \"123\")\n3. Function compares string \"123\" to integer `resource_owner_id` (e.g., 123)\n4. Comparison `\"123\" == 123` evaluates to False in Python (type mismatch)\n5. Function skips the `return Tr"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in execute_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 18
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in execute_query\n\n**Category:** SQLi\n\n**Location:** `database.py:18`\n\n**Attack Scenario:**\n1. Attacker calls any function that uses `execute_query()` with controlled input\n2. Example: User registration with malicious name: `'; DROP TABLE users; --`\n3. The raw SQL string is passed to `conn.execute(sql)` without parameter binding\n4. Attacker can execute arbitrary SQL commands: DELETE data, modify roles to admin, exfiltrate sensitive information\n5. Complete dat"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in execute_read",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 26
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in execute_read\n\n**Category:** SQLi\n\n**Location:** `database.py:26`\n\n**Attack Scenario:**\n1. Attacker controls search/filter parameters that are used to build SQL queries\n2. Example: Search for user by email: `' OR '1'='1` \n3. The constructed query becomes: `SELECT * FROM users WHERE email='' OR '1'='1'` \n4. Attacker bypasses WHERE clauses to dump all records\n5. Using UNION attacks, attacker can extract password hashes, escalate to admin role verification by"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Shared Database Connection Without Thread Safety",
+          "category": "Race Condition",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 10
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Shared Database Connection Without Thread Safety\n\n**Category:** Race Condition\n\n**Location:** `database.py:10`\n\n**Attack Scenario:**\n1. Application runs with multiple threads/workers (common in production)\n2. Thread A starts a transaction, reads sensitive data\n3. Thread B uses the same `_connection`, executes a query that modifies state\n4. Thread A's transaction sees inconsistent data or commits partial state\n5. In SQLite, this can cause database locks, corruption, or \"data"
+        },
+        {
+          "severity": "LOW",
+          "title": "Environment-Controlled Database Path",
+          "category": "Path Traversal",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 5
+            },
+            {
+              "file": "query_builder.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: LOW] Environment-Controlled Database Path\n\n**Category:** Path Traversal\n\n**Location:** `database.py:5`\n\n**Attack Scenario:**\n1. Attacker gains ability to set environment variables (e.g., through container escape, CI/CD injection, or compromised deployment)\n2. Sets `USER_DB_PATH=/etc/passwd` or `/root/.ssh/id_rsa`\n3. Application attempts to open these files as SQLite databases\n4. While SQLite will likely fail to parse non-database files, error messages may leak file content\n5. Attac"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in User Search Query Construction",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 7
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in User Search Query Construction\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:7`\n\n**Attack Scenario:**\n1. Attacker calls the search endpoint with `search_term = \"' OR '1'='1' -- \"` \n2. The resulting query becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%' OR '1'='1' -- %' OR email LIKE '%' OR '1'='1' -- %')`\n3. The `OR '1'='1'` condition is always true, and `--` comments out the rest, bypassing the search filter entir"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in User Profile Update Query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 21
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in User Profile Update Query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:21`\n\n**Attack Scenario:**\n1. Attacker modifies their profile with malicious data: `{\"bio\": \"test', role = 'admin' WHERE '1'='1\", \"name\": \"victim\"}`\n2. The constructed query becomes: `UPDATE users SET bio = 'test', role = 'admin' WHERE '1'='1', name = 'victim' WHERE id = '123'`\n3. Due to SQL injection in the `SET` clause, the attacker can inject arbitrary column updates includin"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in Export Query via Multiple Injection Points",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 33
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in Export Query via Multiple Injection Points\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:33`\n\n**Attack Scenario:**\n1. Attacker calls export endpoint with `filters = {\"role\": \"admin' OR '1'='1' UNION SELECT id, password, token, 'admin', created_at FROM admin_credentials -- \"}`\n2. The injected payload bypasses role filtering and uses UNION to extract credentials from a sensitive table\n3. The resulting query: `SELECT id, name, email, role, created_at "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in Export Query via ORDER BY Clause",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 41
+            },
+            {
+              "file": "user_service.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in Export Query via ORDER BY Clause\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:41`\n\n**Attack Scenario:**\n1. Attacker controls `sort_field` parameter and sends: `sort_field = \"name; DROP TABLE users; --\"`\n2. The resulting query becomes: `SELECT ... ORDER BY name; DROP TABLE users; --`\n3. Depending on database configuration, this could execute as multiple statements, destroying the users table\n4. Alternative payload using boolean-based blind injectio"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized Query Parameter in search_users",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 12
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Query Parameter in search_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:12`\n\n**Attack Scenario:**\n1. Attacker calls `search_users()` with malicious query parameter: `query=\"admin' UNION SELECT password,email,null,null,null FROM credentials--\"`\n2. This query string is passed directly to `build_search_query()` which constructs a SQL string\n3. The resulting SQL is executed via `execute_read()` without parameter binding\n4. Attacker ex"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized sort_field Parameter in export_users",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 31
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized sort_field Parameter in export_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `export_users()` with malicious sort_field: `sort_field=\"name; DROP TABLE users--\"`\n2. This parameter is passed unsanitized to `build_export_query()` which likely constructs an ORDER BY clause\n3. The SQL injection payload is executed via `execute_read()`\n4. Attacker can drop tables, extract data via UNION inject"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized User Data in update_user_profile",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 24
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized User Data in update_user_profile\n\n**Category:** SQLi\n\n**Location:** `user_service.py:24`\n\n**Attack Scenario:**\n1. Attacker calls `update_user_profile()` with malicious data in allowed fields: `data={\"bio\": \"test'; DROP TABLE users--\", \"name\": \"attacker\"}`\n2. The comment on line 20 indicates sanitization was attempted but `bio` and `website` fields were \"missed\"\n3. These unsanitized fields are included in `clean_data` (line 22)\n4. `build_updat"
+        }
+      ],
+      "raw_output": "\ud83d\udd17 Graph-derived check: security gate return value discarded\n\n## [SEVERITY: HIGH] Cross-file Auth Bypass: ignored return of check_permission()\n**Category:** Auth Bypass\n**Location:** `user_service.py:18`\n**Attack Scenario:**\nUserService.update_user_profile() invokes the security gate `check_permission()` (defined in `auth.py`) but never uses its return value. An unauthorized caller reaches the protected operation because the gate's verdict is silently dropped.\n**Fix:**\nBranch on the gate's result, e.g. `if not check_permission(...): abort(403)`.\n---\n\n\ud83d\udd0e Graph/AST static rules \u2014 deterministic findings\n\n## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.delete_user\n**Category:** SQLi\n**Location:** `admin_api.py:22`\n**Attack Scenario:**\nregister_admin_routes.delete_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.impersonate_user\n**Category:** SQLi\n**Location:** `admin_api.py:31`\n**Attack Scenario:**\nregister_admin_routes.impersonate_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n## [SEVERITY: HIGH] Weak Crypto (static): hash_password\n**Category:** Weak Crypto\n**Location:** `auth.py:34`\n**Attack Scenario:**\nMD5 is cryptographically weak; if used for passwords or security tokens it is trivially brute-forced. Use a slow, salted KDF (bcrypt/scrypt/PBKDF2).\n**Fix:**\nSee description.\n---\n\n\n[scanning admin_api.py:1-34]\n## [SEVERITY: CRITICAL] Unauthenticated Arbitrary SQL Query Execution\n\n**Category:** Auth Bypass / SQLi\n\n**Location:** `admin_api.py:10`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/admin/run-query` with arbitrary SQL in JSON body\n2. No authentication check exists (comment on line 15 confirms \"no auth check on this route\")\n3. Attacker executes `{\"query\": \"SELECT * FROM users\"}` to dump all user data\n4. Attacker executes `{\"query\": \"SELECT * FROM sessions\"}` to steal all active session tokens\n5. Attacker executes `{\"query\": \"ATTACH DATABASE '/var/www/shell.php' AS shell; CREATE TABLE shell.pwn (code TEXT); INSERT INTO shell.pwn VALUES ('<?php system($_GET[\\\"cmd\\\"]); ?>')\"}` for RCE (SQLite-specific)\n\n**Blast Radius:**\n- Complete database compromise \u2014 read access to all tables (users, sessions, sensitive data)\n- Session token theft enabling full account takeover of all users\n- Potential remote code execution via SQLite ATTACH DATABASE\n- No audit trail of malicious queries\n\n**Fix:**\n```python\n# BEFORE (line 9-17):\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    data = request.get_json()\n    sql = data.get(\"query\", \"\")\n\n    # \"admin only\" \u2014 but no auth check on this route\n    rows = execute_read(sql)\n    return jsonify({\"results\": [list(r) for r in rows]})\n\n# AFTER:\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n@require_admin_auth  # Add auth decorator that verifies admin role\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    data = request.get_json()\n    sql = data.get(\"query\", \"\")\n    \n    # Validate query is SELECT-only (read operations)\n    if not sql.strip().upper().startswith(\"SELECT\"):\n        return jsonify({\"error\": \"Only SELECT queries allowed\"}), 403\n    \n    # Use parameterized query or query whitelist instead of raw SQL\n    rows = execute_read(sql)\n    return jsonify({\"results\": [list(r) for r in rows]})\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in User Deletion\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:22`\n\n**Attack Scenario:**\n1. Attacker sends DELETE request to `/api/admin/delete-user/1' OR '1'='1`\n2. No authentication check on this route\n3. Constructed query becomes: `DELETE FROM users WHERE id = '1' OR '1'='1'`\n4. All users in the database are deleted\n5. Alternative payload: `1'; DROP TABLE users; --` to destroy the users table entirely\n\n**Blast Radius:**\n- Complete user account deletion (all records)\n- Database structure destruction via DROP TABLE\n- No authentication required due to missing auth check\n- Irreversible data loss with no transaction rollback\n\n**Fix:**\n```python\n# BEFORE (line 19-23):\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    execute_query(f\"DELETE FROM users WHERE id = '{user_id}'\")\n    return jsonify({\"deleted\": user_id})\n\n# AFTER:\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\n@require_admin_auth  # Add auth decorator\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    # Validate user_id is numeric\n    if not user_id.isdigit():\n        return jsonify({\"error\": \"Invalid user ID\"}), 400\n    \n    # Use parameterized query\n    execute_query(\"DELETE FROM users WHERE id = ?\", (user_id,))\n    return jsonify({\"deleted\": user_id})\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Session Token Creation\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:31`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/api/admin/impersonate/1', 'admin'); DELETE FROM users; --`\n2. No authentication check on this route\n3. Constructed query becomes: `INSERT INTO sessions (token, user_id, created_at) VALUES ('[token]', '1', 'admin'); DELETE FROM users; --', datetime('now'))`\n4. User table is deleted via second statement injection\n5. Alternative: `1', 'admin'); UPDATE users SET role='admin' WHERE id='[attacker_id]'; --` to escalate privileges\n\n**Blast Radius:**\n- Arbitrary SQL execution (DELETE, UPDATE, DROP commands)\n- Privilege escalation by modifying user roles\n- Database destruction\n- Token creation for any user enabling account takeover\n- No audit logging of impersonation or malicious SQL\n\n**Fix:**\n```python\n# BEFORE (line 25-34):\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    import secrets\n    token = secrets.token_hex(32)\n    # Stores token with no expiry, no audit log\n    execute_query(\n        f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n    )\n    return jsonify({\"token\": token, \"user_id\": user_id})\n\n# AFTER:\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\n@require_admin_auth  # Add auth decorator\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    import secrets\n    \n    # Validate user_id is numeric\n    if not user_id.isdigit():\n        return jsonify({\"error\": \"Invalid user ID\"}), 400\n    \n    token = secrets.token_hex(32)\n    \n    # Use parameterized query and add expiry + audit logging\n    expiry = datetime.now() + timedelta(hours=1)\n    execute_query(\n        \"INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, datetime('now'), ?)\",\n        (token, user_id, expiry)\n    )\n    \n    # Log impersonation action\n    execute_query(\n        \"INSERT INTO audit_log (admin_id, action, target_user_id, timestamp) VALUES (?, 'impersonate', ?, datetime('now'))\",\n        (get_current_admin_id(), user_id)\n    )\n    \n    return jsonify({\"token\": token, \"user_id\": user_id})\n```\n\n---\n\n## [SEVERITY: CRITICAL] Unauthenticated Account Takeover via Token Generation\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:25`\n\n**Attack Scenario:**\n1. Attacker identifies target user ID (e.g., admin user ID 1)\n2. Sends POST request to `/api/admin/impersonate/1` with no credentials\n3. Receives valid session token for admin account\n4. Uses token to authenticate as admin user\n5. Gains full administrative access to application\n\n**Blast Radius:**\n- Complete account takeover of any user including administrators\n- No authentication barrier (route is publicly accessible)\n- Tokens have no expiration (line 30 comment confirms \"no expiry\")\n- No audit trail of impersonation (line 30 comment confirms \"no audit log\")\n- Attacker can generate unlimited tokens for persistent access\n\n**Fix:**\n```python\n# BEFORE (line 25-34):\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n\n# AFTER:\nfrom auth import require_admin_auth, get_current_admin_id\nfrom datetime import datetime, timedelta\n\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\n@require_admin_auth  # Require authenticated admin\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    # Verify caller has super-admin role\n    admin = get_current_admin()\n    if admin.role != \"super_admin\":\n        return jsonify({\"error\": \"Insufficient privileges\"}), 403\n```\n\n---\n\n## [SEVERITY: HIGH] Session Tokens Without Expiration Enable Persistent Compromise\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:31`\n\n**Attack Scenario:**\n1. Attacker obtains session token via impersonation endpoint or database leak\n2. Token never expires (line 30 confirms \"no expiry\")\n3. Attacker uses token indefinitely, even after user changes password or admin revokes access\n4. Stolen tokens remain valid permanently with no rotation mechanism\n5. Compromised tokens cannot be invalidated without manual database intervention\n\n**Blast Radius:**\n- All session tokens created by this function remain valid forever\n- Password changes do not invalidate existing sessions\n- No mechanism to revoke compromised tokens\n- Account takeover persists indefinitely once token is stolen\n\n**Fix:**\n```python\n# BEFORE (line 28-33):\nimport secrets\ntoken = secrets.token_hex(32)\n# Stores token with no expiry, no audit log\nexecute_query(\n    f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n)\n\n# AFTER:\nimport secrets\nfrom datetime import datetime, timedelta\n\ntoken = secrets.token_hex(32)\n# Set expiration for security (e.g., 1 hour for impersonation)\nexpires_at = datetime.now() + timedelta(hours=1)\n\nexecute_query(\n    \"INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, datetime('now'), ?)\",\n    (token, user_id, expires_at)\n)\n\n# Add audit logging\nexecute_query(\n    \"INSERT INTO audit_log (admin_id, action, target_user_id, timestamp) VALUES (?, 'impersonate', ?, datetime('now'))\",\n    (get_current_admin_id(), user_id)\n)\n```\n[scanning auth.py:1-44]\n## [SEVERITY: HIGH] Authentication Bypass - No Token Expiry or Revocation Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker obtains a valid authentication token (e.g., from a compromised session, stolen cookie, or legitimate login)\n2. User logs out or admin revokes the token - but token remains in VALID_TOKENS dict\n3. Attacker continues using the stolen token indefinitely to access protected endpoints\n4. Even if the user changes their password or is deactivated, the old token remains valid\n5. Token works across all protected routes without any expiry check, scope validation, or revocation verification\n\n**Blast Radius:**\nAll routes decorated with `@require_auth` are vulnerable. An attacker with any token that was ever added to VALID_TOKENS can bypass authentication indefinitely, even after the user session should have ended. This affects every protected endpoint in the application.\n\n**Fix:**\n```python\n# Before:\ndef require_auth(f):\n    \"\"\"Decorator to require authentication on a route.\"\"\"\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:\n            abort(401)\n        # BUG: only checks token exists, never validates expiry or scope\n        if token not in VALID_TOKENS:\n            abort(401)\n        return f(*args, **kwargs)\n    return decorated\n\n# After:\nimport time\n\ndef require_auth(f):\n    \"\"\"Decorator to require authentication on a route.\"\"\"\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:\n            abort(401)\n        \n        token_data = VALID_TOKENS.get(token)\n        if not token_data:\n            abort(401)\n        \n        # Check token expiry\n        if token_data.get(\"expires_at\", 0) < time.time():\n            abort(401)\n        \n        # Check if token has been revoked\n        if token_data.get(\"revoked\", False):\n            abort(401)\n        \n        # Validate token scope matches the requested resource\n        required_scope = getattr(f, \"required_scope\", None)\n        if required_scope and required_scope not in token_data.get(\"scopes\", []):\n            abort(403)\n        \n        return f(*args, **kwargs)\n    return decorated\n```\n\n---\n\n## [SEVERITY: CRITICAL] Weak Password Hashing with MD5\n\n**Category:** Secrets Exposure\n\n**Location:** `auth.py:32`\n\n**Attack Scenario:**\n1. Attacker gains access to the password database (via SQL injection, backup exposure, or insider threat)\n2. Password hashes are stored as MD5 - a cryptographically broken algorithm vulnerable to collision attacks and rainbow tables\n3. Attacker uses freely available rainbow tables or GPU-accelerated cracking tools to reverse the MD5 hashes in seconds\n4. Common passwords are cracked instantly; even complex passwords fall to modern GPUs within hours/days\n5. Attacker uses recovered plaintext passwords to log in as legitimate users\n6. If users reuse passwords across services, attacker can pivot to other platforms\n\n**Blast Radius:**\nAll user passwords in the system are compromised if the hash database is exposed. This affects every user account and any downstream authentication that relies on these credentials. Password reuse across services amplifies the impact beyond this application.\n\n**Fix:**\n```python\n# Before:\ndef hash_password(password):\n    \"\"\"Hash a password for storage.\"\"\"\n    return hashlib.md5(password.encode()).hexdigest()\n\n# After:\nimport secrets\nfrom argon2 import PasswordHasher\n\nph = PasswordHasher(\n    time_cost=2,        # iterations\n    memory_cost=65536,  # 64 MB\n    parallelism=4,      # threads\n    hash_len=32,        # output length\n    salt_len=16         # salt length\n)\n\ndef hash_password(password):\n    \"\"\"Hash a password for storage using Argon2id.\"\"\"\n    return ph.hash(password)\n\ndef verify_password(password, hash):\n    \"\"\"Verify a password against its hash.\"\"\"\n    try:\n        ph.verify(hash, password)\n        # Check if rehashing is needed (parameters updated)\n        if ph.check_needs_rehash(hash):\n            return True, ph.hash(password)\n        return True, None\n    except:\n        return False, None\n```\n\n---\n\n## [SEVERITY: HIGH] Authorization Bypass - Type Confusion in Permission Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:37`\n\n**Attack Scenario:**\n1. Non-admin user (role != \"admin\") attempts to access a resource they don't own\n2. Function retrieves `user.get(\"user_id\")` which returns a string (e.g., \"123\")\n3. Function compares string \"123\" to integer `resource_owner_id` (e.g., 123)\n4. Comparison `\"123\" == 123` evaluates to False in Python (type mismatch)\n5. Function skips the `return True` inside the if block\n6. Execution falls through to line 44: `return True` - unconditional access granted\n7. Attacker can access ANY resource regardless of ownership, as long as they're not an admin\n8. Even regular users effectively have admin-level access due to this bug\n\n**Blast Radius:**\nAll authorization checks using `check_permission` are bypassed for non-admin users. Any endpoint that calls this function to verify resource ownership will grant access to all authenticated users, regardless of whether they own the resource. This effectively makes all user data cross-accessible.\n\n**Fix:**\n```python\n# Before:\ndef check_permission(user, resource_owner_id):\n    \"\"\"Check if user can access a resource.\"\"\"\n    # BUG: compares string user_id to int owner_id \u2014 always fails for non-admins,\n    # so the code below falls through to return True\n    if user.get(\"role\") != \"admin\":\n        if user.get(\"user_id\") == resource_owner_id:\n            return True\n    return True  # admin bypass \u2014 but non-admins also reach here due to type mismatch\n\n# After:\ndef check_permission(user, resource_owner_id):\n    \"\"\"Check if user can access a resource.\"\"\"\n    # Admin users have access to all resources\n    if user.get(\"role\") == \"admin\":\n        return True\n    \n    # Non-admin users can only access their own resources\n    # Ensure type consistency before comparison\n    user_id = user.get(\"user_id\")\n    if user_id is None:\n        return False\n    \n    # Convert both to same type for comparison\n    try:\n        return int(user_id) == int(resource_owner_id)\n    except (ValueError, TypeError):\n        return False\n```\n[scanning database.py:1-50]\n## [SEVERITY: CRITICAL] SQL Injection in execute_query\n\n**Category:** SQLi\n\n**Location:** `database.py:18`\n\n**Attack Scenario:**\n1. Attacker calls any function that uses `execute_query()` with controlled input\n2. Example: User registration with malicious name: `'; DROP TABLE users; --`\n3. The raw SQL string is passed to `conn.execute(sql)` without parameter binding\n4. Attacker can execute arbitrary SQL commands: DELETE data, modify roles to admin, exfiltrate sensitive information\n5. Complete database compromise is possible\n\n**Blast Radius:**\nEvery function in the codebase that calls `execute_query()` becomes an injection point. This includes user registration, profile updates, password changes, and any other write operations. All user-supplied data flowing into these operations can be weaponized for SQL injection.\n\n**Fix:**\n```python\n# BEFORE:\ndef execute_query(sql):\n    \"\"\"Execute a write query (INSERT, UPDATE, DELETE).\"\"\"\n    conn = get_connection()\n    conn.execute(sql)\n    conn.commit()\n\n# AFTER:\ndef execute_query(sql, params=None):\n    \"\"\"Execute a write query (INSERT, UPDATE, DELETE) with parameter binding.\"\"\"\n    conn = get_connection()\n    if params is None:\n        params = []\n    conn.execute(sql, params)\n    conn.commit()\n\n# Usage example:\n# Instead of: execute_query(f\"INSERT INTO users (name) VALUES ('{name}')\")\n# Use: execute_query(\"INSERT INTO users (name) VALUES (?)\", [name])\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in execute_read\n\n**Category:** SQLi\n\n**Location:** `database.py:26`\n\n**Attack Scenario:**\n1. Attacker controls search/filter parameters that are used to build SQL queries\n2. Example: Search for user by email: `' OR '1'='1` \n3. The constructed query becomes: `SELECT * FROM users WHERE email='' OR '1'='1'` \n4. Attacker bypasses WHERE clauses to dump all records\n5. Using UNION attacks, attacker can extract password hashes, escalate to admin role verification bypass\n6. Time-based blind SQLi possible: `' OR (SELECT CASE WHEN (1=1) THEN sqlite_sleep(5000) END) --`\n\n**Blast Radius:**\nEvery function calling `execute_read()` exposes a SQL injection vector. This includes user lookups, authentication checks, profile retrieval, search functionality, and authorization queries. Attackers can extract all database contents, bypass authentication, or cause denial of service.\n\n**Fix:**\n```python\n# BEFORE:\ndef execute_read(sql):\n    \"\"\"Execute a read query and return all rows.\"\"\"\n    conn = get_connection()\n    cursor = conn.execute(sql)\n    return cursor.fetchall()\n\n# AFTER:\ndef execute_read(sql, params=None):\n    \"\"\"Execute a read query with parameter binding and return all rows.\"\"\"\n    conn = get_connection()\n    if params is None:\n        params = []\n    cursor = conn.execute(sql, params)\n    return cursor.fetchall()\n\n# Usage example:\n# Instead of: execute_read(f\"SELECT * FROM users WHERE email='{email}'\")\n# Use: execute_read(\"SELECT * FROM users WHERE email=?\", [email])\n```\n\n---\n\n## [SEVERITY: MEDIUM] Shared Database Connection Without Thread Safety\n\n**Category:** Race Condition\n\n**Location:** `database.py:10`\n\n**Attack Scenario:**\n1. Application runs with multiple threads/workers (common in production)\n2. Thread A starts a transaction, reads sensitive data\n3. Thread B uses the same `_connection`, executes a query that modifies state\n4. Thread A's transaction sees inconsistent data or commits partial state\n5. In SQLite, this can cause database locks, corruption, or \"database is locked\" errors\n6. Attackers can trigger race conditions by sending concurrent requests to cause authentication bypass (e.g., checking a token while another request invalidates it)\n\n**Blast Radius:**\nAll database operations in multi-threaded environments are affected. This can lead to authentication bypasses, data corruption, duplicate records, or application crashes. Any concurrent user operations become unreliable.\n\n**Fix:**\n```python\n# BEFORE:\n_connection = None\n\ndef get_connection():\n    \"\"\"Get or create the database connection.\"\"\"\n    global _connection\n    if _connection is None:\n        _connection = sqlite3.connect(DB_PATH)\n    return _connection\n\n# AFTER:\nimport threading\n\n_local = threading.local()\n\ndef get_connection():\n    \"\"\"Get or create a thread-local database connection.\"\"\"\n    if not hasattr(_local, 'connection') or _local.connection is None:\n        _local.connection = sqlite3.connect(DB_PATH, check_same_thread=False)\n    return _local.connection\n\n# OR for production, use a connection pool:\n# from sqlite3 import dbapi2 as sqlite\n# _pool = queue.Queue()\n# Use connection pooling library like SQLAlchemy\n```\n\n---\n\n## [SEVERITY: LOW] Environment-Controlled Database Path\n\n**Category:** Path Traversal\n\n**Location:** `database.py:5`\n\n**Attack Scenario:**\n1. Attacker gains ability to set environment variables (e.g., through container escape, CI/CD injection, or compromised deployment)\n2. Sets `USER_DB_PATH=/etc/passwd` or `/root/.ssh/id_rsa`\n3. Application attempts to open these files as SQLite databases\n4. While SQLite will likely fail to parse non-database files, error messages may leak file content\n5. Attacker could also point to a malicious SQLite database with triggers that execute on read\n\n**Blast Radius:**\nIf environment variable control is achieved, attacker can cause the application to access arbitrary filesystem paths. Combined with SQLite's file format flexibility and trigger capabilities, this could lead to information disclosure or code execution.\n\n**Fix:**\n```python\n# BEFORE:\nDB_PATH = os.getenv(\"USER_DB_PATH\", \"users.db\")\n\n# AFTER:\nimport os\nfrom pathlib import Path\n\ndef get_db_path():\n    \"\"\"Get database path with validation.\"\"\"\n    db_path = os.getenv(\"USER_DB_PATH\", \"users.db\")\n    \n    # Ensure path is relative or within allowed directory\n    path = Path(db_path).resolve()\n    allowed_dir = Path(\"/var/app/data\").resolve()  # Define your allowed directory\n    \n    if not str(path).startswith(str(allowed_dir)):\n        raise ValueError(f\"Database path {path} is outside allowed directory\")\n    \n    return str(path)\n\nDB_PATH = get_db_path()\n```\n[scanning query_builder.py:1-42]\n## [SEVERITY: CRITICAL] SQL Injection in User Search Query Construction\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:7`\n\n**Attack Scenario:**\n1. Attacker calls the search endpoint with `search_term = \"' OR '1'='1' -- \"` \n2. The resulting query becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%' OR '1'='1' -- %' OR email LIKE '%' OR '1'='1' -- %')`\n3. The `OR '1'='1'` condition is always true, and `--` comments out the rest, bypassing the search filter entirely\n4. Attacker extracts all user records including potentially sensitive admin accounts\n5. More sophisticated payloads could use `UNION SELECT` to extract data from other tables or use time-based blind injection to enumerate the database\n\n**Blast Radius:**\nAny code that calls `build_search_query()` with user-controlled input for `search_term` or `role_filter` becomes an injection vector. The returned SQL string will be passed to database execution functions, allowing arbitrary SQL execution with the privileges of the database user.\n\n**Fix:**\n```python\n# Before:\ndef build_search_query(search_term, role_filter=None):\n    sql = f\"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%{search_term}%' OR email LIKE '%{search_term}%')\"\n    if role_filter:\n        sql += f\" AND role = '{role_filter}'\"\n    sql += \" ORDER BY name ASC LIMIT 50\"\n    return sql\n\n# After:\ndef build_search_query(search_term, role_filter=None):\n    sql = \"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE ? OR email LIKE ?)\"\n    params = [f\"%{search_term}%\", f\"%{search_term}%\"]\n    \n    if role_filter:\n        sql += \" AND role = ?\"\n        params.append(role_filter)\n    \n    sql += \" ORDER BY name ASC LIMIT 50\"\n    return sql, params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in User Profile Update Query\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:21`\n\n**Attack Scenario:**\n1. Attacker modifies their profile with malicious data: `{\"bio\": \"test', role = 'admin' WHERE '1'='1\", \"name\": \"victim\"}`\n2. The constructed query becomes: `UPDATE users SET bio = 'test', role = 'admin' WHERE '1'='1', name = 'victim' WHERE id = '123'`\n3. Due to SQL injection in the `SET` clause, the attacker can inject arbitrary column updates including privilege escalation to admin role\n4. Alternative payload could use nested subqueries to exfiltrate data: `{\"bio\": \"' || (SELECT password FROM admin_users LIMIT 1) || '\"}`\n5. Attacker gains administrative privileges or extracts sensitive data from any table\n\n**Blast Radius:**\nAny code calling `build_update_query()` with user-controlled `data` dictionary becomes an injection vector. The vulnerability allows both vertical privilege escalation (changing role/permissions) and horizontal access (updating other users' records through WHERE clause injection).\n\n**Fix:**\n```python\n# Before:\ndef build_update_query(user_id, data):\n    set_clauses = []\n    for key, value in data.items():\n        set_clauses.append(f\"{key} = '{value}'\")\n    clause_str = \", \".join(set_clauses)\n    return f\"UPDATE users SET {clause_str} WHERE id = '{user_id}'\"\n\n# After:\ndef build_update_query(user_id, data):\n    # Whitelist allowed fields\n    allowed_fields = {'name', 'email', 'bio', 'phone'}\n    \n    set_clauses = []\n    params = []\n    for key, value in data.items():\n        if key not in allowed_fields:\n            raise ValueError(f\"Field {key} is not allowed for update\")\n        set_clauses.append(f\"{key} = ?\")\n        params.append(value)\n    \n    clause_str = \", \".join(set_clauses)\n    params.append(user_id)\n    return f\"UPDATE users SET {clause_str} WHERE id = ?\", params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Export Query via Multiple Injection Points\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:33`\n\n**Attack Scenario:**\n1. Attacker calls export endpoint with `filters = {\"role\": \"admin' OR '1'='1' UNION SELECT id, password, token, 'admin', created_at FROM admin_credentials -- \"}`\n2. The injected payload bypasses role filtering and uses UNION to extract credentials from a sensitive table\n3. The resulting query: `SELECT id, name, email, role, created_at FROM users WHERE role = 'admin' OR '1'='1' UNION SELECT id, password, token, 'admin', created_at FROM admin_credentials -- ' AND ...`\n4. Attacker receives admin credentials in the export results\n5. Similar injection via `created_after` parameter allows time-based blind injection or data exfiltration\n\n**Blast Radius:**\nAny caller passing user-controlled `filters` dictionary to `build_export_query()` enables SQL injection. The export functionality typically returns large datasets, making it an ideal vector for bulk data exfiltration.\n\n**Fix:**\n```python\n# Before:\nconditions = []\nif filters.get(\"role\"):\n    conditions.append(f\"role = '{filters['role']}'\")\nif filters.get(\"created_after\"):\n    conditions.append(f\"created_at > '{filters['created_after']}'\")\n\n# After:\nconditions = []\nparams = []\nif filters.get(\"role\"):\n    conditions.append(\"role = ?\")\n    params.append(filters['role'])\nif filters.get(\"created_after\"):\n    conditions.append(\"created_at > ?\")\n    params.append(filters['created_after'])\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Export Query via ORDER BY Clause\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:41`\n\n**Attack Scenario:**\n1. Attacker controls `sort_field` parameter and sends: `sort_field = \"name; DROP TABLE users; --\"`\n2. The resulting query becomes: `SELECT ... ORDER BY name; DROP TABLE users; --`\n3. Depending on database configuration, this could execute as multiple statements, destroying the users table\n4. Alternative payload using boolean-based blind injection: `sort_field = \"(CASE WHEN (SELECT password FROM admin_users LIMIT 1) LIKE 'a%' THEN name ELSE email END)\"`\n5. Attacker can exfiltrate sensitive data character-by-character by observing result ordering changes\n6. More subtle payload: `sort_field = \"name, (SELECT CASE WHEN (SELECT password FROM admin WHERE id=1) LIKE 'a%' THEN 1 ELSE 1/0 END)\"` causes errors for blind boolean injection\n\n**Blast Radius:**\nAny code calling `build_export_query()` with user-controlled `sort_field` parameter enables injection. ORDER BY injection is particularly dangerous because it's often overlooked and cannot be protected by simple parameterization (column names cannot be parameterized in most SQL implementations).\n\n**Fix:**\n```python\n# Before:\nsql += f\" ORDER BY {sort_field}\"\n\n# After:\n# Whitelist allowed sort fields\nallowed_sort_fields = {'id', 'name', 'email', 'role', 'created_at'}\nif sort_field not in allowed_sort_fields:\n    raise ValueError(f\"Invalid sort field: {sort_field}\")\n\nsql += f\" ORDER BY {sort_field}\"\n```\n\n---\n\n**Summary:** This file contains **4 critical SQL injection vulnerabilities** across all three query-building functions. All functions accept user-controlled input and directly interpolate it into SQL strings without parameterization or validation. The entire file must be refactored to use parameterized queries (prepared statements) and implement strict input validation via whitelisting for structural elements like column names and ORDER BY clauses.\n[scanning user_service.py:1-43]\n# Security Analysis Report\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized Query Parameter in search_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:12`\n\n**Attack Scenario:**\n1. Attacker calls `search_users()` with malicious query parameter: `query=\"admin' UNION SELECT password,email,null,null,null FROM credentials--\"`\n2. This query string is passed directly to `build_search_query()` which constructs a SQL string\n3. The resulting SQL is executed via `execute_read()` without parameter binding\n4. Attacker extracts password hashes or other sensitive data from unintended tables\n5. Can escalate to data exfiltration, privilege escalation, or complete database compromise\n\n**Blast Radius:**\nAny caller of `search_users()` is exploitable. The unsanitized `query` parameter flows through `build_search_query()` into `execute_read()`, which is a SQL injection sink. All user search functionality in the application is vulnerable.\n\n**Fix:**\n```python\n# BEFORE:\ndef search_users(self, query, role_filter, current_user):\n    \"\"\"Search for users matching a query string.\"\"\"\n    sql = build_search_query(query, role_filter)\n    rows = execute_read(sql)\n\n# AFTER:\ndef search_users(self, query, role_filter, current_user):\n    \"\"\"Search for users matching a query string.\"\"\"\n    # Use parameterized query instead of string concatenation\n    sql = \"SELECT id, name, email, role, created_at FROM users WHERE name LIKE ? AND role = ?\"\n    params = (f\"%{query}%\", role_filter)\n    rows = execute_read(sql, params)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized sort_field Parameter in export_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `export_users()` with malicious sort_field: `sort_field=\"name; DROP TABLE users--\"`\n2. This parameter is passed unsanitized to `build_export_query()` which likely constructs an ORDER BY clause\n3. The SQL injection payload is executed via `execute_read()`\n4. Attacker can drop tables, extract data via UNION injections, or execute arbitrary SQL\n5. Example UNION attack: `sort_field=\"name UNION SELECT password,username,null,null,null FROM admin_credentials--\"`\n\n**Blast Radius:**\nAny caller of `export_users()` can exploit this vulnerability. The comment on line 30 explicitly notes the lack of validation. This affects all user export functionality and can lead to complete database compromise.\n\n**Fix:**\n```python\n# BEFORE:\ndef export_users(self, sort_field, filters):\n    \"\"\"Export users with sorting and filtering.\"\"\"\n    # sort_field comes straight from user input \u2014 no validation\n    sql = build_export_query(sort_field, filters)\n    rows = execute_read(sql)\n\n# AFTER:\ndef export_users(self, sort_field, filters):\n    \"\"\"Export users with sorting and filtering.\"\"\"\n    # Whitelist allowed sort fields\n    allowed_sorts = {\"name\", \"email\", \"role\", \"created_at\", \"id\"}\n    if sort_field not in allowed_sorts:\n        raise ValueError(f\"Invalid sort field: {sort_field}\")\n    \n    # Use parameterized query or safe column name insertion\n    sql = f\"SELECT id, name, email, role, created_at FROM users ORDER BY {sort_field}\"\n    rows = execute_read(sql)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized User Data in update_user_profile\n\n**Category:** SQLi\n\n**Location:** `user_service.py:24`\n\n**Attack Scenario:**\n1. Attacker calls `update_user_profile()` with malicious data in allowed fields: `data={\"bio\": \"test'; DROP TABLE users--\", \"name\": \"attacker\"}`\n2. The comment on line 20 indicates sanitization was attempted but `bio` and `website` fields were \"missed\"\n3. These unsanitized fields are included in `clean_data` (line 22)\n4. `build_update_query()` constructs SQL using these malicious values\n5. The SQL injection executes via `execute_query()` on line 25\n6. Attacker can modify arbitrary data, extract sensitive information, or drop tables\n\n**Blast Radius:**\nAll callers of `update_user_profile()` are vulnerable. Any user updating their profile can inject SQL through the `bio` or `website` fields. This affects every user profile update operation and can lead to complete database compromise or lateral privilege escalation by modifying other users' roles.\n\n**Fix:**\n```python\n# BEFORE:\ndef update_user_profile(self, user_id, data, current_user):\n    \"\"\"Update a user's profile. Checks permissions first.\"\"\"\n    check_permission(current_user, user_id)\n    \n    allowed_fields = [\"name\", \"email\", \"bio\", \"website\", \"location\"]\n    clean_data = {k: v for k, v in data.items() if k in allowed_fields}\n    \n    sql = build_update_query(user_id, clean_data)\n    execute_query(sql)\n\n# AFTER:\ndef update_user_profile(self, user_id, data, current_user):\n    \"\"\"Update a user's profile. Checks permissions first.\"\"\"\n    check_permission(current_user, user_id)\n    \n    allowed_fields = [\"name\", \"email\", \"bio\", \"website\", \"location\"]\n    clean_data = {k: v for k, v in data.items() if k in allowed_fields}\n    \n    # Use parameterized query\n    set_clause = \", \".join([f\"{k} = ?\" for k in clean_data.keys()])\n    sql = f\"UPDATE users SET {set_clause} WHERE id = ?\"\n    params = list(clean_data.values()) + [user_id]\n    execute_query(sql, params)\n```\n\n---\n\n## [SEVERITY: HIGH] Authorization Bypass - Unchecked Permission Validation Return Value\n\n**Category:** Auth Bypass\n\n**Location:** `user_service.py:18`\n\n**Attack Scenario:**\n1. The `check_permission()` function is called but its return value is completely ignored\n2. If `check_permission()` returns False or throws an exception that gets caught upstream, the update proceeds anyway\n3. Attacker with user_id=100 calls `update_user_profile(user_id=1, data={...}, current_user=attacker_session)`\n4. Even if permission check fails, execution continues to line 24-25 and updates admin user's profile\n5. Attacker gains unauthorized modification capability over any user account\n\n**Blast Radius:**\nThe `update_user_profile()` function allows any authenticated user to modify any other user's profile if `check_permission()` does not halt execution (e.g., if it only logs warnings or returns False without raising an exception). This affects all profile update operations.\n\n**Fix:**\n```python\n# BEFORE:\ndef update_user_profile(self, user_id, data, current_user):\n    \"\"\"Update a user's profile. Checks permissions first.\"\"\"\n    check_permission(current_user, user_id)\n    \n    allowed_fields = [\"name\", \"email\", \"bio\", \"website\", \"location\"]\n\n# AFTER:\ndef update_user_profile(self, user_id, data, current_user):\n    \"\"\"Update a user's profile. Checks permissions first.\"\"\"\n    # Ensure permission check raises exception or explicitly verify return value\n    if not check_permission(current_user, user_id):\n        raise PermissionError(f\"User {current_user} cannot modify user {user_id}\")\n    \n    allowed_fields = [\"name\", \"email\", \"bio\", \"website\", \"location\"]\n```"
+    },
+    {
+      "metrics": {
+        "precision": 0.6667,
+        "recall": 1.0,
+        "f1": 0.8,
+        "precision_pct": 67,
+        "recall_pct": 100,
+        "f1_pct": 80
+      },
+      "counts": {
+        "tp": 12,
+        "fp": 6,
+        "fn": 0,
+        "total_findings": 19
+      },
+      "matched_ids": [
+        "auth-bypass-permission",
+        "auth-bypass-token",
+        "auth-ignored-return",
+        "sqli-admin-delete",
+        "sqli-admin-impersonate",
+        "sqli-admin-run",
+        "sqli-execute",
+        "sqli-export",
+        "sqli-export-service",
+        "sqli-search",
+        "sqli-update",
+        "weak-hash"
+      ],
+      "missed_ids": [],
+      "provisional_matched_ids": [
+        "sqli-search-service"
+      ],
+      "category_mismatches": [
+        {
+          "finding_index": 6,
+          "finding_title": "Session Tokens Created Without Expiration",
+          "finding_category": "Auth Bypass",
+          "truth_id": "sqli-admin-impersonate",
+          "truth_category": "SQLi"
+        },
+        {
+          "finding_index": 11,
+          "finding_title": "Persistent Database Connection Without Timeout",
+          "finding_category": "Resource Exhaustion",
+          "truth_id": "sqli-search",
+          "truth_category": "SQLi"
+        },
+        {
+          "finding_index": 18,
+          "finding_title": "SQL Injection via Unsanitized update_user_profile Data Fields",
+          "finding_category": "SQLi",
+          "truth_id": "auth-ignored-return",
+          "truth_category": "Auth Bypass"
+        }
+      ],
+      "scan_time_seconds": 152.3,
+      "target_loc": 254,
+      "scan_time_per_kloc": 599.7,
+      "scan_time_per_vuln": 12.7,
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 7512,
+        "sonnet_out": 9548,
+        "calls": 5
+      },
+      "tokens_per_kloc": 67165,
+      "findings": [
+        {
+          "severity": "HIGH",
+          "title": "Cross-file Auth Bypass: ignored return of check_permission()",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 18
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Cross-file Auth Bypass: ignored return of check_permission()\n**Category:** Auth Bypass\n**Location:** `user_service.py:18`\n**Attack Scenario:**\nUserService.update_user_profile() invokes the security gate `check_permission()` (defined in `auth.py`) but never uses its return value. An unauthorized caller reaches the protected operation because the gate's verdict is silently dropped.\n**Fix:**\nBranch on the gate's result, e.g. `if not check_permission(...): abort(403)`.\n---\n\n\ud83d\udd0e Gra"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQLi (static): register_admin_routes.delete_user",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 22
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.delete_user\n**Category:** SQLi\n**Location:** `admin_api.py:22`\n**Attack Scenario:**\nregister_admin_routes.delete_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQLi (static): register_admin_routes.impersonate_user",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 31
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.impersonate_user\n**Category:** SQLi\n**Location:** `admin_api.py:31`\n**Attack Scenario:**\nregister_admin_routes.impersonate_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Weak Crypto (static): hash_password",
+          "category": "Weak Crypto",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 34
+            },
+            {
+              "file": "admin_api.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Weak Crypto (static): hash_password\n**Category:** Weak Crypto\n**Location:** `auth.py:34`\n**Attack Scenario:**\nMD5 is cryptographically weak; if used for passwords or security tokens it is trivially brute-forced. Use a slow, salted KDF (bcrypt/scrypt/PBKDF2).\n**Fix:**\nSee description.\n---\n\n\n[scanning admin_api.py:1-34]\n"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "Arbitrary SQL Execution via Unauthenticated Admin Endpoint",
+          "category": "SQLi / Auth Bypass",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 16
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] Arbitrary SQL Execution via Unauthenticated Admin Endpoint\n\n**Category:** SQLi / Auth Bypass\n\n**Location:** `admin_api.py:16`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/admin/run-query` with arbitrary SQL in the \"query\" field\n2. No authentication check exists on line 15 (comment notes \"admin only\" but no enforcement)\n3. Attacker executes `{\"query\": \"SELECT * FROM users WHERE role='admin'\"}` to exfiltrate admin credentials\n4. Attacker executes `{\"query\":"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Missing Authentication on All Admin Routes",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 9
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Missing Authentication on All Admin Routes\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:9`\n\n**Attack Scenario:**\n1. All three admin routes (`/api/admin/run-query`, `/api/admin/delete-user/<user_id>`, `/api/admin/impersonate/<user_id>`) have no authentication checks\n2. Line 15 contains a comment \"admin only\" but no actual enforcement mechanism\n3. Any anonymous attacker can access these endpoints directly\n4. Attacker executes admin operations without credentials\n5. C"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Session Tokens Created Without Expiration",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "admin_api.py",
+              "line": 31
+            },
+            {
+              "file": "auth.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Session Tokens Created Without Expiration\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:31-33`\n\n**Attack Scenario:**\n1. Admin uses impersonation endpoint to debug a user issue\n2. Session token is created with no expiration date (line 30 comment confirms this)\n3. Token remains valid indefinitely even after debugging is complete\n4. If token is leaked (logs, browser history, network capture), attacker gains permanent access\n5. No mechanism exists to revoke these toke"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authentication Bypass - No Token Expiry or Revocation Check",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 11
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authentication Bypass - No Token Expiry or Revocation Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker obtains a valid token through any means (stolen, leaked, or legitimately issued)\n2. Even after the token should have expired or been revoked, the `require_auth` decorator only checks if the token exists in `VALID_TOKENS`\n3. Attacker can continue using the token indefinitely to access protected endpoints\n4. If a user's credentials"
+        },
+        {
+          "severity": "HIGH",
+          "title": "Authorization Bypass - Type Mismatch in Permission Check",
+          "category": "Auth Bypass",
+          "locations": [
+            {
+              "file": "auth.py",
+              "line": 37
+            },
+            {
+              "file": "database.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: HIGH] Authorization Bypass - Type Mismatch in Permission Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:37`\n\n**Attack Scenario:**\n1. Non-admin user authenticates and obtains a session with `user_id` stored as a string (e.g., `\"123\"`)\n2. User attempts to access a resource owned by `resource_owner_id` passed as an integer (e.g., `456`)\n3. Line 42 compares string `\"123\"` to integer `456` using `==`, which always returns `False` in Python\n4. The check fails even when user_id "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in execute_query",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 18
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in execute_query\n\n**Category:** SQLi\n\n**Location:** `database.py:18`\n\n**Attack Scenario:**\n1. Attacker calls any function that uses `execute_query(sql)` with a crafted payload\n2. For example, if upstream code builds: `sql = f\"INSERT INTO users (name) VALUES ('{user_input}')\"`\n3. Attacker provides: `user_input = \"'); DROP TABLE users; --\"`\n4. Final SQL becomes: `INSERT INTO users (name) VALUES (''); DROP TABLE users; --')`\n5. Database executes the DROP TABLE "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in execute_read",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 26
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in execute_read\n\n**Category:** SQLi\n\n**Location:** `database.py:26`\n\n**Attack Scenario:**\n1. Attacker controls input to any function calling `execute_read(sql)`\n2. For example, if upstream code builds: `sql = f\"SELECT * FROM users WHERE email = '{email}'\"`\n3. Attacker provides: `email = \"' UNION SELECT password_hash, id, email, role, null, null, null, null FROM users WHERE role = 'admin' --\"`\n4. Database returns admin password hashes in the result set\n5. Att"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Persistent Database Connection Without Timeout",
+          "category": "Resource Exhaustion",
+          "locations": [
+            {
+              "file": "database.py",
+              "line": 10
+            },
+            {
+              "file": "query_builder.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: MEDIUM] Persistent Database Connection Without Timeout\n\n**Category:** Resource Exhaustion\n\n**Location:** `database.py:10`\n\n**Attack Scenario:**\n1. The global `_connection` variable (line 7) creates a single persistent SQLite connection\n2. SQLite has no built-in connection timeout or staleness detection\n3. If the database file is deleted, moved, or corrupted while the application runs, the connection becomes stale\n4. Subsequent queries will fail with cryptic errors or undefined beha"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in User Search Query Construction",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 7
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in User Search Query Construction\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:7`\n\n**Attack Scenario:**\n1. Attacker calls `build_search_query(\"admin' OR '1'='1\", None)`\n2. The resulting SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%admin' OR '1'='1%' OR email LIKE '%admin' OR '1'='1%') ORDER BY name ASC LIMIT 50`\n3. The `'1'='1` condition makes the WHERE clause always true, exposing all users in the database\n4. "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in User Profile Update",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 21
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in User Profile Update\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:21`\n\n**Attack Scenario:**\n1. Attacker calls `build_update_query(123, {\"email\": \"attacker@evil.com', role='admin'--\"})`\n2. The resulting SQL becomes: `UPDATE users SET email = 'attacker@evil.com', role='admin'--' WHERE id = '123'`\n3. The `--` comments out the rest of the query, and the attacker has elevated themselves to admin\n4. Alternatively: `{\"name\": \"'; DROP TABLE users; --\"}` ca"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in Export Role Filter",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 33
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in Export Role Filter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:33`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name\", {\"role\": \"admin' OR '1'='1\"})`\n2. The resulting SQL becomes: `... WHERE role = 'admin' OR '1'='1' ORDER BY name`\n3. The condition always evaluates to true, exposing all users regardless of role\n4. More dangerous: `{\"role\": \"' UNION SELECT table_name, column_name, data_type, '', '' FROM information_schema.columns--"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection in ORDER BY Clause",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "query_builder.py",
+              "line": 41
+            },
+            {
+              "file": "user_service.py",
+              "line": 1
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection in ORDER BY Clause\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:41`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name; DROP TABLE users; --\", {})`\n2. If the database allows stacked queries, this executes: `... ORDER BY name; DROP TABLE users; --`\n3. The entire users table is destroyed\n4. Even without stacked queries: `sort_field=\"(CASE WHEN (SELECT password FROM users WHERE id=1) LIKE 'a%' THEN name ELSE email END)\"` enables boolean-b"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized search_users Query Parameter",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 12
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized search_users Query Parameter\n\n**Category:** SQLi\n\n**Location:** `user_service.py:12`\n\n**Attack Scenario:**\n1. Attacker calls `search_users()` with malicious `query` parameter: `query = \"admin' UNION SELECT id, password_hash, email, 'admin', NOW() FROM users WHERE '1'='1\"`\n2. The `query` parameter is passed directly to `build_search_query()` without sanitization\n3. If `build_search_query()` constructs SQL by string concatenation (likely given "
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized sort_field in export_users",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 31
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized sort_field in export_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `export_users()` with malicious `sort_field` parameter: `sort_field = \"name; DROP TABLE users; --\"`\n2. Line 31 passes `sort_field` directly to `build_export_query()` without validation\n3. If `build_export_query()` uses string concatenation for ORDER BY clause (common pattern), the malicious SQL is injected\n4. The construc"
+        },
+        {
+          "severity": "CRITICAL",
+          "title": "SQL Injection via Unsanitized update_user_profile Data Fields",
+          "category": "SQLi",
+          "locations": [
+            {
+              "file": "user_service.py",
+              "line": 24
+            }
+          ],
+          "raw": "## [SEVERITY: CRITICAL] SQL Injection via Unsanitized update_user_profile Data Fields\n\n**Category:** SQLi\n\n**Location:** `user_service.py:24`\n\n**Attack Scenario:**\n1. Attacker calls `update_user_profile()` with malicious data: `data = {\"bio\": \"test'; UPDATE users SET role='admin' WHERE id=1; --\"}`\n2. Line 22 filters fields but does NOT sanitize values \u2014 `clean_data` contains the malicious SQL\n3. Line 24 passes `clean_data` to `build_update_query()`, which likely concatenates values into SQL\n4. T"
+        }
+      ],
+      "raw_output": "\ud83d\udd17 Graph-derived check: security gate return value discarded\n\n## [SEVERITY: HIGH] Cross-file Auth Bypass: ignored return of check_permission()\n**Category:** Auth Bypass\n**Location:** `user_service.py:18`\n**Attack Scenario:**\nUserService.update_user_profile() invokes the security gate `check_permission()` (defined in `auth.py`) but never uses its return value. An unauthorized caller reaches the protected operation because the gate's verdict is silently dropped.\n**Fix:**\nBranch on the gate's result, e.g. `if not check_permission(...): abort(403)`.\n---\n\n\ud83d\udd0e Graph/AST static rules \u2014 deterministic findings\n\n## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.delete_user\n**Category:** SQLi\n**Location:** `admin_api.py:22`\n**Attack Scenario:**\nregister_admin_routes.delete_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n## [SEVERITY: CRITICAL] SQLi (static): register_admin_routes.impersonate_user\n**Category:** SQLi\n**Location:** `admin_api.py:31`\n**Attack Scenario:**\nregister_admin_routes.impersonate_user() interpolates parameter(s) ['user_id'] into a SQL string passed to execute_query() \u2014 a SQL injection sink. Use bound parameters instead.\n**Fix:**\nSee description.\n---\n\n## [SEVERITY: HIGH] Weak Crypto (static): hash_password\n**Category:** Weak Crypto\n**Location:** `auth.py:34`\n**Attack Scenario:**\nMD5 is cryptographically weak; if used for passwords or security tokens it is trivially brute-forced. Use a slow, salted KDF (bcrypt/scrypt/PBKDF2).\n**Fix:**\nSee description.\n---\n\n\n[scanning admin_api.py:1-34]\n## [SEVERITY: CRITICAL] Arbitrary SQL Execution via Unauthenticated Admin Endpoint\n\n**Category:** SQLi / Auth Bypass\n\n**Location:** `admin_api.py:16`\n\n**Attack Scenario:**\n1. Attacker sends POST request to `/api/admin/run-query` with arbitrary SQL in the \"query\" field\n2. No authentication check exists on line 15 (comment notes \"admin only\" but no enforcement)\n3. Attacker executes `{\"query\": \"SELECT * FROM users WHERE role='admin'\"}` to exfiltrate admin credentials\n4. Attacker executes `{\"query\": \"DROP TABLE users; --\"}` to destroy data\n5. Attacker executes `{\"query\": \"ATTACH DATABASE '/var/www/shell.php' AS evil; CREATE TABLE evil.pwn (code TEXT); INSERT INTO evil.pwn VALUES ('<?php system($_GET[cmd]); ?>'); --\"}` to achieve RCE\n\n**Blast Radius:**\nComplete database compromise. All tables readable, modifiable, and deletable. This endpoint accepts ANY SQL statement from ANY unauthenticated user and executes it with full database privileges via `execute_read(sql)`.\n\n**Fix:**\n```python\n# Before:\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    data = request.get_json()\n    sql = data.get(\"query\", \"\")\n    \n    # \"admin only\" \u2014 but no auth check on this route\n    rows = execute_read(sql)\n    return jsonify({\"results\": [list(r) for r in rows]})\n\n# After:\n@app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n@require_admin  # Add authentication decorator\ndef run_raw_query():\n    \"\"\"Execute an arbitrary SQL query from the admin panel.\"\"\"\n    # REMOVE THIS ENDPOINT ENTIRELY - raw SQL execution should never be exposed\n    # If absolutely required, use a whitelist of safe queries only\n    return jsonify({\"error\": \"Endpoint disabled for security\"}), 403\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in User Deletion Endpoint\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:22`\n\n**Attack Scenario:**\n1. Attacker sends DELETE request to `/api/admin/delete-user/1' OR '1'='1`\n2. No authentication check protects this endpoint\n3. SQL becomes: `DELETE FROM users WHERE id = '1' OR '1'='1'`\n4. All users in the database are deleted\n5. Alternatively, attacker uses `1'; DROP TABLE sessions; --` to destroy session table\n\n**Blast Radius:**\nAll user records can be deleted. Attacker can also inject additional SQL statements to modify or destroy other tables via stacked queries or UNION attacks depending on database engine.\n\n**Fix:**\n```python\n# Before:\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    execute_query(f\"DELETE FROM users WHERE id = '{user_id}'\")\n    return jsonify({\"deleted\": user_id})\n\n# After:\n@app.route(\"/api/admin/delete-user/<user_id>\", methods=[\"DELETE\"])\n@require_admin  # Add authentication decorator\ndef delete_user(user_id):\n    \"\"\"Hard-delete a user by ID.\"\"\"\n    # Validate user_id is numeric\n    if not user_id.isdigit():\n        return jsonify({\"error\": \"Invalid user ID\"}), 400\n    \n    # Use parameterized query\n    execute_query(\"DELETE FROM users WHERE id = ?\", (user_id,))\n    return jsonify({\"deleted\": user_id})\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Session Token Creation\n\n**Category:** SQLi\n\n**Location:** `admin_api.py:31-33`\n\n**Attack Scenario:**\n1. Attacker sends POST to `/api/admin/impersonate/1' OR '1'='1') RETURNING *; --`\n2. No authentication protects this endpoint\n3. SQL becomes: `INSERT INTO sessions (token, user_id, created_at) VALUES ('...', '1' OR '1'='1') RETURNING *; --', datetime('now'))`\n4. Attacker injects: `/api/admin/impersonate/1', 1); INSERT INTO users (username, role) VALUES ('hacker', 'admin'); --`\n5. Creates admin account or exfiltrates data via error messages or timing attacks\n\n**Blast Radius:**\nComplete authentication bypass. Attacker can create unlimited session tokens for any user, insert malicious data into the sessions table, or use stacked queries to modify other tables. Combined with the unauthenticated nature of this endpoint, any anonymous user can impersonate any legitimate user including administrators.\n\n**Fix:**\n```python\n# Before:\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    import secrets\n    token = secrets.token_hex(32)\n    # Stores token with no expiry, no audit log\n    execute_query(\n        f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n    )\n    return jsonify({\"token\": token, \"user_id\": user_id})\n\n# After:\n@app.route(\"/api/admin/impersonate/<user_id>\", methods=[\"POST\"])\n@require_admin  # Add authentication decorator\ndef impersonate_user(user_id):\n    \"\"\"Generate a session token for any user \u2014 for support debugging.\"\"\"\n    import secrets\n    from datetime import datetime, timedelta\n    \n    # Validate user_id is numeric\n    if not user_id.isdigit():\n        return jsonify({\"error\": \"Invalid user ID\"}), 400\n    \n    token = secrets.token_hex(32)\n    expires_at = datetime.now() + timedelta(hours=1)\n    \n    # Use parameterized query and add expiry + audit\n    execute_query(\n        \"INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, datetime('now'), ?)\",\n        (token, user_id, expires_at)\n    )\n    \n    # Log impersonation for audit\n    execute_query(\n        \"INSERT INTO audit_log (action, admin_id, target_user_id) VALUES ('impersonate', ?, ?)\",\n        (get_current_admin_id(), user_id)\n    )\n    \n    return jsonify({\"token\": token, \"user_id\": user_id})\n```\n\n---\n\n## [SEVERITY: HIGH] Missing Authentication on All Admin Routes\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:9`\n\n**Attack Scenario:**\n1. All three admin routes (`/api/admin/run-query`, `/api/admin/delete-user/<user_id>`, `/api/admin/impersonate/<user_id>`) have no authentication checks\n2. Line 15 contains a comment \"admin only\" but no actual enforcement mechanism\n3. Any anonymous attacker can access these endpoints directly\n4. Attacker executes admin operations without credentials\n5. Combined with SQL injection vulnerabilities, this enables complete system compromise\n\n**Blast Radius:**\nEvery admin endpoint in this file is accessible to unauthenticated users. This compounds the SQL injection vulnerabilities by removing any barrier to exploitation. An attacker needs no credentials to delete users, execute arbitrary SQL, or generate session tokens for privilege escalation.\n\n**Fix:**\n```python\n# Before:\ndef register_admin_routes(app):\n    \"\"\"Register admin-only routes on the Flask app.\"\"\"\n\n    @app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n    def run_raw_query():\n        # ...\n\n# After:\nfrom functools import wraps\nfrom flask import g\n\ndef require_admin(f):\n    @wraps(f)\n    def decorated_function(*args, **kwargs):\n        # Check if user is authenticated\n        token = request.headers.get('Authorization', '').replace('Bearer ', '')\n        if not token:\n            return jsonify({\"error\": \"Authentication required\"}), 401\n        \n        # Verify token and check admin role\n        user = verify_token_and_get_user(token)\n        if not user or user.get('role') != 'admin':\n            return jsonify({\"error\": \"Admin access required\"}), 403\n        \n        g.current_user = user\n        return f(*args, **kwargs)\n    return decorated_function\n\ndef register_admin_routes(app):\n    \"\"\"Register admin-only routes on the Flask app.\"\"\"\n\n    @app.route(\"/api/admin/run-query\", methods=[\"POST\"])\n    @require_admin\n    def run_raw_query():\n        # ...\n```\n\n---\n\n## [SEVERITY: MEDIUM] Session Tokens Created Without Expiration\n\n**Category:** Auth Bypass\n\n**Location:** `admin_api.py:31-33`\n\n**Attack Scenario:**\n1. Admin uses impersonation endpoint to debug a user issue\n2. Session token is created with no expiration date (line 30 comment confirms this)\n3. Token remains valid indefinitely even after debugging is complete\n4. If token is leaked (logs, browser history, network capture), attacker gains permanent access\n5. No mechanism exists to revoke these tokens\n6. Compromised token provides perpetual authenticated access as the impersonated user\n\n**Blast Radius:**\nAny session token created by this endpoint remains valid forever. This affects the `impersonate_user` function but also suggests a systemic issue if other session creation code follows the same pattern. Without expiration, token compromise has unlimited impact duration.\n\n**Fix:**\n```python\n# Before:\n# Stores token with no expiry, no audit log\nexecute_query(\n    f\"INSERT INTO sessions (token, user_id, created_at) VALUES ('{token}', '{user_id}', datetime('now'))\"\n)\n\n# After:\nfrom datetime import datetime, timedelta\n\nexpires_at = datetime.now() + timedelta(hours=1)  # 1 hour expiry for impersonation\nexecute_query(\n    \"INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, datetime('now'), ?)\",\n    (token, user_id, expires_at)\n)\n\n# Also add audit logging\nexecute_query(\n    \"INSERT INTO audit_log (action, timestamp, admin_id, target_user_id, details) VALUES (?, datetime('now'), ?, ?, ?)\",\n    ('impersonate', get_current_admin_id(), user_id, f'Token: {token[:8]}...')\n)\n```\n[scanning auth.py:1-44]\n## [SEVERITY: HIGH] Authentication Bypass - No Token Expiry or Revocation Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:11`\n\n**Attack Scenario:**\n1. Attacker obtains a valid token through any means (stolen, leaked, or legitimately issued)\n2. Even after the token should have expired or been revoked, the `require_auth` decorator only checks if the token exists in `VALID_TOKENS`\n3. Attacker can continue using the token indefinitely to access protected endpoints\n4. If a user's credentials are compromised and their token is revoked by adding it to a revocation list, the system has no mechanism to honor that revocation\n5. Attacker maintains persistent unauthorized access to all `@require_auth` protected routes\n\n**Blast Radius:**\nAll routes decorated with `@require_auth` are vulnerable. Any endpoint using this decorator can be accessed with expired or revoked tokens. The decorator provides a false sense of security while allowing unlimited token reuse.\n\n**Fix:**\n```python\n# Before:\ndef require_auth(f):\n    \"\"\"Decorator to require authentication on a route.\"\"\"\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:\n            abort(401)\n        # BUG: only checks token exists, never validates expiry or scope\n        if token not in VALID_TOKENS:\n            abort(401)\n        return f(*args, **kwargs)\n    return decorated\n\n# After:\nimport time\n\nREVOKED_TOKENS = set()\n\ndef require_auth(f):\n    \"\"\"Decorator to require authentication on a route.\"\"\"\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        token = request.headers.get(\"Authorization\", \"\").replace(\"Bearer \", \"\")\n        if not token:\n            abort(401)\n        if token not in VALID_TOKENS:\n            abort(401)\n        \n        # Check if token is revoked\n        if token in REVOKED_TOKENS:\n            abort(401)\n        \n        # Check token expiry\n        token_data = VALID_TOKENS[token]\n        if token_data.get(\"expires_at\", 0) < time.time():\n            abort(401)\n        \n        # Validate token scope matches the required scope for this endpoint\n        required_scope = getattr(f, \"required_scope\", None)\n        if required_scope and required_scope not in token_data.get(\"scopes\", []):\n            abort(403)\n        \n        return f(*args, **kwargs)\n    return decorated\n```\n\n---\n\n## [SEVERITY: CRITICAL] Weak Password Hashing with MD5\n\n**Category:** Secrets Exposure\n\n**Location:** `auth.py:32`\n\n**Attack Scenario:**\n1. Attacker gains read access to the password database (SQL injection, backup exposure, insider threat, etc.)\n2. MD5 hashes are retrieved from storage\n3. Attacker uses rainbow tables or GPU-accelerated cracking tools to reverse MD5 hashes in seconds to minutes\n4. MD5 is cryptographically broken and designed for speed, not security\n5. Attacker recovers plaintext passwords and can authenticate as any user\n6. Users who reuse passwords across services are now compromised on all platforms\n\n**Blast Radius:**\nAll user credentials in the system are effectively stored in plaintext. Any function that stores user passwords using `hash_password()` creates credentials that can be trivially cracked. Password verification functions comparing against these hashes provide no real security.\n\n**Fix:**\n```python\n# Before:\nimport hashlib\n\ndef hash_password(password):\n    \"\"\"Hash a password for storage.\"\"\"\n    return hashlib.md5(password.encode()).hexdigest()\n\n# After:\nimport hashlib\nimport os\n\ndef hash_password(password):\n    \"\"\"Hash a password for storage using PBKDF2.\"\"\"\n    salt = os.urandom(32)\n    pwdhash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)\n    return salt.hex() + pwdhash.hex()\n\ndef verify_password(stored_password, provided_password):\n    \"\"\"Verify a password against the stored hash.\"\"\"\n    salt = bytes.fromhex(stored_password[:64])\n    stored_hash = stored_password[64:]\n    pwdhash = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt, 100000)\n    return pwdhash.hex() == stored_hash\n```\n\nOr better, use bcrypt or argon2:\n```python\nimport bcrypt\n\ndef hash_password(password):\n    \"\"\"Hash a password for storage using bcrypt.\"\"\"\n    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')\n\ndef verify_password(stored_password, provided_password):\n    \"\"\"Verify a password against the stored hash.\"\"\"\n    return bcrypt.checkpw(provided_password.encode('utf-8'), stored_password.encode('utf-8'))\n```\n\n---\n\n## [SEVERITY: HIGH] Authorization Bypass - Type Mismatch in Permission Check\n\n**Category:** Auth Bypass\n\n**Location:** `auth.py:37`\n\n**Attack Scenario:**\n1. Non-admin user authenticates and obtains a session with `user_id` stored as a string (e.g., `\"123\"`)\n2. User attempts to access a resource owned by `resource_owner_id` passed as an integer (e.g., `456`)\n3. Line 42 compares string `\"123\"` to integer `456` using `==`, which always returns `False` in Python\n4. The check fails even when user_id legitimately matches, so line 43 doesn't return `True`\n5. Execution falls through to line 44, which returns `True` unconditionally\n6. Non-admin user gains access to ANY resource, including resources owned by other users\n7. This affects all non-admin users attempting to access any resource, effectively making authorization meaningless\n\n**Blast Radius:**\nAny endpoint that calls `check_permission()` to verify resource access will incorrectly grant access to all users for all resources. The permission system is completely broken for non-admin users, allowing them to access data belonging to other users. This defeats any row-level security or resource ownership checks.\n\n**Fix:**\n```python\n# Before:\ndef check_permission(user, resource_owner_id):\n    \"\"\"Check if user can access a resource.\"\"\"\n    # BUG: compares string user_id to int owner_id \u2014 always fails for non-admins,\n    # so the code below falls through to return True\n    if user.get(\"role\") != \"admin\":\n        if user.get(\"user_id\") == resource_owner_id:\n            return True\n    return True  # admin bypass \u2014 but non-admins also reach here due to type mismatch\n\n# After:\ndef check_permission(user, resource_owner_id):\n    \"\"\"Check if user can access a resource.\"\"\"\n    # Admins can access everything\n    if user.get(\"role\") == \"admin\":\n        return True\n    \n    # Non-admins can only access their own resources\n    # Normalize types to ensure comparison works\n    user_id = str(user.get(\"user_id\"))\n    owner_id = str(resource_owner_id)\n    \n    if user_id == owner_id:\n        return True\n    \n    return False\n```\n[scanning database.py:1-50]\n## [SEVERITY: CRITICAL] SQL Injection in execute_query\n\n**Category:** SQLi\n\n**Location:** `database.py:18`\n\n**Attack Scenario:**\n1. Attacker calls any function that uses `execute_query(sql)` with a crafted payload\n2. For example, if upstream code builds: `sql = f\"INSERT INTO users (name) VALUES ('{user_input}')\"`\n3. Attacker provides: `user_input = \"'); DROP TABLE users; --\"`\n4. Final SQL becomes: `INSERT INTO users (name) VALUES (''); DROP TABLE users; --')`\n5. Database executes the DROP TABLE command, destroying all user data\n6. Attacker can also use UNION-based injection to exfiltrate data from other tables\n\n**Blast Radius:**\nAny caller of `execute_query()` becomes a critical injection point. Even functions that appear to only INSERT data can be weaponized to read sensitive data (via UNION SELECT INTO), modify admin privileges (via nested UPDATE), or destroy tables. The wrapper function itself is the foundational sink that enables all upstream injection chains.\n\n**Fix:**\n```python\n# BEFORE:\ndef execute_query(sql):\n    \"\"\"Execute a write query (INSERT, UPDATE, DELETE).\"\"\"\n    conn = get_connection()\n    conn.execute(sql)\n    conn.commit()\n\n# AFTER:\ndef execute_query(sql, params=None):\n    \"\"\"Execute a write query with parameterized inputs.\"\"\"\n    conn = get_connection()\n    if params is None:\n        params = []\n    conn.execute(sql, params)\n    conn.commit()\n\n# Usage changes from:\n#   execute_query(f\"INSERT INTO users (name) VALUES ('{name}')\")\n# To:\n#   execute_query(\"INSERT INTO users (name) VALUES (?)\", [name])\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in execute_read\n\n**Category:** SQLi\n\n**Location:** `database.py:26`\n\n**Attack Scenario:**\n1. Attacker controls input to any function calling `execute_read(sql)`\n2. For example, if upstream code builds: `sql = f\"SELECT * FROM users WHERE email = '{email}'\"`\n3. Attacker provides: `email = \"' UNION SELECT password_hash, id, email, role, null, null, null, null FROM users WHERE role = 'admin' --\"`\n4. Database returns admin password hashes in the result set\n5. Attacker can also use boolean-based blind injection: `email = \"' OR '1'='1\"` to bypass authentication\n6. Time-based injection allows data exfiltration even without visible output\n\n**Blast Radius:**\nAny caller of `execute_read()` becomes a critical information disclosure point. Read operations are often perceived as \"safer\" but UNION SELECT enables full database extraction. Attackers can pivot from any SELECT query to read password_hash column (line 47), role assignments (line 42), or any other sensitive data across all tables.\n\n**Fix:**\n```python\n# BEFORE:\ndef execute_read(sql):\n    \"\"\"Execute a read query and return all rows.\"\"\"\n    conn = get_connection()\n    cursor = conn.execute(sql)\n    return cursor.fetchall()\n\n# AFTER:\ndef execute_read(sql, params=None):\n    \"\"\"Execute a read query with parameterized inputs.\"\"\"\n    conn = get_connection()\n    if params is None:\n        params = []\n    cursor = conn.execute(sql, params)\n    return cursor.fetchall()\n\n# Usage changes from:\n#   execute_read(f\"SELECT * FROM users WHERE email = '{email}'\")\n# To:\n#   execute_read(\"SELECT * FROM users WHERE email = ?\", [email])\n```\n\n---\n\n## [SEVERITY: MEDIUM] Persistent Database Connection Without Timeout\n\n**Category:** Resource Exhaustion\n\n**Location:** `database.py:10`\n\n**Attack Scenario:**\n1. The global `_connection` variable (line 7) creates a single persistent SQLite connection\n2. SQLite has no built-in connection timeout or staleness detection\n3. If the database file is deleted, moved, or corrupted while the application runs, the connection becomes stale\n4. Subsequent queries will fail with cryptic errors or undefined behavior\n5. The application cannot recover without a restart because `get_connection()` only creates the connection once (line 13 check)\n6. In multi-threaded environments, sharing a single SQLite connection leads to \"database is locked\" errors\n\n**Blast Radius:**\nAll database operations (`execute_query`, `execute_read`, `init_db`) depend on `get_connection()`. A stale or locked connection affects the entire application. This is particularly dangerous in long-running services or containerized deployments where the database file might be replaced during a rolling update.\n\n**Fix:**\n```python\n# BEFORE:\n_connection = None\n\ndef get_connection():\n    \"\"\"Get or create the database connection.\"\"\"\n    global _connection\n    if _connection is None:\n        _connection = sqlite3.connect(DB_PATH)\n    return _connection\n\n# AFTER:\nimport threading\n\n_local = threading.local()\n\ndef get_connection():\n    \"\"\"Get or create a thread-local database connection.\"\"\"\n    if not hasattr(_local, 'connection') or _local.connection is None:\n        _local.connection = sqlite3.connect(\n            DB_PATH,\n            check_same_thread=False,\n            timeout=5.0  # Prevent indefinite blocking\n        )\n    return _local.connection\n\n# Or for single-threaded apps, use connection pooling with staleness checks:\ndef get_connection():\n    \"\"\"Get a fresh database connection.\"\"\"\n    return sqlite3.connect(DB_PATH, timeout=5.0)\n```\n[scanning query_builder.py:1-42]\n## [SEVERITY: CRITICAL] SQL Injection in User Search Query Construction\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:7`\n\n**Attack Scenario:**\n1. Attacker calls `build_search_query(\"admin' OR '1'='1\", None)`\n2. The resulting SQL becomes: `SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%admin' OR '1'='1%' OR email LIKE '%admin' OR '1'='1%') ORDER BY name ASC LIMIT 50`\n3. The `'1'='1` condition makes the WHERE clause always true, exposing all users in the database\n4. More sophisticated payloads can use UNION-based injection to extract data from other tables: `search_term=\"' UNION SELECT id, password, email, 'admin', created_at FROM admin_credentials--\"`\n\n**Blast Radius:**\nAny code path that calls `build_search_query` with user-controlled input will allow attackers to extract arbitrary data from the database, modify queries to bypass access controls, or potentially execute administrative commands depending on database permissions.\n\n**Fix:**\n```python\n# Before:\nsql = f\"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE '%{search_term}%' OR email LIKE '%{search_term}%')\"\n\n# After:\nsql = \"SELECT id, name, email, role, created_at FROM users WHERE (name LIKE ? OR email LIKE ?)\"\nparams = [f\"%{search_term}%\", f\"%{search_term}%\"]\n\nif role_filter:\n    sql += \" AND role = ?\"\n    params.append(role_filter)\n\nsql += \" ORDER BY name ASC LIMIT 50\"\nreturn sql, params  # Return parameterized query\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Role Filter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:10`\n\n**Attack Scenario:**\n1. Attacker calls `build_search_query(\"john\", \"admin' OR role='user\")`\n2. The resulting SQL becomes: `... WHERE (...) AND role = 'admin' OR role='user' ORDER BY name ASC LIMIT 50`\n3. Due to SQL operator precedence, this bypasses the intended role filter and returns users with ANY role\n4. Attacker can also inject: `role_filter=\"' OR 1=1 UNION SELECT password, username, email, salt, hash FROM credentials--\"` to extract credential data\n\n**Blast Radius:**\nAny caller passing user-controlled input as `role_filter` enables complete database access. The `OR` injection can bypass all WHERE clause restrictions established earlier in the query.\n\n**Fix:**\n```python\n# Before:\nif role_filter:\n    sql += f\" AND role = '{role_filter}'\"\n\n# After:\nif role_filter:\n    sql += \" AND role = ?\"\n    params.append(role_filter)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in User Profile Update\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:21`\n\n**Attack Scenario:**\n1. Attacker calls `build_update_query(123, {\"email\": \"attacker@evil.com', role='admin'--\"})`\n2. The resulting SQL becomes: `UPDATE users SET email = 'attacker@evil.com', role='admin'--' WHERE id = '123'`\n3. The `--` comments out the rest of the query, and the attacker has elevated themselves to admin\n4. Alternatively: `{\"name\": \"'; DROP TABLE users; --\"}` can execute destructive commands\n\n**Blast Radius:**\nAny code that calls `build_update_query` with user-supplied data allows attackers to modify arbitrary columns (including privilege escalation via `role` field), update other users' records, or execute destructive SQL commands.\n\n**Fix:**\n```python\n# Before:\ndef build_update_query(user_id, data):\n    set_clauses = []\n    for key, value in data.items():\n        set_clauses.append(f\"{key} = '{value}'\")\n    \n    clause_str = \", \".join(set_clauses)\n    return f\"UPDATE users SET {clause_str} WHERE id = '{user_id}'\"\n\n# After:\ndef build_update_query(user_id, data):\n    # Whitelist allowed columns\n    allowed_columns = {'name', 'email', 'bio', 'avatar_url'}\n    \n    set_clauses = []\n    params = []\n    for key, value in data.items():\n        if key not in allowed_columns:\n            raise ValueError(f\"Invalid column: {key}\")\n        set_clauses.append(f\"{key} = ?\")\n        params.append(value)\n    \n    clause_str = \", \".join(set_clauses)\n    params.append(user_id)  # Add user_id as final parameter\n    return f\"UPDATE users SET {clause_str} WHERE id = ?\", params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Column Name via user_id Parameter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:24`\n\n**Attack Scenario:**\n1. Attacker calls `build_update_query(\"1' OR '1'='1\", {\"name\": \"John\"})`\n2. The resulting SQL becomes: `UPDATE users SET name = 'John' WHERE id = '1' OR '1'='1'`\n3. The WHERE clause now matches all users, causing the update to affect every user in the database\n4. Mass privilege escalation: `user_id=\"1'; UPDATE users SET role='admin'; --\"` executes a second statement\n\n**Blast Radius:**\nAny code passing unsanitized input as `user_id` can trigger mass updates affecting all database records or execute arbitrary SQL statements via stacked queries.\n\n**Fix:**\n```python\n# Before:\nreturn f\"UPDATE users SET {clause_str} WHERE id = '{user_id}'\"\n\n# After:\n# Validate user_id is numeric\nif not str(user_id).isdigit():\n    raise ValueError(\"Invalid user_id\")\n\nparams.append(user_id)\nreturn f\"UPDATE users SET {clause_str} WHERE id = ?\", params\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Export Role Filter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:33`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name\", {\"role\": \"admin' OR '1'='1\"})`\n2. The resulting SQL becomes: `... WHERE role = 'admin' OR '1'='1' ORDER BY name`\n3. The condition always evaluates to true, exposing all users regardless of role\n4. More dangerous: `{\"role\": \"' UNION SELECT table_name, column_name, data_type, '', '' FROM information_schema.columns--\"}` enumerates database schema\n\n**Blast Radius:**\nAny code calling `build_export_query` with user-controlled filters can be exploited to extract all user data or execute UNION-based attacks to access other tables.\n\n**Fix:**\n```python\n# Before:\nif filters.get(\"role\"):\n    conditions.append(f\"role = '{filters['role']}'\")\n\n# After:\nparams = []\nif filters.get(\"role\"):\n    conditions.append(\"role = ?\")\n    params.append(filters[\"role\"])\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in Export Date Filter\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:35`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name\", {\"created_after\": \"2020-01-01' OR 1=1 UNION SELECT user, password, email, salt, hash FROM admin_users--\"})`\n2. The UNION injection appends a second result set containing admin credentials\n3. The export function returns sensitive authentication data to the attacker\n\n**Blast Radius:**\nAny code using `created_after` filter with user input enables UNION-based data extraction from any table in the database.\n\n**Fix:**\n```python\n# Before:\nif filters.get(\"created_after\"):\n    conditions.append(f\"created_at > '{filters['created_after']}'\")\n\n# After:\nif filters.get(\"created_after\"):\n    conditions.append(\"created_at > ?\")\n    params.append(filters[\"created_after\"])\n\n# ... and return (sql, params)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection in ORDER BY Clause\n\n**Category:** SQLi\n\n**Location:** `query_builder.py:41`\n\n**Attack Scenario:**\n1. Attacker calls `build_export_query(\"name; DROP TABLE users; --\", {})`\n2. If the database allows stacked queries, this executes: `... ORDER BY name; DROP TABLE users; --`\n3. The entire users table is destroyed\n4. Even without stacked queries: `sort_field=\"(CASE WHEN (SELECT password FROM users WHERE id=1) LIKE 'a%' THEN name ELSE email END)\"` enables boolean-based blind SQL injection to extract passwords character-by-character\n\n**Blast Radius:**\nAny code passing user-controlled `sort_field` to `build_export_query` enables blind SQL injection, data exfiltration via timing attacks, or destructive commands if stacked queries are enabled.\n\n**Fix:**\n```python\n# Before:\nsql += f\" ORDER BY {sort_field}\"\n\n# After:\nallowed_sort_fields = {'id', 'name', 'email', 'role', 'created_at'}\nif sort_field not in allowed_sort_fields:\n    raise ValueError(f\"Invalid sort field: {sort_field}\")\n\nsql += f\" ORDER BY {sort_field}\"  # Safe after whitelist validation\n```\n[scanning user_service.py:1-43]\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized search_users Query Parameter\n\n**Category:** SQLi\n\n**Location:** `user_service.py:12`\n\n**Attack Scenario:**\n1. Attacker calls `search_users()` with malicious `query` parameter: `query = \"admin' UNION SELECT id, password_hash, email, 'admin', NOW() FROM users WHERE '1'='1\"`\n2. The `query` parameter is passed directly to `build_search_query()` without sanitization\n3. If `build_search_query()` constructs SQL by string concatenation (likely given no parameterization here), the malicious input is embedded in the SQL string\n4. The constructed SQL is forwarded to `execute_read(sql)` at line 13\n5. Attacker extracts password hashes of all users or executes arbitrary queries\n\n**Blast Radius:**\nAny code path that calls `UserService.search_users()` becomes an attack surface. The vulnerability allows complete database compromise through the `execute_read()` sink.\n\n**Fix:**\n```python\n# Before:\nsql = build_search_query(query, role_filter)\n\n# After:\n# Pass parameters separately for proper binding\nparams = {'query': query, 'role_filter': role_filter}\nsql = build_search_query(params)  # build_search_query must use parameterized queries\n# OR validate that query contains only safe characters\nimport re\nif not re.match(r'^[a-zA-Z0-9\\s]+$', query):\n    raise ValueError(\"Invalid search query\")\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized sort_field in export_users\n\n**Category:** SQLi\n\n**Location:** `user_service.py:31`\n\n**Attack Scenario:**\n1. Attacker calls `export_users()` with malicious `sort_field` parameter: `sort_field = \"name; DROP TABLE users; --\"`\n2. Line 31 passes `sort_field` directly to `build_export_query()` without validation\n3. If `build_export_query()` uses string concatenation for ORDER BY clause (common pattern), the malicious SQL is injected\n4. The constructed SQL is forwarded to `execute_read(sql)` at line 32\n5. Attacker can drop tables, exfiltrate data, or execute arbitrary database commands\n\n**Blast Radius:**\nAny endpoint exposing `export_users()` functionality allows complete database compromise. The `sort_field` parameter typically appears in admin panels or reporting features with elevated privileges.\n\n**Fix:**\n```python\n# Before:\nsql = build_export_query(sort_field, filters)\n\n# After:\n# Whitelist allowed sort fields\nALLOWED_SORT_FIELDS = ['name', 'email', 'created_at', 'role']\nif sort_field not in ALLOWED_SORT_FIELDS:\n    raise ValueError(f\"Invalid sort field. Allowed: {ALLOWED_SORT_FIELDS}\")\nsql = build_export_query(sort_field, filters)\n```\n\n---\n\n## [SEVERITY: CRITICAL] SQL Injection via Unsanitized update_user_profile Data Fields\n\n**Category:** SQLi\n\n**Location:** `user_service.py:24`\n\n**Attack Scenario:**\n1. Attacker calls `update_user_profile()` with malicious data: `data = {\"bio\": \"test'; UPDATE users SET role='admin' WHERE id=1; --\"}`\n2. Line 22 filters fields but does NOT sanitize values \u2014 `clean_data` contains the malicious SQL\n3. Line 24 passes `clean_data` to `build_update_query()`, which likely concatenates values into SQL\n4. The constructed SQL is forwarded to `execute_query(sql)` at line 25\n5. Attacker escalates privileges to admin or modifies arbitrary user records\n\n**Blast Radius:**\nAny authenticated user can exploit this to gain admin privileges or modify other users' data. The comment on line 20 acknowledges missing sanitization for 'bio' and 'website' but the actual vulnerability is that NO values are sanitized.\n\n**Fix:**\n```python\n# Before:\nclean_data = {k: v for k, v in data.items() if k in allowed_fields}\nsql = build_update_query(user_id, clean_data)\nexecute_query(sql)\n\n# After:\nclean_data = {k: v for k, v in data.items() if k in allowed_fields}\n# Pass data as parameters, not embedded in SQL string\nparams = {'user_id': user_id, **clean_data}\nsql = build_update_query(params)  # build_update_query must use parameterized queries\nexecute_query(sql, params)\n```\n\n---\n\n## [SEVERITY: HIGH] Authorization Bypass - Ignored check_permission Return Value\n\n**Category:** Auth Bypass\n\n**Location:** `user_service.py:18`\n\n**Attack Scenario:**\n1. Attacker calls `update_user_profile()` to modify victim's profile: `update_user_profile(victim_id, malicious_data, attacker_user)`\n2. Line 18 calls `check_permission(current_user, user_id)` but ignores the return value\n3. If `check_permission()` returns False or raises no exception, execution continues\n4. Lines 24-25 execute the update regardless of authorization check result\n5. Attacker modifies victim's profile, potentially injecting malicious content or changing email for account takeover\n\n**Blast Radius:**\nAny user can modify any other user's profile if `check_permission()` returns a boolean instead of raising an exception. This allows horizontal privilege escalation and account takeover through email modification.\n\n**Fix:**\n```python\n# Before:\ncheck_permission(current_user, user_id)\n\n# After:\nif not check_permission(current_user, user_id):\n    raise PermissionError(f\"User {current_user} not authorized to modify user {user_id}\")\n# OR ensure check_permission raises an exception on failure\n```"
+    }
+  ],
+  "cost_usd_total": 0.5225,
+  "cost_usd_per_run": 0.1742,
+  "finding_counts": [
+    21,
+    20,
+    19
+  ]
+}
