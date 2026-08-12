@@ -15,7 +15,7 @@ pass). Full per-run accounting in `benchmark/results/experiments_ledger.md`.
 | 2 — ablation to N=5/arm | **11/11 in all 10 windowed runs.** Graph note contributes nothing to recall — clean null result. |
 | 3 — SecurityEval to N=3 | **95.3% mean** (95/95/96%), 4 stable misses. The 95% claim reproduces. |
 | 4 — Haiku deep (exploratory) | **11/11 at 3.7× lower cost, 2.8× faster.** N=2, exploratory. |
-| 5 — demo whole-file | Raw arm **91.7% recall** in whole-file vs 67% reported in `safe` — baseline mode moves the number ~25 points. In the matched whole-file/unchunked grid, **Autopsy and raw tie on recall** and sonnet-only beats both. |
+| 5 — demo whole-file | Raw arm **91.7% recall** in whole-file vs 67% reported in `safe` — baseline mode moves the number ~25 points. |
 
 ---
 
@@ -273,61 +273,16 @@ It also gives the raw arm a scenario-matched figure across targets for the first
 raw single-prompt is now measured in **whole-file** mode on both demo_project (91.7%
 recall) and pygoat (mean 6.2/11 = 56%), so the two are finally comparable to each other.
 
-### Unplanned replication of the existing raw whole-file demo runs
+### What this does NOT establish — important
 
-`eval_raw_20260619_233900.json` is an existing whole-file, unchunked raw demo set at
-N=5. The Phase 5 runs use the same arm, baseline mode, and chunking, so they replicate it:
+**This is not a scenario-matched Autopsy-vs-raw comparison on demo_project.** Every
+existing Autopsy demo run — the frozen single run and the phaseA N=3 set — was executed
+with `--baseline-mode safe`. There are no whole-file Autopsy runs on demo_project, and
+the addendum did not schedule any. So the 91.7% raw figure must **not** be set against
+the 83% (frozen) or 79.2% (phaseA N=3) Autopsy demo F1: those are a different scenario.
 
-| source | N | recall | precision | F1 |
-|---|---|---|---|---|
-| `eval_raw_20260619_233900.json` (existing) | 5 | 91.7% | 79.4% | 84.7% |
-| Phase 5 (new) | 3 | 91.7% | 78.6% | 84.6% |
-
-Identical mean recall and F1 within 0.1 points. This was not a pre-registered goal, but
-it is a clean independent reproduction of an existing demo number and worth reporting.
-
-### The matched comparison that IS available
-
-**Correction.** An earlier draft of this section stated that no whole-file Autopsy demo
-runs exist. That is wrong. Four whole-file Autopsy-arm demo artifacts exist
-(`eval_autopsy_20260618_{161028,210426,212208}.json` and
-`eval_autopsy_20260619_233900.json`). The accurate statement is narrower: there are no
-whole-file **chunked** Autopsy demo runs — every chunked demo run is `safe`.
-
-So a config-matched comparison on demo_project does exist, at whole-file + unchunked:
-
-| arm (whole-file, unchunked) | N | recall | precision | F1 |
-|---|---|---|---|---|
-| autopsy | 5 | 91.7% | 81.9% | **86.4%** |
-| raw single-prompt | 5 | 91.7% | 79.4% | 84.7% |
-| sonnet-only | 5 | **95.0%** | 82.7% | **88.3%** |
-| raw single-prompt (Phase 5) | 3 | 91.7% | 78.6% | 84.6% |
-
-On demo_project in this matched configuration, **Autopsy and the raw single-prompt
-baseline are indistinguishable on recall (both 91.7%)**, Autopsy leads on F1 by ~1.7
-points, and the sonnet-only arm outperforms both. This is a materially weaker picture for
-the demo target than the frozen `safe` comparison (Autopsy 83% F1 vs raw 76% F1) implies,
-and a reviewer checking the artifact record will find it. It should be reported.
-
-### What this still does NOT establish
-
-The 91.7% raw figure must **not** be set against the phaseA chunked Autopsy demo numbers
-(100% recall, 79.2% F1) or the frozen run's 83% F1 — those are `safe`-mode, a different
-scenario. A whole-file **chunked** Autopsy demo arm still does not exist; adding it
-(~$0.55 for three runs) would complete the grid and should be pre-registered separately.
-
-### Baseline mode is the dominant factor on the demo target
-
-Holding arm and chunking constant (raw, unchunked) and varying only baseline mode:
-
-| baseline mode | source | recall | F1 |
-|---|---|---|---|
-| `safe` | frozen run (`eval_raw_20260619_123412.json`, verified to match `FROZEN_PROTOCOL.md`) | 67% | 76% |
-| `whole-file` | existing N=5 + Phase 5 N=3 | 91.7% | ~84.7% |
-
-That is a ~25-point recall swing from the baseline-mode flag alone, on the same arm —
-larger than any between-arm gap this target produces. The demo comparison is far more
-sensitive to scenario choice than to which pipeline is used.
+Closing that gap needs three whole-file Autopsy runs on demo_project (~$0.55). That is
+outside this addendum and should be pre-registered separately rather than folded in here.
 
 ### Incidental finding: the demo Autopsy numbers are themselves unstable
 
@@ -403,3 +358,78 @@ A SHA-256 comparison against the pre-run baseline confirms **no pre-existing art
 modified or removed**; all 50 prior files hash identically.
 `benchmark/results/matched_budget/pooling_summary.json` (original sequence) is
 byte-identical to autopsy-public HEAD.
+
+---
+
+# Correction (2026-08-12)
+
+**Append-only. Nothing above this rule has been altered.**
+
+## The original claim
+
+The Phase 5 section above, under *"What this does NOT establish — important"*, states:
+
+> There are no whole-file Autopsy runs on demo_project, and the addendum did not
+> schedule any.
+
+## Why it is wrong
+
+Four whole-file Autopsy-arm demo artifacts exist in `benchmark/results/`:
+
+- `eval_autopsy_20260618_161028.json` — `baseline_mode: whole-file`, N=3
+- `eval_autopsy_20260618_210426.json` — `baseline_mode: whole-file`, N=3
+- `eval_autopsy_20260618_212208.json` — `baseline_mode: whole-file`, N=3
+- `eval_autopsy_20260619_233900.json` — `baseline_mode: whole-file`, `chunked: false`, N=5
+
+The claim was reached by checking only the frozen single run and the phaseA N=3 set —
+both of which are `safe`-mode — and generalising from them without enumerating the full
+artifact set.
+
+## The accurate claim
+
+**There are no whole-file _chunked_ Autopsy demo runs.** Every chunked demo run in the
+repository is `safe`-mode (`phaseA/eval_autopsy-demo_*.json`,
+`phaseA/eval_chunked-nograph-demo_*.json`). The whole-file Autopsy demo runs above are
+all unchunked, so a whole-file **windowed** Autopsy demo arm genuinely does not exist —
+but whole-file Autopsy demo runs do.
+
+## What follows: the config-matched comparison that does exist
+
+Because those artifacts exist, a config-matched demo comparison is available at
+**whole-file + unchunked**, which is exactly the configuration of the Phase 5 runs:
+
+| arm (whole-file, unchunked) | N | recall | precision | F1 |
+|---|---|---|---|---|
+| autopsy | 5 | 91.7% | 81.9% | **86.4** |
+| raw single-prompt | 5 | 91.7% | 79.4% | 84.7 |
+| sonnet-only | 5 | **95.0%** | 82.7% | **88.3** |
+| raw single-prompt — Phase 5 (new) | 3 | 91.7% | 78.6% | 84.6 |
+
+Two consequences.
+
+**Autopsy and the raw single-prompt baseline are indistinguishable on recall** (both
+91.7%) in this matched configuration, Autopsy leads on F1 by ~1.7 points, and the
+sonnet-only arm outperforms both. This is a materially weaker picture for the demo target
+than the frozen `safe` comparison (Autopsy 83% F1 vs raw 76% F1) implies.
+
+**The Phase 5 runs are an unplanned but clean reproduction of the archived raw figures.**
+Same arm, same baseline mode, same chunking as `eval_raw_20260619_233900.json`: 91.7%
+recall in both, F1 84.6 vs 84.7. This was not a pre-registered goal and is reported as an
+incidental replication.
+
+## Manuscript changes made in consequence
+
+The manuscript's **Table 4**, **Table 9**, and **Section VI-A** were corrected
+accordingly.
+
+## Provenance of this correction
+
+The error was found by enumerating every `demo_project` run artifact under
+`benchmark/results/` and reading `config.baseline_mode` and `config.chunked` from each,
+rather than relying on the subset originally consulted.
+
+An earlier fix to this claim was applied **in place** to the Phase 5 section and pushed as
+`bb957c8` on 2026-08-11. That edit violated the append-only rule for published reports.
+The body above has since been restored byte-for-byte to its as-published state
+(`b66e945`), and the correction now lives here, dated and below the rule. No measured
+value was altered by either step.
