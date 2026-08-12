@@ -1,0 +1,328 @@
+{
+  "sequence": "seq2 (independent replication of Test A pooling)",
+  "runs_pooled": 5,
+  "new_runs": [
+    {
+      "ts": "2026-08-11T12:14:05",
+      "run_label": "seq2_1",
+      "attempts": 1,
+      "recall": 0.5455,
+      "tp": 6,
+      "fp": 15,
+      "total_findings": 21,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ],
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "cost_usd": 0.3389,
+      "output_tokens": 8192,
+      "hit_output_cap_8192": true,
+      "scan_time_s": 149.0
+    },
+    {
+      "ts": "2026-08-11T12:16:44",
+      "run_label": "seq2_2",
+      "attempts": 1,
+      "recall": 0.8182,
+      "tp": 9,
+      "fp": 13,
+      "total_findings": 22,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ],
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "cost_usd": 0.3389,
+      "output_tokens": 8192,
+      "hit_output_cap_8192": true,
+      "scan_time_s": 158.4
+    },
+    {
+      "ts": "2026-08-11T12:19:13",
+      "run_label": "seq2_3",
+      "attempts": 1,
+      "recall": 0.3636,
+      "tp": 4,
+      "fp": 17,
+      "total_findings": 21,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-sqli-login",
+        "pygoat-unsafe-yaml"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-weak-hash",
+        "pygoat-xxe"
+      ],
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "cost_usd": 0.3389,
+      "output_tokens": 8192,
+      "hit_output_cap_8192": true,
+      "scan_time_s": 148.9
+    },
+    {
+      "ts": "2026-08-11T12:27:48",
+      "run_label": "seq2_4",
+      "attempts": 1,
+      "recall": 0.5455,
+      "tp": 6,
+      "fp": 23,
+      "total_findings": 29,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-login",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-sqli-injection-lab",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-unsafe-yaml",
+        "pygoat-weak-hash"
+      ],
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "cost_usd": 0.3389,
+      "output_tokens": 8192,
+      "hit_output_cap_8192": true,
+      "scan_time_s": 159.4
+    },
+    {
+      "ts": "2026-08-11T12:30:15",
+      "run_label": "seq2_5",
+      "attempts": 1,
+      "recall": 0.5455,
+      "tp": 6,
+      "fp": 16,
+      "total_findings": 22,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-login",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval",
+        "pygoat-sqli-injection-lab",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ],
+      "usage": {
+        "haiku_in": 0,
+        "haiku_out": 0,
+        "sonnet_in": 72010,
+        "sonnet_out": 8192,
+        "calls": 1
+      },
+      "cost_usd": 0.3389,
+      "output_tokens": 8192,
+      "hit_output_cap_8192": true,
+      "scan_time_s": 146.4
+    }
+  ],
+  "this_process_spend_usd": 0.6778,
+  "new_spend_usd": 1.6945,
+  "pooled_5run_total_cost_usd": 1.6945,
+  "curve": [
+    {
+      "k": 1,
+      "runs_included": [
+        "seq2_1"
+      ],
+      "cumulative_findings_deduped": 21,
+      "recall": 6,
+      "recall_str": "6/11",
+      "cumulative_cost_usd": 0.3389,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-ssrf",
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ]
+    },
+    {
+      "k": 2,
+      "runs_included": [
+        "seq2_1",
+        "seq2_2"
+      ],
+      "cumulative_findings_deduped": 34,
+      "recall": 9,
+      "recall_str": "9/11",
+      "cumulative_cost_usd": 0.6778,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ]
+    },
+    {
+      "k": 3,
+      "runs_included": [
+        "seq2_1",
+        "seq2_2",
+        "seq2_3"
+      ],
+      "cumulative_findings_deduped": 47,
+      "recall": 9,
+      "recall_str": "9/11",
+      "cumulative_cost_usd": 1.0167,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ]
+    },
+    {
+      "k": 4,
+      "runs_included": [
+        "seq2_1",
+        "seq2_2",
+        "seq2_3",
+        "seq2_4"
+      ],
+      "cumulative_findings_deduped": 67,
+      "recall": 9,
+      "recall_str": "9/11",
+      "cumulative_cost_usd": 1.3556,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ]
+    },
+    {
+      "k": 5,
+      "runs_included": [
+        "seq2_1",
+        "seq2_2",
+        "seq2_3",
+        "seq2_4",
+        "seq2_5"
+      ],
+      "cumulative_findings_deduped": 77,
+      "recall": 9,
+      "recall_str": "9/11",
+      "cumulative_cost_usd": 1.6945,
+      "matched_ids": [
+        "pygoat-code-injection-eval",
+        "pygoat-command-injection",
+        "pygoat-imagemath-eval",
+        "pygoat-insecure-deser-pickle",
+        "pygoat-sqli-injection-lab",
+        "pygoat-sqli-login",
+        "pygoat-ssrf",
+        "pygoat-unsafe-yaml",
+        "pygoat-xxe"
+      ],
+      "missed_ids": [
+        "pygoat-ssti",
+        "pygoat-weak-hash"
+      ]
+    }
+  ],
+  "windowed_ref": {
+    "runs": 1,
+    "cost_usd": 1.1261,
+    "findings": 112,
+    "recall": "11/11"
+  },
+  "retry_disclosure": "Runs 4 and 5 failed on their first attempt with HTTP 400 (credit balance exhausted) and were retried once, as allowed by preregistration_matched_budget.md \u00a76. The failed first attempts are preserved as raw_seq2_run_{4,5}_FAILED_attempt1.json. No run was retried for any reason other than an API error."
+}
