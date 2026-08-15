@@ -503,6 +503,25 @@ Everything the evaluation needs lives in `benchmark/`:
   `"provisional": true` and is **excluded from scoring** unless you pass
   `--include-provisional` — see its `provisional_reason` field.
 
+### Replication and failure analysis
+
+The August 2026 replication re-ran the evaluation end to end against the current
+models, and a companion pass looked at what Autopsy consistently *fails* to
+find. Three documents cover it:
+
+- **[`benchmark/results/results_summary_aug2026.md`](benchmark/results/results_summary_aug2026.md)**
+  — the replication's results across all phases, with the paid-run ledger and a
+  dated correction appended below the separator. Raw per-run artifacts, including
+  the runs that failed and were retried, sit alongside it under
+  `benchmark/results/`.
+- **[`benchmark/results/securityeval_aug2026/stable_misses_analysis.md`](benchmark/results/securityeval_aug2026/stable_misses_analysis.md)**
+  — the qualitative failure analysis: which SecurityEval cases are missed
+  repeatedly rather than by sampling noise, and the late-file deficit observed on
+  pygoat.
+- **[`benchmark/prereg_addendum_20260811.md`](benchmark/prereg_addendum_20260811.md)**
+  — the addendum registering the replication and the precision extension, written
+  before any API call in that round.
+
 ---
 
 ## Why Autopsy vs. Existing Tools
