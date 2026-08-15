@@ -60,3 +60,50 @@ rewriting it would invalidate the archived v1.2 DOI. The redaction standard ther
 applies from v1.3 onward, and the inconsistency is recorded here rather than silently
 resolved. Note also that the developer path segment is the same string as the public
 GitHub account name, so it discloses nothing not already implied by the repository URL.
+
+---
+
+# Second round — dated 2026-08-14 (v1.4-paper)
+
+Append-only. Nothing above this separator was altered.
+
+## What was redacted
+
+Two Phase A run artifacts first published at `v1.3-paper` carried an absolute
+developer path in their `config.baseline` field. One string value was substituted,
+everywhere it occurred:
+
+| original | published as | occurrences |
+|---|---|---|
+| `/Users/annenolte/autopsytest copy 2/` | `<repo>/` | 2 |
+
+Affected files (occurrences substituted):
+
+- `phaseA/eval_autopsy_20260811_132802.json` (1)
+- `phaseA/eval_chunked-nograph_20260811_142728.json` (1)
+
+In both files the substitution rewrote exactly one line:
+`"baseline": "/Users/annenolte/autopsytest copy 2/benchmark/baseline"` became
+`"baseline": "<repo>/benchmark/baseline"`.
+
+## What was NOT changed
+
+Pure literal string replacement on one path prefix. **No measured value, metric,
+count, finding, token count, timestamp, or config flag was altered.** Parsing both
+files before and after and comparing every top-level block except `config` shows
+them equal; within `config`, `baseline` is the only key whose value differs. The
+sibling `config.demo` value (`/tmp/pygoat/introduction`) is a scratch checkout
+path, not a developer path, and is left as recorded.
+
+## Fixed at the source
+
+`benchmark/eval.py` now routes `config.demo` and `config.baseline` through
+`_portable_path()`, which writes any path inside the repository as `<repo>/...`
+at artifact-write time. Paths outside the repository are recorded unchanged.
+Future runs therefore need no after-the-fact substitution.
+
+## Still-untouched v1.2 files
+
+The three `v1.2-paper` files listed in the previous section remain untouched, for
+the reason given there: that file set is immutable and rewriting it would
+invalidate the archived v1.2 DOI.

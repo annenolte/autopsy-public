@@ -5,7 +5,7 @@
   "config": {
     "arm": "autopsy",
     "demo": "/tmp/pygoat/introduction",
-    "baseline": "/Users/annenolte/autopsytest copy 2/benchmark/baseline",
+    "baseline": "<repo>/benchmark/baseline",
     "baseline_mode": "whole-file",
     "dedupe": true,
     "chunked": true,

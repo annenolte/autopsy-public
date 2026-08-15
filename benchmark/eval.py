@@ -79,6 +79,21 @@ RESULTS_DIR = _THIS_DIR / "results"
 DEFAULT_FUZZ_LINES = 5  # +/- lines a reported location may be off and still match
 
 
+def _portable_path(p) -> str:
+    """Render a path for a published artifact, without the developer's home dir.
+
+    Paths inside the repo are written as `<repo>/...` so a run artifact is the
+    same on any machine; anything outside it (e.g. a /tmp checkout of pygoat) is
+    left alone. See benchmark/results/REDACTIONS.md for the two rounds of
+    after-the-fact substitution this replaces.
+    """
+    resolved = Path(p).resolve()
+    try:
+        return f"<repo>/{resolved.relative_to(_REPO_ROOT).as_posix()}"
+    except ValueError:
+        return str(p)
+
+
 # ─── Ground truth ─────────────────────────────────────────────────────────────
 
 def load_ground_truth(
@@ -815,8 +830,8 @@ def summarize(runs, args, scored, all_truth, temp_note, arm="autopsy") -> dict:
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "config": {
             "arm": arm,
-            "demo": str(args.demo),
-            "baseline": str(args.baseline),
+            "demo": _portable_path(args.demo),
+            "baseline": _portable_path(args.baseline),
             "baseline_mode": args.baseline_mode,
             "dedupe": not args.no_dedupe,
             "chunked": args.chunked or arm == "chunked-nograph",
