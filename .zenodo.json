@@ -1,9 +1,11 @@
 {
   "title": "Autopsy: detecting vulnerabilities in AI-generated code by reasoning across dependency graphs",
-  "description": "<p>Autopsy is a static-plus-LLM vulnerability detector aimed at AI-generated code. It builds a cross-file dependency graph, scans code in windows so that large files are not limited by a single pass's output budget, and includes deterministic detectors for deletion-based (\"zero-footprint\") vulnerabilities, where removing a comment boundary or a security control introduces a vulnerability that never appears as an added line in a diff.</p><p>This release is the reproducibility artifact accompanying the paper. It contains the detection pipeline, the benchmark harnesses (pygoat, SecurityEval, a Flask demo, and a TypeScript demo), and the Semgrep, Bandit, and CodeQL <code>security-extended</code> baselines scored through a frozen matcher.</p>",
+  "description": "<p>Autopsy is a static-plus-LLM vulnerability detector aimed at AI-generated code. It builds a cross-file dependency graph (Tree-sitter to NetworkX) over Python, JavaScript, and TypeScript, scans code in overlapping line windows so that large files are not limited by a single pass's output budget, and enriches every finding with a graph-derived blast radius: the set of callers that can reach the vulnerable function.</p><p>Alongside the LLM pass, Autopsy ships deterministic AST and graph detectors that require no model call and are scale-invariant: SQL strings interpolated into an execution sink, weak hashing of sensitive values, security gates whose return value is discarded, and deletion-based (\"zero-footprint\") vulnerabilities, where removing a comment boundary or a security control introduces a vulnerability that never appears as an added line in a diff.</p><p>This release is the reproducibility artifact accompanying the paper. It contains the detection pipeline, the benchmark harnesses (pygoat, SecurityEval, a Flask demo, and a TypeScript demo), the Semgrep, Bandit, and CodeQL <code>security-extended</code> baselines scored through a frozen matcher, the pre-registered matched-budget control, and the August 2026 replication with its qualitative failure analysis.</p>",
   "upload_type": "software",
   "access_right": "open",
   "license": "mit",
+  "version": "1.5-paper",
+  "publication_date": "2026-08-14",
   "creators": [
     {
       "name": "Nolte, Anne",
@@ -18,13 +20,19 @@
     "large language models",
     "AI-generated code",
     "dependency graph",
-    "program analysis"
+    "program analysis",
+    "reproducibility"
   ],
   "related_identifiers": [
     {
       "identifier": "https://github.com/annenolte/autopsy-public",
       "relation": "isSupplementTo",
       "scheme": "url"
+    },
+    {
+      "identifier": "10.5281/zenodo.21614411",
+      "relation": "isVersionOf",
+      "scheme": "doi"
     }
   ]
 }

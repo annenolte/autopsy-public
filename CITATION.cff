@@ -3,21 +3,26 @@ message: "If you use this software or its benchmark artifact, please cite it as 
 title: "Autopsy: detecting vulnerabilities in AI-generated code by reasoning across dependency graphs"
 abstract: >-
   Autopsy is a static-plus-LLM vulnerability detector aimed at AI-generated code.
-  It builds a cross-file dependency graph, scans code in windows so that large
-  files are not limited by a single pass's output budget, and includes
-  deterministic detectors for deletion-based ("zero-footprint") vulnerabilities,
+  It builds a cross-file dependency graph over Python, JavaScript, and
+  TypeScript, scans code in overlapping line windows so that large files are not
+  limited by a single pass's output budget, and enriches every finding with a
+  graph-derived blast radius. Alongside the LLM pass it ships deterministic AST
+  and graph detectors that need no model call: SQL strings interpolated into an
+  execution sink, weak hashing of sensitive values, security gates whose return
+  value is discarded, and deletion-based ("zero-footprint") vulnerabilities,
   where removing a comment boundary or a security control introduces a
   vulnerability that never appears as an added line in a diff. This repository is
   the reproducibility artifact accompanying the paper, including the benchmark
-  harnesses and the Semgrep, Bandit, and CodeQL baselines scored by a frozen
-  matcher.
+  harnesses, the Semgrep, Bandit, and CodeQL baselines scored by a frozen
+  matcher, the pre-registered matched-budget control, and the August 2026
+  replication with its qualitative failure analysis.
 type: software
 authors:
   - family-names: Nolte
     given-names: Anne
     orcid: "https://orcid.org/0009-0006-8087-4745"
     affiliation: "Independent Researcher"
-version: "1.4-paper"
+version: "1.5-paper"
 date-released: "2026-08-14"
 doi: "10.5281/zenodo.21614411"
 license: MIT

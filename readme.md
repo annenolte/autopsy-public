@@ -1,70 +1,71 @@
-# Autopsy — AI Vulnerability Detective
-
-> *Claude Code wrote it. You accepted it. Autopsy finds what you didn't understand — and what it could cost you.*
+# Autopsy
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-red.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](LICENSE)
-[![Built at LAH X](https://img.shields.io/badge/Built%20at-Los%20Altos%20Hacks%20X-red.svg)](https://losaltoshacks.com)
 
-Autopsy is a developer security tool that finds vulnerabilities in AI-generated code by reasoning across your entire dependency graph — not just the file where the bug lives. It detects what Claude Code, Copilot, and Cursor wrote, scans it for vulnerabilities, traces root causes across file boundaries, maps the full blast radius of every finding, and catches vulnerability classes that diff-only tools miss entirely — including code activated by deletion.
+Autopsy is a vulnerability scanner for AI-generated code. It parses a repository with Tree-sitter into a NetworkX dependency graph, diffs that graph across commits, and uses the resulting structure to do three things a file-at-a-time scanner cannot:
 
-**Copilot helps when you already know what to ask. Autopsy starts from zero with you.**
+- **Reason across file boundaries.** The root cause of a finding is often not in the file where the symptom appears; the graph makes the call chain explicit.
+- **Analyze deletions.** Removing a comment delimiter or a `validate()` function can introduce a vulnerability that never appears as an added line in a diff. Addition-only scanners are blind to this class.
+- **Report a blast radius.** After locating a vulnerability, Autopsy reverses the graph to enumerate the callers that can reach it.
 
----
+Detection runs in two layers: deterministic AST/graph detectors that need no API call, and an LLM pass (Claude Haiku for triage, Sonnet for analysis) windowed over long files.
 
-## The Problem
-
-Every developer using AI coding assistants is shipping code they didn't fully write — and may not fully understand. When something breaks or gets exploited, the root cause is rarely in the file where the error was thrown. It's three files upstream, in a dependency you accepted from an AI suggestion without reading closely.
-
-Traditional security tools scan files in isolation. They also only watch additions — meaning an entire class of vulnerability introduced by deletion is invisible to them. Autopsy builds a graph of your entire codebase, diffs it across commits, and reasons across the full structure. The difference is the difference between finding a symptom and finding the cause.
+On OWASP pygoat, Autopsy finds 11/11 labeled vulnerabilities, a strict superset of CodeQL `security-extended` (9/11), Semgrep (7/11), and Bandit (5/11). On SecurityEval it flags 95% of 121 vulnerable files. [Measured results](#measured-results) reports these alongside the ablations and the pre-registered control that bound what they do and do not show.
 
 ---
 
-## Features
+## Background
 
-### Three Modes
+Code produced by AI assistants is accepted at a rate that outpaces review, which means a codebase accumulates functions nobody has read closely. Two properties of conventional scanners interact badly with that:
+
+1. **They scan files in isolation.** A sink in `db.py` is reported at `db.py`, with no indication of which entry points reach it, so triage requires manually reconstructing the call graph.
+2. **They scan additions.** A unified diff of a deleted comment delimiter is one or two characters. The set of live functions in the AST can change substantially, and none of it appears as an addition.
+
+Autopsy builds the graph at the pre- and post-commit SHAs and compares them structurally, so both the additions and the structural consequences of removals are visible to the scan.
+
+---
+
+## Modes
+
+Autopsy exposes four operations. Each is available as a CLI subcommand, a REPL menu entry, a VS Code command, and an HTTP endpoint.
 
 **`s` — SCAN THIS** (`Cmd+Shift+S` in VS Code)
 
-Autopsy reads your git diff, identifies which code was likely written by an AI assistant using 7 heuristic signals, and scans it for vulnerabilities. Before scanning additions, it runs a full deletion analysis pass — catching security controls that were removed and code that was silently activated. Every finding includes:
-- Severity badge (CRITICAL / HIGH / MEDIUM / LOW)
-- Exact file and line number
-- Attack scenario in plain English
-- Suggested fix
-- **Blast radius** — every file that can reach the vulnerable function
+Reads the git diff, scores which code was likely AI-authored using 7 heuristic signals, and scans it. Before the LLM pass it runs deletion analysis and the deterministic detectors. Each finding carries a severity badge (CRITICAL / HIGH / MEDIUM / LOW), file and line, an attack scenario, a suggested fix, and a blast radius.
 
 **`d` — DEBUG THIS** (`Cmd+Shift+D` in VS Code)
 
-Describe a bug or paste an error. Autopsy traverses the dependency graph using BFS, identifies which nodes are causally connected to the problem, and streams a full analysis including root cause, causal chain, fix suggestion, and blast radius. The root cause is almost never in the file where the error was thrown.
+Takes an error message or a target file/function. Autopsy extracts the connected subgraph via BFS to a bounded depth and streams root cause, causal chain, suggested fix, and blast radius.
 
 **`o` — ORIENT ME** (`Cmd+Shift+O` in VS Code)
 
-Point Autopsy at any unfamiliar repo. Get a structured map in seconds: architecture overview, module map, data flow, entry points, and complexity hotspots. Uses graph-theoretic properties — in-degree, out-degree, cycle detection — not just text analysis.
+Produces a map of an unfamiliar repository: file tree, architecture overview, module map, data flow, entry points, and complexity hotspots ranked by in-degree. Uses graph properties — in-degree, out-degree, cycle detection — rather than text analysis alone.
 
 **`g` — GRAPH**
 
-View dependency graph statistics and launch the interactive force-directed visualization (in VS Code) showing every node and edge in your codebase, color-coded by type.
+Dependency graph statistics (node counts by type, edge counts by relationship) and, in VS Code, an interactive force-directed visualization.
 
 ---
 
-## How It Works
+## How it works
 
-### The Dependency Graph
+### The dependency graph
 
-Autopsy's core is a **NetworkX directed graph** built by parsing your entire codebase with **Tree-sitter**. Every function, class, and module is a node. Every function call, import, and inheritance relationship is a directed edge.
+Autopsy parses the repository with Tree-sitter and builds a NetworkX `DiGraph`. Every file, function, and class is a node; every import, call, and inheritance relationship is a directed edge. Nodes carry `type`, `qualified_name`, and `file` attributes.
 
 ```
 File A (auth/handler.py)
   └── calls → get_user() in db.py
                 └── calls → execute_query() in db.py
-                              └── ⚠ SQL Injection here
+                              └── SQL injection here
 ```
 
-This graph is what separates Autopsy from a linter. A linter sees one file at a time. Autopsy sees the whole structure.
+Parsed languages (`autopsy/parser/languages.py`): Python (`.py`), JavaScript (`.js`, `.jsx`), TypeScript (`.ts`), TSX (`.tsx`).
 
-### The Full Scan Pipeline
+### Scan pipeline
 
-Every scan runs four phases in sequence:
+Deterministic analysis runs first and requires no API calls; the LLM pass follows.
 
 ```
 Git Diff
@@ -86,16 +87,24 @@ Git Diff
            │
            ▼
 ┌─────────────────────────┐
-│  Phase 3                │  Score changed code with 7-signal heuristic
+│  Phase 3                │  SQL string injection → execute sink
+│  Deterministic          │  Weak hashing (MD5/SHA1) on secrets
+│  Detectors              │  Ignored security-gate return values
+└──────────┬──────────────┘
+           │
+           ▼
+┌─────────────────────────┐
+│  Phase 4                │  Score changed code with 7-signal heuristic
 │  AI Authorship          │  Score ≥ 0.5 = likely_ai, scanned first
 │  Detection              │  Union with activated_nodes from Phase 2
 └──────────┬──────────────┘
            │
            ▼
 ┌─────────────────────────┐
-│  Phase 4                │  BFS extracts subgraph (max 50 nodes)
+│  Phase 5                │  BFS extracts subgraph (max 50 nodes)
 │  LLM Pipeline           │  Claude Haiku triages → JSON
-│                         │  Claude Sonnet streams deep analysis
+│                         │  Claude Sonnet streams deep analysis,
+│                         │  windowed over long files
 │                         │  Blast radius via reverse BFS
 └──────────┬──────────────┘
            │
@@ -104,13 +113,13 @@ Git Diff
     (streamed via SSE)
 ```
 
-### Deletion Analysis
+`--no-llm` stops after Phase 4.
 
-Autopsy detects three categories of deletion-based vulnerabilities that are invisible to diff-only scanners.
+### Deletion analysis
 
-**Comment boundary deletion — zero-footprint activation**
+`autopsy/detection/deletions.py` covers three deletion-introduced classes.
 
-Deleting the opening delimiter of a multiline comment activates an entire dormant block of code. The git diff shows only the removed delimiter — one or two characters. The AST sees a completely new set of live functions that never appear as additions, so every diff-only tool misses them entirely.
+**Comment boundary deletion (zero-footprint activation).** Deleting the opening delimiter of a multiline comment makes the enclosed block live. The diff shows the removed delimiter; the AST shows new live functions that never appear as additions.
 
 ```
 - """
@@ -119,7 +128,7 @@ Deleting the opening delimiter of a multiline comment activates an entire dorman
   """
 ```
 
-Autopsy detects deleted comment openers across all supported languages:
+Openers detected (`COMMENT_OPENERS`):
 
 | Delimiter | Language |
 |-----------|----------|
@@ -130,7 +139,9 @@ Autopsy detects deleted comment openers across all supported languages:
 | `=begin` | Ruby |
 | `<!--` | HTML / XML |
 
-When a comment boundary deletion is detected, the activated code block is added to scan targets and passed through the full Haiku → Sonnet pipeline as if it were an addition.
+Delimiter scanning operates on raw diff text, so the warning fires for any of these. Graph-level follow-through — feeding the activated block through the full pipeline with blast radius — requires a parsed language (Python / JS / TS / TSX). For Julia, Lua, Ruby, and HTML you get the activation warning and the revealed block, not the graph analysis.
+
+When a deletion is detected, the revealed block is checked for executable content (`_revealed_block_is_dangerous`) and, if so, added to scan targets and passed through the same Haiku → Sonnet pipeline as an addition.
 
 ```
 ⚠  ZERO-FOOTPRINT ACTIVATION DETECTED
@@ -145,9 +156,7 @@ Autopsy is scanning the newly activated code for vulnerabilities.
 This code does not appear as additions in your git diff.
 ```
 
-**Security control deletion**
-
-When a function is removed from the codebase whose name contains security-relevant keywords — `validate`, `authenticate`, `sanitize`, `authorize`, `verify`, `guard`, `protect`, `rate_limit`, `csrf`, `xss`, `escape`, `hash`, `encrypt`, `permission`, `require`, `restrict` — Autopsy flags it and reports every caller that is now unprotected.
+**Security control deletion.** When a removed function's name contains a security keyword — `validate`, `authenticate`, `sanitize`, `authorize`, `verify`, `guard`, `protect`, `rate_limit`, `csrf`, `xss`, `escape`, `hash`, `encrypt`, `permission`, `require`, `restrict` — Autopsy reports it along with every caller that is now potentially unprotected.
 
 ```
 🚨  SECURITY CONTROL DELETED
@@ -157,9 +166,7 @@ validate_input() was removed. Its callers may now be unprotected.
 Called by: api/routes.py, api/admin.py, middleware/session.py
 ```
 
-**Broken edge detection**
-
-When a function that still exists calls a function that no longer exists, Autopsy reports the dangling dependency — code that calls nothing, silently failing at runtime.
+**Broken edge detection.** When a surviving function calls a function that no longer exists, Autopsy reports the dangling dependency.
 
 ```
 ⚠  BROKEN DEPENDENCY DETECTED
@@ -168,9 +175,33 @@ auth/handler.py::authenticate()  →  utils/crypto.py::hash_password()
 hash_password() was deleted. authenticate() is now calling nothing.
 ```
 
-### Pre/Post Commit Graph Diffing
+### Deterministic detectors (no LLM)
 
-For deletion analysis, Autopsy builds the dependency graph at two points in time and compares them structurally. File contents are read directly from the git object database using GitPython blob reads into a `TemporaryDirectory` — the working directory is never modified. Node IDs are normalized after snapshot construction so the two graphs are directly comparable.
+These fire without any API call. Their practical property is scale-invariance: an LLM's recall degrades as a codebase grows and attention spreads across more code, whereas an AST/graph rule fires identically on a 200-line file and a 500k-line monorepo, in linear time, with no context-window limit.
+
+| Detector | Module | What it matches |
+|---|---|---|
+| SQL string injection | `detection/static_rules.py::detect_sql_string_injection` | Parameters interpolated into a SQL string that reaches an execute sink. Project-specific sink names are discovered via `_sql_sink_names`. Matches the interpolated shape; does not match the equivalent bound-parameter query. |
+| Weak hashing | `detection/static_rules.py::detect_weak_hashing` | MD5/SHA1 applied to sensitive values, e.g. password hashing. |
+| Ignored security returns | `detection/ignored_returns.py::detect_ignored_security_returns` | A security gate is called but its boolean result is discarded — `check_permission(user, id)` as a bare expression statement, so the gate does not affect control flow. |
+
+The ignored-return detector is the case where the graph is load-bearing: the graph records the cross-file `calls` edge to a security-named function, and the AST determines whether the return value is consumed (assigned, tested, returned, passed) or discarded. Together these make the finding decidable without the model noticing it, which matters because an LLM scan tends to fixate on higher-signal bugs such as SQL injection in the same function and reports this pattern inconsistently.
+
+Findings from this layer are deterministic static analysis, not evidence of LLM reasoning. The benchmark harness attributes static-layer and LLM-layer findings separately, and the rules are validated against code they were not written for (`benchmark/heldout/`, `benchmark/validate_heldout.py`).
+
+### Windowed map-reduce scanning
+
+A single whole-file prompt is bounded by its output budget, and long files get truncated — pygoat's `introduction/views.py` is roughly 1,240 lines, so a 500-line cap never reaches most of it. `autopsy/llm/chunking.py::scan_stream_chunked` slides a window over each file instead, so every region gets its own read and its own output budget.
+
+- `iter_line_windows(total_lines, window=400, overlap=40)` — 400-line windows with 40 lines of overlap, so a vulnerability spanning a boundary is seen whole by at least one window.
+- `_graph_neighbors_note(...)` / `_graph_subgraph_bodies(...)` attach cross-file dependency context to each window, and can be disabled to isolate the windowing effect.
+- Findings across windows are merged and deduped (same file, within 3 lines, same category).
+
+The deterministic layer runs once over the whole repository; only the LLM step is windowed. On pygoat, windowing rather than the dependency-graph note is the measured source of the recall gain over a single prompt — see [Measured results](#measured-results).
+
+### Pre/post commit graph diffing
+
+Autopsy builds the graph at two commits and compares them structurally. File contents are read from the git object database via GitPython blob reads into a `TemporaryDirectory`; the working directory is not modified. Node IDs are normalized after snapshot construction so the graphs are directly comparable.
 
 ```python
 pre_graph  = build_graph_at_commit(repo_path, pre_commit_sha)
@@ -183,11 +214,11 @@ graph_diff = diff_graphs(pre_graph, post_graph)
 # security_critical_deletions: deleted security-named functions
 ```
 
-Any node in `activated_nodes` — whether activated by comment removal, file restructuring, or any other mechanism — is added to scan targets and goes through the same Haiku → Sonnet → blast radius pipeline as explicit additions.
+Any node in `activated_nodes` — whether activated by comment removal, file restructuring, or another mechanism — is added to scan targets and follows the same path as an explicit addition.
 
-### The Blast Radius
+### Blast radius
 
-After finding a vulnerability, Autopsy reverses the dependency graph and runs a second BFS traversal — this time backward from the vulnerable node to find every caller chain that reaches it.
+After a finding, Autopsy reverses the graph and runs a second BFS from the vulnerable node to enumerate the caller chains that reach it.
 
 ```python
 # Forward graph: A → B → C (A calls B which calls C)
@@ -197,7 +228,7 @@ reversed_graph = graph.reverse()
 blast_radius = bfs(reversed_graph, vulnerable_node)
 ```
 
-This answers the question traditional tools never ask: *"Who can reach this vulnerability?"* Not just "where is it."
+When blast-radius data is supplied, the prompt is instructed to use the computed graph-derived file and function names rather than inferring them.
 
 ```
 ⚠ CRITICAL — SQL Injection
@@ -214,35 +245,82 @@ This answers the question traditional tools never ask: *"Who can reach this vuln
   Any of these entry points exposes the SQL injection.
 ```
 
-### AI Authorship Detection
+### AI authorship detection
 
-Autopsy uses 7 heuristic signals to detect which code was likely written by an AI coding assistant, and prioritizes scanning that code first:
+`autopsy/detection/heuristics.py` scores changed code with seven weighted signals. `likely_ai` sections are scanned first.
 
-| Signal | Weight | What it detects |
+| Signal | Weight | What it measures |
 |--------|--------|-----------------|
 | Bulk Addition | 0.20 | Large blocks added in a single commit |
-| Boilerplate Density | 0.15 | High ratio of template/scaffold patterns |
+| Boilerplate Density | 0.15 | Ratio of template/scaffold patterns |
 | Complete Functions | 0.15 | Fully implemented functions with no TODOs |
-| Missing Edge Cases | 0.15 | Functions that handle the happy path only |
-| Uniform Style | 0.10 | Suspiciously consistent formatting throughout |
-| Generated Comments | 0.10 | Docstrings that describe exactly what the code does |
+| Missing Edge Cases | 0.15 | Happy-path-only handling |
 | Commit Message | 0.15 | "Add feature X" with no context or discussion |
+| Uniform Style | 0.10 | Consistency of formatting throughout |
+| Generated Comments | 0.10 | Docstrings that restate the code |
 
-A score ≥ 0.5 marks the code as `likely_ai`. Autopsy scans `likely_ai` sections first, then the rest of the diff.
+A weighted score ≥ 0.5 sets `likely_ai`. An explicit AI-authorship marker in the commit message (`commit_message` signal ≥ 0.95) also sets it on its own, because a weighted average otherwise dilutes a single decisive signal below threshold.
 
-### Vulnerability Categories
+### Vulnerability categories
 
-Autopsy detects 9 vulnerability categories:
+The prompt taxonomy (`autopsy/llm/prompts.py`) plus the categories exercised by the benchmarks:
 
-1. **SQL Injection** — unsanitized input in database queries
-2. **XSS** — unescaped user content rendered in HTML
-3. **Auth Bypass** — logic flaws that skip authentication
-4. **Path Traversal** — reading files outside intended directories
-5. **SSRF** — server-side requests to attacker-controlled URLs
-6. **Command Injection** — OS commands built from user input
-7. **Secrets Exposure** — API keys and tokens in code
-8. **Race Conditions** — timing flaws that corrupt state or bypass checks
-9. **Unvalidated Input** — user data used without sanitization
+SQLi · XSS · Auth Bypass · Path Traversal · SSRF · Command Injection · Code Injection · Insecure Deserialization · XXE · SSTI · Weak Crypto (e.g. MD5/SHA1 password hashing) · Secrets Exposure · Race Conditions · Unvalidated Input
+
+Categories are normalized by the benchmark scorer so findings can be compared against other tools' taxonomies.
+
+---
+
+## Measured results
+
+All numbers were measured in this repository and are reproducible via `benchmark/`. Recall means: did the tool find the labeled vulnerabilities. Pinned baseline versions: CodeQL 2.25.6, Semgrep 1.167.0, Bandit 1.9.4.
+
+### OWASP pygoat — third-party app, 11 in-scope vulns, frozen matcher
+
+| Tool | Recall (file + category + ±5 lines) | Findings |
+|---|---|---|
+| Semgrep (`p/python`) | 64% (7/11) | 14 |
+| Bandit | 45% (5/11) | 42 |
+| CodeQL (`security-extended`) | 82% (9/11) | 37 |
+| Raw Sonnet (single prompt, no graph) | 68% (mean of 2 runs: 7/11, 8/11) | ~19 |
+| Autopsy (windowed) | 100% (11/11), both runs | ~110 |
+
+Autopsy's set is a strict superset of every static baseline on this target. Paired McNemar reaches significance against Bandit (p = 0.031); against Semgrep and CodeQL the direction is the same but n = 11 limits power.
+
+### SecurityEval — 121 vulnerable Python files, per-file detection
+
+| Tool | Per-file detection |
+|---|---|
+| Semgrep (`p/python`) | 19% (23/121) |
+| Bandit | 40% (49/121) |
+| CodeQL (`security-extended`) | 42% (51/121) |
+| Autopsy (full LLM pipeline, windowed) | 95% (115/121) |
+
+### TypeScript demo
+
+Autopsy 95% against raw single-prompt 75%, indicating the pipeline is not Python-specific.
+
+### Specificity on clean code
+
+On a held-out safe code set, Autopsy reported 0 false vulnerabilities per KLOC.
+
+### Ablations
+
+- **Windowing vs single prompt:** +31.8 points on pygoat (95% CI [+27, +36]).
+- **Dependency-graph note, on vs off:** +0.0 ± 0.0 points on pygoat. Windowing alone saturates this target, so the cross-file note's marginal recall contribution here is zero. The note is claimed only where it is measured to help: cross-file cases, and as the scaffolding blast radius depends on.
+
+### Matched-budget control (pre-registered)
+
+Given roughly 1.5× the windowed arm's budget, a pooled single-prompt baseline (union of 5 runs, $1.69) also reaches 11/11. On pygoat the windowing advantage is therefore an efficiency result — full recall in one pass (~$1.13) where repeated single-prompt sampling needs about four pooled passes ($1.35) to match — and not evidence that windowing recovers vulnerabilities single prompting categorically cannot. See `benchmark/preregistration_matched_budget.md` and `benchmark/results/matched_budget/summary.md`.
+
+### Scope and limitations
+
+- **Python is the most exercised path.** TS/JS are supported and measured (95% on the TS demo), but coverage is thinner.
+- **SecurityEval 95% is file-level detection** — whether Autopsy flagged something in a vulnerable file — not exact line or category localization.
+- **The pygoat number is recall, not precision.** Autopsy emits roughly 110 deduped findings against 11 labels. It does not false-positive on the held-out safe set (0/KLOC), but the finding count is not a precision claim.
+- **The pygoat edge is an efficiency claim** under matched budget, not a unique-capability claim.
+- **Benchmarks cover statically-decidable vulnerabilities only.** Misconfiguration, vulnerable-dependency, and business-logic access-control issues are outside the labeled sets.
+- **LLM modes are nondeterministic** (the client exposes no temperature control), so individual runs vary; reported numbers are means over repeats.
 
 ---
 
@@ -251,52 +329,66 @@ Autopsy detects 9 vulnerability categories:
 ```
 autopsy/
 ├── cli/
-│   └── main.py                    # Typer CLI + interactive REPL (readchar)
-├── graph/
-│   └── builder.py                 # NetworkX graph construction,
-│                                  # build_graph_at_commit,
-│                                  # diff_graphs, _normalize_graph_paths
+│   ├── main.py                    # Typer CLI (scan/debug/orient/graph/serve)
+│   ├── interactive.py             # Single-keypress REPL (readchar)
+│   └── splash.py                  # Banner
 ├── parser/
-│   └── core.py                    # Tree-sitter repo parsing → AST
+│   ├── core.py                    # Tree-sitter repo parsing → AST model
+│   ├── languages.py               # Grammar registry (py/js/jsx/ts/tsx)
+│   ├── extractors.py              # Function/class/import/call extraction
+│   └── models.py                  # Parsed-repo dataclasses
+├── graph/
+│   ├── builder.py                 # NetworkX construction, build_graph_at_commit,
+│   │                              # diff_graphs, _normalize_graph_paths
+│   ├── subgraph.py                # Bounded BFS subgraph extraction (max 50 nodes)
+│   ├── traversal.py               # Traversal + reverse-BFS blast radius
+│   └── visualize.py               # Force-directed visualization payload
 ├── detection/
-│   ├── deletions.py               # Comment boundary detection,
-│   │                              # zero-footprint activation,
-│   │                              # deletion output formatters
-│   ├── heuristics.py              # 7-signal AI authorship detector
-│   └── vulnerabilities.py        # 9 vulnerability category definitions
-├── traversal/
-│   └── core.py                    # BFS subgraph extraction + blast radius
+│   ├── deletions.py               # Comment boundary detection, zero-footprint
+│   │                              # activation, deletion output formatters
+│   ├── static_rules.py            # SQL string injection + weak hashing (no LLM)
+│   ├── ignored_returns.py         # Discarded security-gate returns (no LLM)
+│   └── heuristics.py              # 7-signal AI authorship detector
 ├── llm/
-│   ├── pipeline.py                # Full scan pipeline (Phases 1–4)
-│   ├── triage.py                  # Claude Haiku fast pass (JSON output)
-│   └── analysis.py                # Claude Sonnet deep pass (streaming)
-├── server/
-│   └── main.py                    # FastAPI server (port 7891)
-│       ├── POST /api/debug
-│       ├── POST /api/scan
-│       ├── POST /api/orient
-│       ├── POST /api/graph
-│       ├── POST /api/graph/visual
-│       └── GET  /api/health
-└── vscode/
+│   ├── pipeline.py                # scan/debug/orient streams, triage, blast radius
+│   ├── chunking.py                # Windowed map-reduce scan + finding dedup
+│   ├── client.py                  # Anthropic client, model pins, usage accounting
+│   └── prompts.py                 # Prompt taxonomy + finding format
+├── git/
+│   └── diff.py                    # Diff extraction, ref resolution
+├── cache/
+│   └── embeddings.py              # Voyage embedding cache (optional dependency)
+└── server/
+    └── app.py                     # FastAPI server (port 7891)
+        ├── POST /api/debug
+        ├── POST /api/scan
+        ├── POST /api/orient
+        ├── POST /api/graph
+        ├── POST /api/graph/visual
+        └── GET  /api/health
+
+extension/
+└── src/
     ├── extension.ts               # VS Code extension entry point
     ├── panel.ts                   # Streaming webview panel
-    ├── diagnostics.ts             # Inline red squiggly underlines
-    └── graph.ts                   # Force-directed dependency graph
+    ├── diagnostics.ts             # Inline diagnostics
+    ├── graphPanel.ts              # Force-directed dependency graph
+    └── client.ts                  # HTTP/SSE client for the local server
 ```
 
-### The VS Code Extension
+### VS Code extension
 
-The extension communicates with Autopsy's FastAPI server over localhost:7891. It auto-starts the server on activation and polls `/api/health` until ready.
+The extension communicates with the FastAPI server over `127.0.0.1:7891`. It starts the server on activation and polls `/api/health` until ready.
 
-- **Streaming webview panel** — results stream character by character via Server-Sent Events
-- **Inline diagnostics** — vulnerable lines get red squiggly underlines in the editor
-- **Interactive graph** — force-directed visualization with draggable nodes, color-coded by type
-- **Problems panel** — all findings surfaced as VS Code diagnostics
+- Streaming webview panel — results arrive incrementally via Server-Sent Events
+- Inline diagnostics — vulnerable lines are underlined in the editor and listed in the Problems panel
+- Interactive graph — force-directed, draggable nodes, color-coded by node type
 
-### The CLI REPL
+The server fingerprints a repository by `(relative_path, mtime_ns)` over supported files and caches the parsed graph, so repeated requests against an unchanged tree skip re-parsing.
 
-Type `autopsy` with no arguments to launch the interactive interface:
+### CLI REPL
+
+Running `autopsy` with no arguments launches the interactive interface:
 
 ```
     A U T O P S Y   v0.1.0
@@ -311,50 +403,62 @@ Type `autopsy` with no arguments to launch the interactive interface:
     q  Quit
 ```
 
-Single-keypress navigation. Returns to menu after each command. Exit with `q` or Ctrl+C.
-
-`autopsy serve` starts the FastAPI server for VS Code extension communication.
+Navigation is by arrow keys or the mode letter. The menu returns after each command; `q` or Ctrl+C exits. `autopsy serve` starts the FastAPI server used by the extension.
 
 ---
 
-## Tech Stack
+## Tech stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| Code Parsing | Tree-sitter ≥ 0.23 | AST generation for Python, JS, TS, TSX |
-| Graph Engine | NetworkX ≥ 3.2 | Dependency graph construction, traversal, diffing |
-| Git Integration | GitPython ≥ 3.1.40 | Diffs, commit history, blob reads for graph snapshots |
-| LLM Triage | Claude Haiku 4.5 | Fast JSON triage pass (2048 tokens) |
-| LLM Analysis | Claude Sonnet 4.5 | Deep streaming analysis (4096 tokens) |
-| Code Embeddings | Voyage AI voyage-code-2 | Semantic similarity for subgraph selection |
-| API Server | FastAPI ≥ 0.109 + Uvicorn | Local server for VS Code extension |
-| CLI | Typer + Rich + readchar | Interactive terminal REPL |
-| VS Code Extension | TypeScript + VS Code API | Editor integration |
-| Streaming | Server-Sent Events (SSE) | Real-time output to VS Code panel |
+| Code parsing | Tree-sitter ≥ 0.23 | AST generation for Python, JS/JSX, TS, TSX |
+| Graph engine | NetworkX ≥ 3.2 | Graph construction, traversal, snapshotting, diffing |
+| Git integration | GitPython ≥ 3.1.40 | Diffs, commit history, blob reads for graph snapshots |
+| LLM triage | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) | JSON triage pass (2048 output tokens) |
+| LLM analysis | Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`) | Streaming analysis (8192 output tokens) |
+| Code embeddings | Voyage AI `voyage-code-2` (optional) | Semantic similarity for subgraph selection |
+| API server | FastAPI ≥ 0.109 + Uvicorn | Local server for the VS Code extension |
+| CLI | Typer + Rich + readchar | Terminal REPL |
+| Extension | TypeScript + VS Code API | Editor integration |
+| Streaming | Server-Sent Events | Output to the VS Code panel |
+
+The Sonnet output cap was raised from 4096 to 8192 because 4096 truncated scans mid-finding.
 
 ---
 
 ## Installation
 
-```bash
-pip install autopsy
-```
-
-Or from source:
+Install from source:
 
 ```bash
 git clone https://github.com/annenolte/autopsy
 cd autopsy
+python -m venv .venv && source .venv/bin/activate
 pip install -e .
 ```
 
-Set your Anthropic API key:
+Set an Anthropic API key:
 
 ```bash
 export ANTHROPIC_API_KEY=your_key_here
 ```
 
-Install the VS Code extension from the marketplace (search "Autopsy") or install the `.vsix` file directly.
+A `.env` file in the repository root is loaded automatically via `python-dotenv`; copy `.env.example` to `.env` and fill it in. The deterministic detection layer runs with no key — see `--no-llm`.
+
+Optional semantic subgraph selection:
+
+```bash
+pip install -e ".[embeddings]"     # adds voyageai
+export VOYAGE_API_KEY=your_key_here
+```
+
+The VS Code extension is in `extension/` and is not published to the marketplace. Build and install it locally:
+
+```bash
+cd extension && npm install && npm run compile
+npx vsce package                  # produces autopsy-0.1.0.vsix
+code --install-extension autopsy-0.1.0.vsix
+```
 
 ---
 
@@ -363,58 +467,73 @@ Install the VS Code extension from the marketplace (search "Autopsy") or install
 ### CLI
 
 ```bash
-# Launch interactive mode
+# Interactive mode
 autopsy
 
-# Run a scan directly
+# Scan a repo's most recent changes
 autopsy scan /path/to/repo
 
-# Debug a specific error
-autopsy debug /path/to/repo --error "TypeError: cannot read property of undefined"
+# Scan uncommitted working-tree changes
+autopsy scan /path/to/repo --uncommitted
 
-# Map a repo's architecture
+# Scan a specific ref range
+autopsy scan /path/to/repo --base main --head HEAD
+
+# Deterministic layer only — deletion analysis, static rules, authorship. No API calls.
+autopsy scan /path/to/repo --no-llm
+
+# Debug an error
+autopsy debug /path/to/repo --query "TypeError: cannot read property of undefined"
+
+# Debug a specific function with deeper traversal
+autopsy debug /path/to/repo --target get_user --depth 5
+
+# Architecture map
 autopsy orient /path/to/repo
 
-# Start the VS Code server
-autopsy serve
+# Graph stats, or a target's subgraph
+autopsy graph /path/to/repo
+autopsy graph /path/to/repo --target db.py --view
+
+# Server for the VS Code extension
+autopsy serve --port 7891
 ```
 
 ### VS Code
 
-With the extension installed and a repo open:
+With the extension installed and a repository open:
 
 - `Cmd+Shift+D` — Debug This
 - `Cmd+Shift+S` — Scan This
 - `Cmd+Shift+O` — Orient Me
 
-Results stream into the Autopsy panel. Vulnerable lines get red squiggly underlines directly in your editor.
+Results stream into the Autopsy panel, and vulnerable lines are underlined in the editor.
 
 ---
 
 ## Cost
 
-Autopsy is designed to be cheap to run:
+Token usage is tracked per model (`reset_usage` / `get_usage` in `autopsy/llm/client.py`), so cost is measured rather than estimated.
 
-| Component | Cost per session |
-|-----------|-----------------|
-| Claude Haiku (triage) | ~$0.01–0.05 |
-| Claude Sonnet (analysis) | ~$0.10–0.40 |
-| Voyage AI (embeddings, optional) | ~$0.01 |
-| **Total** | **~$0.12–0.46** |
+| Workload | Measured cost |
+|---|---|
+| Deterministic detectors + deletion analysis (`--no-llm`) | $0.00 — no API calls |
+| Typical diff scan (Haiku triage + Sonnet analysis) | ~$0.12–0.46 |
+| Full windowed scan of pygoat `introduction/` | ~$1.13, ~20 min wall time |
+| Single-prompt baseline on the same target | ~$0.34/run |
 
-Cost controls: Haiku handles triage, Sonnet only runs on confirmed findings, subgraph capped at 50 nodes, embeddings cached to disk. Graph snapshots for deletion analysis use direct blob reads with no extra API calls.
+Cost controls: Haiku handles triage, Sonnet runs only on confirmed findings, the subgraph is capped at 50 nodes, and embeddings are cached to disk. Graph snapshots for deletion analysis use direct blob reads and add no API calls. Per-run cost from token usage at pinned list prices is reproducible via `benchmark/measure_cost_runtime.py`.
 
 ---
 
-## Reproduce the evaluation
+## Reproducing the evaluation
 
-The evaluation in the paper is frozen under `benchmark/`. It measures how well
-Autopsy's scan recovers a known set of planted vulnerabilities.
+The evaluation is frozen under `benchmark/`. `benchmark/FROZEN_PROTOCOL.md` pins the targets, the matcher, and the tool versions.
 
 **Environment**
 
 - Python ≥ 3.10
-- An Anthropic API key (the scan makes live calls to Haiku + Sonnet)
+- An Anthropic API key (the scan makes live calls to Haiku and Sonnet)
 
 ```bash
 # 1. Install Autopsy and its dependencies (editable install)
@@ -426,94 +545,115 @@ cp .env.example .env        # then edit .env and set ANTHROPIC_API_KEY=sk-...
 #   or: export ANTHROPIC_API_KEY=sk-...
 ```
 
-**Run the benchmark**
+**Core harness**
 
 ```bash
 # Single live run (default fuzz tolerance = ±5 lines)
 python benchmark/eval.py
 
-# Report mean ± standard deviation across repeated runs
+# Mean ± standard deviation across repeated runs
 python benchmark/eval.py --repeat 5
 
-# Reproduce the looser legacy matching used during development
+# The looser legacy matching used during development
 python benchmark/eval.py --fuzz-lines 25
 
-# Choose the evaluation scenario (see benchmark/README.md):
+# Evaluation scenario (see benchmark/README.md):
 #   whole-file = each vulnerable file is net-new AI-generated code (original eval)
 #   safe       = diff against a clean baseline (default; harder, more conservative)
 python benchmark/eval.py --baseline-mode whole-file --repeat 5
 
-# Ablation: does the dependency graph beat just asking the model? Same model,
-# same prompt, same scorer — the only difference is Autopsy's graph pipeline.
+# Ablation: same model, same prompt, same scorer — the only difference is
+# Autopsy's graph pipeline.
 python benchmark/eval.py --arm both --repeat 5
 
-# Offline wiring check — builds the graph + diff and self-tests the
-# matcher without any API call (also the automatic fallback when no key is set)
+# Windowed map-reduce scanning, and the graph-note ablation
+python benchmark/eval.py --chunked --window-lines 400
+python benchmark/eval.py --chunked --graph-mode off      # off | note | subgraph
+python benchmark/eval.py --no-graph                      # drop graph context entirely
+
+# Offline wiring check — builds the graph and diff and self-tests the matcher
+# with no API call (also the automatic fallback when no key is set)
 python benchmark/eval.py --dry-run
 ```
 
-**Expected output shape.** The harness prints the dependency-graph and diff
-sizes, streams the scan, then prints a results table — True/False
-Positives, False Negatives, and Precision / Recall / F1 as whole-number
-percentages — followed by the lists of which ground-truth IDs were true
-positives, which were missed, and which findings were false positives. A JSON
-record of every run (raw scan output included) is written to
-`benchmark/results/eval_<timestamp>.json` (this directory is gitignored).
+**Other harnesses**
 
-> **Results vary slightly across runs.** The scan calls Claude with the model's
-> default sampling (the current client exposes no temperature control), so the
-> exact finding set — and therefore precision/recall — shifts a little run to
-> run. Use `--repeat N` to characterize the spread rather than reading a single
-> run as definitive.
+| Script | What it measures |
+|---|---|
+| `eval_securityeval.py` / `run_securityeval_repeats.py` | Per-file detection across SecurityEval's 121 vulnerable Python files |
+| `compare_tools.py` | Semgrep and Bandit head-to-head on a target, same matcher |
+| `run_codeql_baseline.py` + `codeql_sarif_adapter.py` | CodeQL `security-extended` SARIF scored by the frozen matcher |
+| `eval_deletions.py` | Deterministic deletion detectors — no API calls |
+| `validate_heldout.py` | Static rules validated on code they were not written for (`benchmark/heldout/`) |
+| `run_specificity.py` | False vulnerabilities per KLOC on clean code |
+| `eval_authorship.py` / `eval_authorship_classifier.py` | The 7-signal AI-authorship detector |
+| `eval_subgraph_caps.py` | Sensitivity to the 50-node subgraph cap |
+| `measure_cost_runtime.py` / `measure_haiku_stages.py` | USD cost and wall time from token usage at pinned list prices |
+| `per_category.py` / `stats.py` | Per-category breakdowns and significance tests |
+
+Supporting documents: `BASELINES.md`, `SECURITYEVAL.md`, `AUTHORSHIP.md`, `SUBGRAPH_CAPS.md`, `TIMING.md`, `preregistration_matched_budget.md`.
+
+**Output shape.** The harness prints the dependency-graph and diff sizes, streams the scan, then prints a results table — true positives, false positives, false negatives, and precision / recall / F1 as whole-number percentages — followed by which ground-truth IDs were true positives, which were missed, and which findings were false positives. A JSON record of every run, including raw scan output, is written to `benchmark/results/eval_<timestamp>.json`.
+
+> **Runs vary.** The scan calls Claude with the model's default sampling (the
+> current client exposes no temperature control), so the exact finding set — and
+> therefore precision and recall — shifts between runs. Use `--repeat N` to
+> characterize the spread rather than reading a single run as definitive.
 >
 > **Model note.** The analysis model originally used in the paper,
-> `claude-sonnet-4-20250514`, has been retired by Anthropic (live calls now
-> return a 404). The client is pinned to its date-stamped successor,
+> `claude-sonnet-4-20250514`, has been retired by Anthropic (live calls return a
+> 404). The client is pinned to its date-stamped successor,
 > `claude-sonnet-4-5-20250929`, so the benchmark runs reproducibly; absolute
-> numbers will differ from the original model. The triage model
-> (`claude-haiku-4-5-20251001`) is unchanged. Also ensure Autopsy is installed
-> editable **from this repository** (`pip install -e .`) so the benchmark
-> exercises this code rather than another local checkout.
+> numbers differ from the original model. The triage model
+> (`claude-haiku-4-5-20251001`) is unchanged. Ensure Autopsy is installed
+> editable from this repository (`pip install -e .`) so the benchmark exercises
+> this code rather than another local checkout.
 
-### Benchmark
+### Benchmark targets
 
-Everything the evaluation needs lives in `benchmark/`:
-
-- **`demo_project/`** (repo root) — the *vulnerable* target: a small Flask-style
-  user-management module (search, profile update, export, admin tools) carrying
-  twelve deliberately planted vulnerabilities (SQL injection, auth bypass, and
-  MD5 password hashing) spread across six files.
-- **`benchmark/baseline/`** — a **reconstructed** clean version of the same
-  module: identical structure and function signatures with the vulnerabilities
-  removed (bound parameters, token expiry/scope checks, PBKDF2 hashing, enforced
-  permission checks). It is **not** recovered original source — no
-  pre-vulnerability version was ever committed — so each file is labeled as a
-  reconstruction in its header. The baseline is the "before" state; the
-  vulnerable demo is the "after" state.
-- **`benchmark/make_diff.py`** — builds a throwaway git repo with two commits
-  (baseline → vulnerable) and emits the unified diff, exactly mirroring how
-  `autopsy scan` diffs two refs and feeds the diff (plus the repo's git object
-  database) into the scan pipeline.
+- **`demo_project/`** (repository root) — the vulnerable target: a small
+  Flask-style user-management module (search, profile update, export, admin
+  tools) carrying twelve planted vulnerabilities (SQL injection, auth bypass,
+  MD5 password hashing) across six files.
+- **`benchmark/baseline/`** — a reconstructed clean version of the same module:
+  identical structure and function signatures with the vulnerabilities removed
+  (bound parameters, token expiry/scope checks, PBKDF2 hashing, enforced
+  permission checks). It is not recovered original source — no pre-vulnerability
+  version was ever committed — so each file is labeled as a reconstruction in its
+  header. The baseline is the "before" state; the vulnerable demo is the "after"
+  state.
+- **`benchmark/pygoat/`** — labels for OWASP pygoat pinned at `19d17cc8`
+  (2026-03-28): `ground_truth_pygoat.json` marks 11 in-scope vulnerabilities.
+  pygoat itself is not vendored — clone it from
+  `github.com/adeyosemanputra/pygoat`; the ground truth references line numbers
+  only.
+- **`benchmark/js_demo/`** — the TypeScript/JavaScript target.
+- **`benchmark/heldout/`** — `safe/` and `vulnerable/` code the static rules were
+  not written against, for generality and specificity checks.
+- **`benchmark/deletion/`** — targets for the deletion-detector tests.
+- **`benchmark/make_diff.py`** — builds a throwaway git repository with two
+  commits (baseline → vulnerable) and emits the unified diff, mirroring how
+  `autopsy scan` diffs two refs and feeds the diff and the repository's git
+  object database into the scan pipeline.
 - **`benchmark/ground_truth.json`** — the authoritative list of planted
   vulnerabilities (`id`, `file`, `category`, `line_start`, `line_end`,
   `description`), with line numbers read directly from `demo_project`. A finding
-  counts as a true positive when its file basename matches, its (normalized)
+  counts as a true positive when its file basename matches, its normalized
   category matches, and its reported line is within `--fuzz-lines` of the labeled
   range; matching is one-to-one. One entry (`sqli-search-service`) is marked
-  `"provisional": true` and is **excluded from scoring** unless you pass
+  `"provisional": true` and is excluded from scoring unless you pass
   `--include-provisional` — see its `provisional_reason` field.
 
 ### Replication and failure analysis
 
 The August 2026 replication re-ran the evaluation end to end against the current
-models, and a companion pass looked at what Autopsy consistently *fails* to
-find. Three documents cover it:
+models, and a companion pass examined what Autopsy consistently fails to find.
+Three documents cover it:
 
 - **[`benchmark/results/results_summary_aug2026.md`](benchmark/results/results_summary_aug2026.md)**
-  — the replication's results across all phases, with the paid-run ledger and a
-  dated correction appended below the separator. Raw per-run artifacts, including
-  the runs that failed and were retried, sit alongside it under
-  `benchmark/results/`.
+  — results across all phases, with the paid-run ledger and a dated correction
+  appended below the separator. Raw per-run artifacts, including the runs that
+  failed and were retried, are alongside it under `benchmark/results/`.
 - **[`benchmark/results/securityeval_aug2026/stable_misses_analysis.md`](benchmark/results/securityeval_aug2026/stable_misses_analysis.md)**
   — the qualitative failure analysis: which SecurityEval cases are missed
   repeatedly rather than by sampling noise, and the late-file deficit observed on
@@ -524,29 +664,55 @@ find. Three documents cover it:
 
 ---
 
-## Why Autopsy vs. Existing Tools
+## Citing this work
 
-| | Copilot / Cursor | Sentry | Semgrep | **Autopsy** |
+This repository is the archived reproducibility artifact accompanying the paper.
+Machine-readable metadata is in [`CITATION.cff`](CITATION.cff) and
+[`.zenodo.json`](.zenodo.json).
+
+Cite the concept DOI ([10.5281/zenodo.21614411](https://doi.org/10.5281/zenodo.21614411))
+to reference the artifact in general — it resolves to the newest release. Cite the
+version DOI shown on a specific Zenodo release when the exact state of the code and
+results matters.
+
+```bibtex
+@software{nolte_autopsy,
+  author  = {Nolte, Anne},
+  title   = {Autopsy: detecting vulnerabilities in AI-generated code by
+             reasoning across dependency graphs},
+  year    = {2026},
+  doi     = {10.5281/zenodo.21614411},
+  url     = {https://github.com/annenolte/autopsy-public},
+  license = {MIT}
+}
+```
+
+---
+
+## Comparison with other tools
+
+Capability matrix. The ✓/✗ marks describe what each tool is designed to do, not how well it does it; for measured detection rates see [Measured results](#measured-results).
+
+| | Copilot / Cursor | Sentry | Semgrep | Autopsy |
 |---|---|---|---|---|
 | Finds vulnerabilities proactively | ✗ | ✗ | ✓ | ✓ |
-| Knows which files to look at | ✗ | ✗ | ✗ | ✓ |
-| Traces cross-file root causes | ✗ | ✓ (post-prod) | ✗ | ✓ |
+| Selects which files to examine | ✗ | ✗ | ✗ | ✓ |
+| Traces cross-file root causes | ✗ | ✓ (post-production) | ✗ | ✓ |
 | Detects AI-generated code | ✗ | ✗ | ✗ | ✓ |
-| Maps blast radius | ✗ | ✗ | ✗ | ✓ |
+| Reports blast radius | ✗ | ✗ | ✗ | ✓ |
 | Catches deletion-activated code | ✗ | ✗ | ✗ | ✓ |
 | Detects security control deletion | ✗ | ✗ | ✗ | ✓ |
 | Detects broken dependencies | ✗ | ✓ (runtime) | ✗ | ✓ |
-| Works before you ship | ✓ | ✗ | ✓ | ✓ |
-| No pasting required | ✗ | ✓ | ✓ | ✓ |
+| Runs pre-merge | ✓ | ✗ | ✓ | ✓ |
+| Operates on the repository directly | ✗ | ✓ | ✓ | ✓ |
+| pygoat recall (11 labeled vulns) | — | — | 64% | 100% |
 
-Sentry catches your house on fire. Autopsy finds the gas leak before anyone lights a match.
-
----
-
-## Built With
-
-Built solo in 24 hours at **Los Altos Hacks X** — April 11–12, 2026.
-
-By **Anne Nolte** — [GitHub](https://github.com/annenolte)
+Semgrep and CodeQL are deterministic and fast and carry no per-run cost; Autopsy's LLM layer is neither, and the two are complementary rather than substitutes. The rows where Autopsy is alone are consequences of the graph and the deletion analysis, which is the part of the design the benchmarks are meant to test.
 
 ---
+
+## Provenance
+
+Initial version built at Los Altos Hacks X, April 11–12, 2026, and developed since.
+
+Anne Nolte — [GitHub](https://github.com/annenolte)
